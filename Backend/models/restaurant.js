@@ -12,6 +12,10 @@ const restaurantSchema = new mongoose.Schema({
       ref: 'Category', // Reference to the Category model
     },
   ],
+  qrCodeUrl: { type: String }, // Add the field for QR code URL
+  qrCodeImage: { type: String }, // Add the field for QR code image
+  profileImage: { type: String }, // New field for profile image
+  bannerImage: { type: String }, // New field for banner image
 }, { timestamps: true });
 
 const Restaurant = mongoose.model('Restaurant', restaurantSchema);

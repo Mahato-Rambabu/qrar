@@ -1,36 +1,23 @@
-// multerConfig.js
 import multer from 'multer';
-import path from 'path';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
+import cloudinary from './cloudinaryConfig.js';
 
-// Set storage destination and filename for uploaded files
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    // Specify the uploads folder to save files
-    cb(null, './uploads/');
-  },
-  filename: (req, file, cb) => {
-    // Set the filename for uploaded files (e.g., original name + timestamp)
-    const fileExtension = path.extname(file.originalname);
-    const fileName = `${Date.now()}${fileExtension}`;
-    cb(null, fileName);
+// Configure Cloudinary Storage for Multer
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'restaurant-images', // Name of the folder in Cloudinary
+    resource_type: 'image', // Ensure only image uploads
+    format: async (req, file) => file.mimetype.split('/')[1], // Dynamically set format based on mimetype
+    public_id: (req, file) => file.originalname.split('.')[0], // Use file's original name as public_id
+    overwrite: true,
   },
 });
 
-// Multer filter to accept only image files
-const fileFilter = (req, file, cb) => {
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-  if (allowedTypes.includes(file.mimetype)) {
-    cb(null, true);
-  } else {
-    cb(new Error('Invalid file type. Only .jpeg, .png, and .gif are allowed.'));
-  }
-};
-
-// Create the upload middleware with the above storage and filter
+// Multer middleware with Cloudinary storage
 const upload = multer({
   storage: storage,
-  fileFilter: fileFilter,
   limits: { fileSize: 5 * 1024 * 1024 }, // Max file size of 5MB
 });
 
-export default upload;
+export { upload };

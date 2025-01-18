@@ -1,29 +1,93 @@
-import React from 'react';
-import { FiSun, FiUser } from 'react-icons/fi';
-import { RxHamburgerMenu } from 'react-icons/rx';
+import React, { memo, useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
+import { Menu } from 'lucide-react'; // Import Lucide icons
+import { Link } from 'react-router-dom';
+import axios from 'axios';
 
-const Navbar = ({ toggleSidebar, toggleTheme, title }) => {
+const Navbar = ({ toggleSidebar, title }) => {
+
+  const [profileImage, setProfileImage] = useState(null);
+  const [restaurantName, setRestaurantName] = useState('');
+  // Inline skeleton image (a simple placeholder)
+  const skeletonImage =
+    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiBmaWxsPSIjY2NjIj48cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHJ4PSIyMCIvPjwvc3ZnPg==';
+
+
+      useEffect(() => {
+        const fetchProfileImage = async () => {
+          try {
+            const token = localStorage.getItem("authToken");
+            if (!token) throw new Error("Authentication token is missing.");
+    
+            const response = await axios.get("http://localhost:5001/restaurants/profile", {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+    
+            setProfileImage(response.data.profileImage);
+            setRestaurantName(response.data.name);
+          } catch (err) {
+            console.error("Error fetching profile:", err);
+          }
+        };
+    
+        fetchProfileImage();
+      }, []);
   return (
-    <div className="fixed h-[8vh] w-full flex items-center justify-between px-4 border-b-2 bg-white z-10">
-      <div className="flex gap-2 items-center">
-        <RxHamburgerMenu
-          size={38}
-          className="hover:bg-gray-100 rounded-md hover:rounded-full p-2 cursor-pointer"
+    <nav className="fixed top-0 left-0 w-full bg-white shadow-md z-50">
+      {/* Desktop View */}
+      <div className="hidden md:flex items-center justify-between px-4 py-2">
+        <div className='flex items-center gap-2'>
+
+        
+        {/* Hamburger Menu */}
+        <button
+          className="p-2 rounded-md hover:bg-gray-200 focus:outline-none"
           onClick={toggleSidebar}
-        />
-        <img src="./resto-logo.svg" alt="Logo" className="h-10 w-10" />
-        <h1 className="text-xl hidden sm:block">{title}</h1>
+          aria-label="Toggle Sidebar"
+        >
+          <Menu className="w-6 h-6 text-blue-400" />
+        </button>
+
+        {/* Page Title */}
+        <h1 className="text-lg font-semibold text-black">{title}</h1>
+        </div>
+
+        {/* Restaurant Name */}
+        <h2 className="text-lg font-semibold text-black">{restaurantName || 'Restaurant Name'}</h2>
+
+        {/* Profile Section */}
+        <Link to="/profile" className="flex items-center">
+          <img
+            src={profileImage || skeletonImage}
+            alt="Profile"
+            className="w-10 h-10 rounded-full object-cover border-2 border-gray-300"
+          />
+        </Link>
       </div>
-      <div className="flex gap-6">
-        <FiSun
-          size={42}
-          onClick={toggleTheme}
-          className="cursor-pointer hover:bg-gray-100 rounded-md hover:rounded-full p-2"
-        />
-        <FiUser size={42} className="cursor-pointer hover:bg-gray-100 rounded-md hover:rounded-full p-2" />
+
+      {/* Mobile View */}
+      <div className="flex md:hidden items-center justify-between px-4 py-2">
+        {/* Restaurant Name */}
+        <h2 className="text-lg font-semibold text-black">
+          {restaurantName || 'Restaurant Name'}
+        </h2>
+
+        {/* Profile Section */}
+        <Link to="/profile" className="flex items-center">
+          <img
+            src={profileImage || skeletonImage}
+            alt="Profile"
+            className="w-10 h-10 rounded-full object-cover border-2 border-gray-300"
+          />
+        </Link>
       </div>
-    </div>
+    </nav>
   );
 };
 
-export default Navbar;
+Navbar.propTypes = {
+  toggleSidebar: PropTypes.func.isRequired,
+  title: PropTypes.string.isRequired,
+};
+
+export default memo(Navbar);

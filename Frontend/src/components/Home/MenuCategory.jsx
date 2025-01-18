@@ -1,76 +1,116 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios'; // For API requests
+import { fetchCategories } from '../../api/categoryApi';
 import { FaCircleChevronRight } from 'react-icons/fa6';
+import { AiOutlineLoading3Quarters } from 'react-icons/ai';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
-// MenuCategory Component
+const SERVER_BASE_URL = 'http://localhost:5001';
+
 const MenuCategory = () => {
-    const [categories, setCategories] = useState([]); // State for fetched data
-    const [loading, setLoading] = useState(true); // State for loading indicator
-    const [error, setError] = useState(null); // State for error handling
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-    // Fetch categories from the API
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const response = await axios.get('http://localhost:5001/674af850d2533b9e24314045/categories'); // Replace with your API endpoint
-                setCategories(response.data);
-            } catch (err) {
-                console.error('Error fetching categories:', err);
-                setError('Failed to load categories. Please try again later.');
-            } finally {
-                setLoading(false);
-            }
-        };
+  const [searchParams] = useSearchParams();
+  const restaurantId = searchParams.get('restaurantId'); // Extract restaurantId from URL
+  const navigate = useNavigate();
 
-        fetchCategories();
-    }, []);
+  useEffect(() => {
+    const getCategories = async () => {
+      if (!restaurantId) {
+        setError('Restaurant ID is missing. Please scan a valid QR code.');
+        setLoading(false);
+        return;
+      }
 
-    if (loading) {
-        return <p className="text-center">Loading...</p>;
-    }
+      try {
+        const data = await fetchCategories(restaurantId);
+        setCategories(data);
+      } catch (err) {
+        setError('Unable to fetch menu categories. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    if (error) {
-        return <p className="text-center text-red-500">{error}</p>;
-    }
+    getCategories();
+  }, [restaurantId]); // Fetch categories whenever restaurantId changes
 
+  if (loading) {
     return (
-        <div className="w-full px-4">
-            {/* Menu Heading */}
-            <h1 className="text-xl text-center pt-4">Menu</h1>
-
-            {/* Card Container */}
-            <div className="w-full grid grid-cols-3 md:grid-cols-4 gap-4 mt-4">
-                {categories.map((category) => (
-                    <Card key={category.id} image={category.image} name={category.catName} price={category.price} />
-                ))}
-                <SeeAllCard />
-            </div>
-        </div>
+      <div className="flex justify-center items-center h-32">
+        <AiOutlineLoading3Quarters className="animate-spin text-gray-500 text-3xl" />
+      </div>
     );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center text-red-500">
+        <p>{error}</p>
+        <button
+          className="mt-4 px-4 py-2 bg-pink-500 text-white rounded"
+          onClick={() => window.location.reload()}
+        >
+          Refresh
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full px-4 pb-2">
+      <h1 className="text-xl font-bold text-center pt-4 text-pink-500">Menu</h1>
+      <div className="w-full grid grid-cols-3 md:grid-cols-4 gap-4 mt-4">
+        {categories.map((category) => (
+          <Card
+            key={category._id}
+            image={category.img}
+            name={category.catName}
+            price={category.price}
+            categoryId={category._id}
+            restaurantId={restaurantId}  // Pass restaurantId to Card
+            navigate={navigate}
+          />
+        ))}
+        <SeeAllCard
+          restaurantId={restaurantId}  // Pass restaurantId to SeeAllCard
+          navigate={navigate}
+        />
+      </div>
+    </div>
+  );
 };
 
-// Card Component
-const Card = ({ image, name, price }) => (
-    <div className="bg-none rounded-lg p-2 flex flex-col justify-between">
-        <img src={image} alt={name} className="w-full h-20 md:h-32 object-cover rounded-md mb-2" />
-
-        <h3 className="text-sm font-medium">{name}</h3>
-
-        <div className="flex justify-between items-center mt-2">
-            <p className="text-sm text-gray-500">{price}</p>
-            <button className="px-3 py-1 text-pink-500 border border-pink-500 rounded-full text-xs">
-                More
-            </button>
-        </div>
+const Card = ({ image, name, price, categoryId, restaurantId, navigate }) => (
+  <div className="bg-none rounded-lg p-2 flex flex-col justify-between transform hover:scale-105 transition-transform duration-200">
+    <img
+     src={image || '/placeholder.png'} 
+      alt={name}
+      className="w-full h-20 md:h-32 object-cover rounded-md mb-2"
+      loading="lazy"
+    />
+    <h3 className="text-sm font-medium">{name}</h3>
+    <div className="flex justify-between items-center mt-2">
+      <p className="text-sm text-gray-500">{price}*</p>
+      <button
+        className="px-3 py-1 text-pink-500 border border-pink-500 rounded-full text-xs hover:bg-pink-600 hover:text-white transition-colors"
+        onClick={() => navigate(`/products?restaurantId=${restaurantId}&categoryId=${categoryId}`)} // Include restaurantId
+      >
+        More
+      </button>
     </div>
+  </div>
 );
 
-// See All Card Component
-const SeeAllCard = () => (
-    <div className="bg-pink-500 rounded-lg shadow-md flex flex-col items-center justify-center mb-2 p-4 cursor-pointer">
-        <button className="text-white text-lg font-semibold">See All</button>
-        <FaCircleChevronRight size={28} className="text-white mt-2" />
-    </div>
+const SeeAllCard = ({ restaurantId, navigate }) => (
+  <div
+    onClick={() => navigate(`/products?restaurantId=${restaurantId}`)} // Include restaurantId
+    className="bg-pink-500 rounded-lg shadow-md flex flex-col items-center justify-center p-4 cursor-pointer hover:bg-pink-600 transition-colors"
+  >
+    <button className="text-white text-lg font-semibold">See All</button>
+    <FaCircleChevronRight size={28} className="text-white mt-2" />
+  </div>
 );
 
 export default MenuCategory;
