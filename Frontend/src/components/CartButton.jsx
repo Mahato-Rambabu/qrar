@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { IoCartSharp } from 'react-icons/io5';
-import { useCart } from '../Context/CartContext';
+import { useCart } from '../context/CartContext';
 import { toast } from 'react-hot-toast';
 
 const CartButton = () => {
