@@ -44,14 +44,15 @@ const OrderHistory = () => {
     setDateRange(e.target.value);
   };
 
-  const filteredOrders = orders.filter((order) => {
-    const orderNo = order?.orderNo?.toString() || "";
-    const customerName = order?.customerName?.toLowerCase() || "";
-    return (
-      customerName.includes(searchQuery.toLowerCase()) ||
-      orderNo.includes(searchQuery)
-    );
-  });
+ const filteredOrders = Array.isArray(orders) ? orders.filter((order) => {
+  const orderNo = order?.orderNo?.toString() || "";
+  const customerName = order?.customerName?.toLowerCase() || "";
+  return (
+    customerName.includes(searchQuery.toLowerCase()) ||
+    orderNo.includes(searchQuery)
+  );
+}) : [];
+
 
   return (
     <div className="p-6 bg-white min-h-screen">
