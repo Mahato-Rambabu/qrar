@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../../utils/axiosInstance';
 import SummaryCard from './SummaryCard';
 import LineGraph from './LineCharts';
 import PieChart from './PieCharts';
@@ -23,16 +23,16 @@ const RestoDashboard = () => {
       try {
         const token = localStorage.getItem('authToken');
         const [profitResponse, productResponse, orderResponse, usersResponse] = await Promise.all([
-          axios.get(`http://localhost:5001/orders/total-profit?dateRange=${dateRange}`, {
+          axiosInstance.get(`/orders/total-profit?dateRange=${dateRange}`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get('http://localhost:5001/products/count', {
+          axiosInstance.get('/products/count', {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get(`http://localhost:5001/orders/order-count?dateRange=${dateRange}`, {
+          axiosInstance.get(`/orders/order-count?dateRange=${dateRange}`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get('http://localhost:5001/users/total-users', {
+          axiosInstance.get('/users/total-users', {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
