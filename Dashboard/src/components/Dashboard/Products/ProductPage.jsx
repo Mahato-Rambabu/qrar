@@ -160,7 +160,7 @@ const ProductPage = () => {
       {/* Breadcrumbs */}
       <div className="mb-4">
         <nav className="text-sm text-gray-500">
-          <span className="cursor-pointer hover:underline" onClick={() => navigate("/dashboard")}>Dashboard</span>
+          <span className="cursor-pointer hover:underline" onClick={() => navigate("/")}>Dashboard</span>
           <span className="mx-2">/</span>
           <span className="cursor-pointer hover:underline" onClick={() => navigate("/categories")}>Categories</span>
           <span className="mx-2">/</span>
