@@ -35,7 +35,15 @@ export const fetchOrderHistory = async (dateRange) => {
       Authorization: `Bearer ${token}`,
     },
     });
+    console.log("Raw Response:", response);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
     const data = await response.json();
+    
+    console.log("Parsed JSON:", data);
 
     return Array.isArray(data) ? data : []; // Ensure it's always an array
   } catch (error) {
