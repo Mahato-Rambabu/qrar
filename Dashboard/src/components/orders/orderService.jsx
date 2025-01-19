@@ -17,6 +17,7 @@ export const fetchPendingOrders = async (dateRange) => {
       dateRange, // Include date range as a query parameter
     },
   });
+  console.log("API Response:", response.data); 
   return response.data;
 };
 
