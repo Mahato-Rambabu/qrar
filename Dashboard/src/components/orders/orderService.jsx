@@ -41,11 +41,9 @@ export const fetchOrderHistory = async (dateRange) => {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
-    const data = await response.json();
-    
-    console.log("Parsed JSON:", data);
-
-    return Array.isArray(data) ? data : []; // Ensure it's always an array
+   const data = await response.json();
+return Array.isArray(data.orders) ? data.orders : [];
+ // Ensure it's always an array
   } catch (error) {
     console.error("Error fetching order history:", error);
     return []; // Return empty array on failure
