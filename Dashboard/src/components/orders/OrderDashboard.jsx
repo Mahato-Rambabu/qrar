@@ -17,13 +17,18 @@ const OrderDashboard = () => {
 
   useEffect(() => {
     const getOrders = async () => {
-      try {
-        const data = await fetchPendingOrders(dateRange); // Pass date range
-        setOrders(data);
-      } catch (err) {
-        console.error("Failed to fetch orders:", err);
+    try {
+      const data = await fetchPendingOrders(dateRange);
+      console.log("Fetched Orders:", data); // Debugging log
+      if (!Array.isArray(data)) {
+        console.error("API did not return an array:", data);
       }
-    };
+      setOrders(Array.isArray(data) ? data : []); // Ensure it's always an array
+    } catch (err) {
+      console.error("Failed to fetch orders:", err);
+      setOrders([]); // Set an empty array to prevent .filter error
+    }
+  };
 
     getOrders();
 
