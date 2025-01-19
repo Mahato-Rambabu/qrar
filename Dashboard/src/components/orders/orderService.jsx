@@ -31,10 +31,16 @@ export const fetchOrderHistory = async (dateRange) => {
       headers: {
         Authorization: `Bearer ${token}`,
       },
-      params: { dateRange }, // Include date range as a query parameter
+      params: { dateRange },
     });
 
-    return Array.isArray(response.data.orders) ? response.data.orders : []; // Ensure it's always an array
+    console.log("API Response for Order History:", response.data);
+
+    if (!response.data || !Array.isArray(response.data.orders)) {
+      throw new Error("Invalid response format");
+    }
+
+    return response.data.orders; // Return the orders array
   } catch (error) {
     console.error("Error fetching order history:", error.message);
     return []; // Return empty array on failure
