@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "qrar.onrender.com/orders/";
+const API_BASE_URL = "qrar.onrender.com/orders";
 
 // Function to get the token from localStorage or cookies
 const getAuthToken = () => {
