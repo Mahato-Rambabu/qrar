@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axiosInstance from '../../../utils/axiosInstance';
+import axios from 'axios';
 
 const ProductList = ({ dateRange }) => {
   const [products, setProducts] = useState([]);
@@ -9,7 +9,7 @@ const ProductList = ({ dateRange }) => {
     const fetchProductSales = async () => {
       try {
         const token = localStorage.getItem('authToken');
-        const response = await axiosInstance.get(`/orders/product-sales?dateRange=${dateRange}`, {
+        const response = await axios.get(`http://localhost:5001/orders/product-sales?dateRange=${dateRange}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
