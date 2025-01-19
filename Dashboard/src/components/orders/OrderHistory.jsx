@@ -5,55 +5,52 @@ import OrderTable from "../orders/OrderTable";
 import { FaArrowLeft } from "react-icons/fa";
 import { io } from "socket.io-client";
 
-const socket = io("qrar.onrender.com");
+const socket = io("https://qrar.onrender.com");
 
 const OrderHistory = () => {
   const [orders, setOrders] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [dateRange, setDateRange] = useState("24h"); // Default date range
+  const [dateRange, setDateRange] = useState("24h");
   const navigate = useNavigate();
 
-useEffect(() => {
-  const getOrderHistory = async () => {
-    try {
-      const data = await fetchOrderHistory(dateRange);
-      console.log("Fetched Order History:", data);
-      setOrders(data);
-    } catch (err) {
-      console.error("Failed to fetch order history:", err.message);
-    }
-  };
+  useEffect(() => {
+    const getOrderHistory = async () => {
+      try {
+        const data = await fetchOrderHistory(dateRange);
+        console.log("Fetched Order History:", data);
+        setOrders(data);
+      } catch (err) {
+        console.error("Failed to fetch order history:", err.message);
+      }
+    };
 
-  getOrderHistory();
+    getOrderHistory();
 
-  socket.on("order:updated", (updatedOrder) => {
-    if (updatedOrder.status === "Served") {
-      setOrders((prevOrders) => [updatedOrder, ...prevOrders]);
-    }
-  });
+    socket.on("order:updated", (updatedOrder) => {
+      console.log("Socket Update Received:", updatedOrder);
+      if (updatedOrder.status === "Served") {
+        setOrders((prevOrders) => [updatedOrder, ...prevOrders]);
+      }
+    });
 
-  return () => {
-    socket.off("order:updated");
-  };
-}, [dateRange]);
-  
-  const handleSearch = (e) => {
-    setSearchQuery(e.target.value);
-  };
+    return () => {
+      socket.off("order:updated");
+    };
+  }, [dateRange]);
 
-  const handleDateRangeChange = (e) => {
-    setDateRange(e.target.value);
-  };
+  const handleSearch = (e) => setSearchQuery(e.target.value);
+  const handleDateRangeChange = (e) => setDateRange(e.target.value);
 
- const filteredOrders = Array.isArray(orders) ? orders.filter((order) => {
-  const orderNo = order?.orderNo?.toString() || "";
-  const customerName = order?.customerName?.toLowerCase() || "";
-  return (
-    customerName.includes(searchQuery.toLowerCase()) ||
-    orderNo.includes(searchQuery)
-  );
-}) : [];
-
+  const filteredOrders = Array.isArray(orders)
+    ? orders.filter((order) => {
+        const orderNo = order?.orderNo?.toString() || "";
+        const customerName = order?.customerName?.toLowerCase() || "";
+        return (
+          customerName.includes(searchQuery.toLowerCase()) ||
+          orderNo.includes(searchQuery)
+        );
+      })
+    : [];
 
   return (
     <div className="p-6 bg-white min-h-screen">
@@ -73,12 +70,7 @@ useEffect(() => {
             Orders
           </span>
           <span className="mx-2">/</span>
-          <span
-            className="cursor-pointer hover:underline"
-            onClick={() => navigate("/history")}
-          >
-            History
-          </span>
+          <span className="cursor-pointer">History</span>
         </nav>
       </div>
 
@@ -113,7 +105,11 @@ useEffect(() => {
         </select>
       </div>
 
-      <OrderTable orders={filteredOrders} isHistory={true} />
+      {filteredOrders.length > 0 ? (
+        <OrderTable orders={filteredOrders} isHistory={true} />
+      ) : (
+        <p className="text-center text-gray-500">No orders found.</p>
+      )}
     </div>
   );
 };
