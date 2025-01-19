@@ -29,23 +29,13 @@ const server = http.createServer(app);
 // Initialize Socket.IO with the server instance
 const io = initializeSocket(server);
 
-const allowedOrigins = [
-  "http://localhost:5173", // Local development
-  "https://qrar-lyart.vercel.app" // Production frontend on Vercel
-];
-
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
+    origin: "https://qrar-lyart.vercel.app", // Allow your Vercel frontend URL
+    credentials: true, // Allow cookies to be sent
   })
 );
+
 
 app.use(cookieParser()); 
 app.use(express.json());
