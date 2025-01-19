@@ -22,17 +22,17 @@ export const fetchPendingOrders = async (dateRange) => {
 };
 
 export const fetchOrderHistory = async (dateRange) => {
-  const token = getAuthToken();
-  const response = await axios.get(`${API_BASE_URL}/history`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    params: {
-      dateRange, // Include date range as a query parameter
-    },
-  });
-  return response.data;
+  try {
+    const response = await fetch(`${API_BASE_URL}/orders/history?dateRange=${dateRange}`);
+    const data = await response.json();
+
+    return Array.isArray(data) ? data : []; // Ensure it's always an array
+  } catch (error) {
+    console.error("Error fetching order history:", error);
+    return []; // Return empty array on failure
+  }
 };
+
 
 export const updateOrderStatus = async (orderId, status) => {
   const token = getAuthToken();
