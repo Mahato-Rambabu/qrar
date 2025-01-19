@@ -37,7 +37,7 @@ const Dashboard = () => {
         return 'Products';
       case '/orders':
         return 'Orders';
-      case '/dashboard':
+      case '/':
         return 'Dashboard';
       default:
         return 'Restaurant';
@@ -73,7 +73,7 @@ const Dashboard = () => {
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route
-                  path="/dashboard"
+                  path="/"
                   element={
                     <ProtectedRoute>
                       <RestoDashboard />
