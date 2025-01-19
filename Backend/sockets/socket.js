@@ -2,7 +2,7 @@ import { Server } from 'socket.io';
 
 const initializeSocket = (server) => {
     const io = new Server(server, {
-        cors: { origin: process.env.FRONTEND_BASE_URL, methods: ['GET', 'POST'] },
+        cors: { origin: process.env.FRONTEND_BASE_URL, methods: ['GET', 'POST', 'PUT', 'DELETE'] },
     });
 
     io.on('connection', (socket) => {
