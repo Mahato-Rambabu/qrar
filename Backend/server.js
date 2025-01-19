@@ -32,7 +32,7 @@ const io = initializeSocket(server);
 // Middleware
 app.use(
     cors({
-      origin: "http://localhost:5173", // Frontend URL
+      origin: "https://qrar-lyart.vercel.app/", // Frontend URL
       credentials: true, // Allow cookies to be sent
     })
   );
