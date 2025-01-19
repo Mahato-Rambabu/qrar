@@ -12,7 +12,7 @@ const Sidebar = memo(({ isOpen }) => {
 
   // Menu items array
   const menuItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: ChartLine },
+    { path: '/', label: 'Dashboard', icon: ChartLine },
     { path: '/categories', label: 'Products', icon: Package },
     { path: '/orders', label: 'Orders', icon: ShoppingCart },
     { path: '/customers', label: 'Customers', icon: Users },
