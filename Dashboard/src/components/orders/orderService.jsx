@@ -26,22 +26,28 @@ export const fetchPendingOrders = async (dateRange) => {
 
 export const fetchOrderHistory = async (dateRange) => {
   try {
-    const token = getAuthToken();
-    const response = await axios.get(`${API_BASE_URL}/history`, {
+    // Get the token from localStorage (or other storage)
+    const token = localStorage.getItem("token");
+
+    // Ensure the token exists
+    if (!token) {
+      throw new Error("Authorization token not found. Please log in again.");
+    }
+
+    const response = await axios.get(`${API_BASE_URL}/orders/history`, {
       params: { dateRange },
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`, // Adjust token storage if needed
+        Authorization: `Bearer ${token}`, // Include the token in the request
       },
     });
 
     console.log("Raw API Response:", response.data);
 
-    // Check if response contains the 'orders' array
+    // Validate the response structure
     if (response.data && Array.isArray(response.data.orders)) {
       return response.data.orders;
     }
 
-    // Handle unexpected formats
     throw new Error("Unexpected API response structure");
   } catch (error) {
     console.error("Error fetching order history:", error.message);
