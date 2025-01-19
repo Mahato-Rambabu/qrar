@@ -29,7 +29,7 @@ const HomePage = () => {
     const fetchProfileImage = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5001/restaurants/images/${restaurantId}`
+          `https://qrar.onrender.com/restaurants/images/${restaurantId}`
         ); // Use the correct backend route
         if (!response.ok) {
           console.error(`Error ${response.status}: ${response.statusText}`);
