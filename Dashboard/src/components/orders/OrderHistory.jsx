@@ -13,28 +13,32 @@ const OrderHistory = () => {
   const [dateRange, setDateRange] = useState("24h"); // Default date range
   const navigate = useNavigate();
 
-  useEffect(() => {
-    console.log("Fetching order history with dateRange:", dateRange);
-    const getOrderHistory = async () => {
-      try {
-        const data = await fetchOrderHistory(dateRange); // Pass date range
-        setOrders(data);
-      } catch (err) {
-        console.error("Failed to fetch order history:", err);
-      }
-    };
-    getOrderHistory();
-  
-    socket.on("order:updated", (updatedOrder) => {
-      if (updatedOrder.status === "Served") {
-        setOrders((prevOrders) => [updatedOrder, ...prevOrders]);
-      }
-    });
-  
-    return () => {
-      socket.off("order:updated");
-    };
-  }, [dateRange]);
+useEffect(() => {
+  console.log("Fetching order history with dateRange:", dateRange);
+
+  const getOrderHistory = async () => {
+    try {
+      const data = await fetchOrderHistory(dateRange);
+      console.log("Fetched Order History:", data); // Log fetched data
+      setOrders(data);
+    } catch (err) {
+      console.error("Failed to fetch order history:", err.message);
+    }
+  };
+
+  getOrderHistory();
+
+  socket.on("order:updated", (updatedOrder) => {
+    if (updatedOrder.status === "Served") {
+      console.log("Order updated via socket:", updatedOrder);
+      setOrders((prevOrders) => [updatedOrder, ...prevOrders]);
+    }
+  });
+
+  return () => {
+    socket.off("order:updated");
+  };
+}, [dateRange]);
   
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
