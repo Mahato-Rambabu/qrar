@@ -11,7 +11,7 @@ import sliderImages from './routes/sliderImages.js';
 import configureOrderRoutes from './routes/orderRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import QrCodeGen from './routes/QrCodeGen.js';
-import initializeSocket from './sockets/Socket.js';
+import initializeSocket from './sockets/socket.js';
 import http from 'http';
 import cookieParser from 'cookie-parser';
 import validateCustomer from './middlewares/validateCustomer.js';
