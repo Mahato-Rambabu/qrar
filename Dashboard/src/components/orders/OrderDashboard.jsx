@@ -90,7 +90,7 @@ const OrderDashboard = () => {
         <nav className="text-sm text-gray-500">
           <span
             className="cursor-pointer hover:underline"
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate("/")}
           >
             Dashboard
           </span>
