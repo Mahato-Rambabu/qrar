@@ -14,12 +14,10 @@ const OrderHistory = () => {
   const navigate = useNavigate();
 
 useEffect(() => {
-  console.log("Fetching order history with dateRange:", dateRange);
-
   const getOrderHistory = async () => {
     try {
       const data = await fetchOrderHistory(dateRange);
-      console.log("Fetched Order History:", data); // Log fetched data
+      console.log("Fetched Order History:", data);
       setOrders(data);
     } catch (err) {
       console.error("Failed to fetch order history:", err.message);
@@ -30,7 +28,6 @@ useEffect(() => {
 
   socket.on("order:updated", (updatedOrder) => {
     if (updatedOrder.status === "Served") {
-      console.log("Order updated via socket:", updatedOrder);
       setOrders((prevOrders) => [updatedOrder, ...prevOrders]);
     }
   });
