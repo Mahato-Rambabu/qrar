@@ -231,41 +231,34 @@ const getDateRange = (dateRange) => {
 router.get("/history", authMiddleware, async (req, res) => {
   try {
     const restaurantId = req.user.id;
-    const { dateRange } = req.query; // Extract the dateRange query parameter
+    const { dateRange } = req.query;
 
     if (!restaurantId || !isValidObjectId(restaurantId)) {
       console.error("Invalid restaurant ID");
-      return res.status(400).json([]); // Return empty array on error
+      return res.status(400).json([]); // Return an empty array on error
     }
 
-    const startDate = getDateRange(dateRange); // Use the getDateRange helper
+    const startDate = getDateRange(dateRange);
     if (!startDate) {
       console.error("Invalid date range");
-      return res.status(400).json([]); // Return empty array on error
+      return res.status(400).json([]); // Return an empty array on error
     }
 
-    // Fetch served orders within the date range
     const servedOrders = await Order.find({
       restaurantId,
       status: "Served",
-      updatedAt: { $gte: startDate }, // Filter by startDate
+      updatedAt: { $gte: startDate },
     })
       .populate("customerIdentifier", "name")
       .populate("items.productId", "name description img")
       .select("orderNo total items status updatedAt customerIdentifier")
       .sort({ updatedAt: -1 });
 
-    // Transform orders for the response
-    const transformedOrders = servedOrders.map((order) => ({
-      ...order.toObject(),
-      customerName: order.customerIdentifier?.name || "Unknown",
-      formattedDate: order.updatedAt.toLocaleString(),
-    }));
-
-    res.status(200).json(transformedOrders); // Always return an array
+    // Always return an array
+    res.status(200).json(Array.isArray(servedOrders) ? servedOrders : []);
   } catch (error) {
     console.error("Error fetching order history:", error);
-    res.status(500).json([]); // Return empty array on error
+    res.status(500).json([]); // Always return an array
   }
 });
 
