@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../../utils/axiosInstance';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658'];
@@ -11,7 +11,7 @@ const CustomPieChart = () => {
   useEffect(() => {
     const fetchAgeGroupData = async () => {
       try {
-        const response = await axios.get('http://localhost:5001/users/users-by-age-group',{
+        const response = await axiosInstance.get('/users/users-by-age-group',{
           headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` },
         });
         const data = Object.entries(response.data).map(([key, value]) => ({

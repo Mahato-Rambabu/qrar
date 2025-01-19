@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../../utils/axiosInstance';
 import {
   AreaChart, Area, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
 } from 'recharts';
@@ -40,7 +40,7 @@ const LineGraph = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('authToken');
-      const response = await axios.get(`http://localhost:5001/orders/total-profit?dateRange=${dateRange}`,{
+      const response = await axiosInstance.get(`orders/total-profit?dateRange=${dateRange}`,{
         headers: { Authorization: `Bearer ${token}` },
       });
       const { data } = response.data;
