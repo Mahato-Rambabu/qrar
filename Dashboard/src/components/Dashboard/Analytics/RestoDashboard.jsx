@@ -4,7 +4,7 @@ import SummaryCard from './SummaryCard';
 import LineGraph from './LineCharts';
 import PieChart from './PieCharts';
 import ProductList from './ProductList';
-import OrderList from '../OrderList';
+import OrderList from './OrderList';
 import { useTheme } from '../../../contexxt/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../../utils/axiosInstance';
 
 const formatDateTime = (dateString, includeDate = false) => {
   const options = {
@@ -23,7 +23,7 @@ const OrderList = () => {
         const dateRange = '24h'; // Adjust as needed
 
         // Fetch served orders
-        const servedResponse = await axios.get(`http://localhost:5001/orders/history`, {
+        const servedResponse = await axiosInstance.get(`/orders/history`, {
           headers: { Authorization: `Bearer ${token}` },
           params: { dateRange },
         });
