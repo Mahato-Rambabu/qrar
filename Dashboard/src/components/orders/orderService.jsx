@@ -8,6 +8,7 @@ const getAuthToken = () => {
 };
 
 export const fetchPendingOrders = async (dateRange) => {
+  try{
   const token = getAuthToken();
   const response = await axios.get(`${API_BASE_URL}/pending`, {
     headers: {
@@ -17,13 +18,23 @@ export const fetchPendingOrders = async (dateRange) => {
       dateRange, // Include date range as a query parameter
     },
   });
-  console.log("API Response:", response.data); 
-  return response.data;
+
+  const data = await response.json();
+  return Array.isArray(data) ? data : []; // Ensure it's always an array
+  }catch (error) {
+    console.error("Error fetching order history:", error);
+    return []; // Return empty array on failure
+  }
 };
 
 export const fetchOrderHistory = async (dateRange) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/orders/history?dateRange=${dateRange}`);
+    const token = getAuthToken();
+    const response = await fetch(`${API_BASE_URL}/orders/history?dateRange=${dateRange}`,{
+       headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    });
     const data = await response.json();
 
     return Array.isArray(data) ? data : []; // Ensure it's always an array
