@@ -4,7 +4,7 @@ import { FaCircleChevronRight } from 'react-icons/fa6';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
-const SERVER_BASE_URL = 'http://localhost:5001';
+const SERVER_BASE_URL = 'https://qrar.onrender.com';
 
 const MenuCategory = () => {
   const [categories, setCategories] = useState([]);
