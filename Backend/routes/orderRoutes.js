@@ -254,8 +254,13 @@ router.get("/history", authMiddleware, async (req, res) => {
       .select("orderNo total items status updatedAt customerIdentifier")
       .sort({ updatedAt: -1 });
 
-    // Always return an array
-    res.status(200).json(Array.isArray(servedOrders) ? servedOrders : []);
+    // Transform orders to include customerName with a default value
+    const transformedOrders = servedOrders.map((order) => ({
+      ...order.toObject(),
+      customerName: order.customerIdentifier?.name || "N/A",
+    }));
+
+    res.status(200).json(transformedOrders);
   } catch (error) {
     console.error("Error fetching order history:", error);
     res.status(500).json([]); // Always return an array
