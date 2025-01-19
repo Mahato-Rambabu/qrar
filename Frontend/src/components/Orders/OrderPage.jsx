@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { RiArrowLeftSLine } from "react-icons/ri";
 import { useNavigate, useParams } from "react-router-dom";
-import { useCart } from "../../context/CartContext";
+import { useCart } from "../../Context/CartContext";
 import axiosInstance from "../../utils/axiosInstance";
 import OrderItem from "./OrderItem";
 import UserForm from "./UserForm";
