@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HomePage from './components/Home/HomePage';
 import ProductPage from './components/Products/ProductPage';
 import OrderPage from './components/Orders/OrderPage';
-import { CartProvider } from './context/CartContext';
+import { CartProvider } from './Context/CartContext';
 import CartButton from './components/CartButton';
 
 const App = () => {
