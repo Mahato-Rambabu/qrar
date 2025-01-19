@@ -94,7 +94,7 @@ const CategoryPage = () => {
   return (
     <div className="p-6">
       <nav className="text-sm text-gray-500 mb-4">
-        <span className="cursor-pointer hover:underline" onClick={() => navigate("/dashboard")}>
+        <span className="cursor-pointer hover:underline" onClick={() => navigate("/")}>
           Dashboard
         </span>
         <span className="mx-2">/</span>
