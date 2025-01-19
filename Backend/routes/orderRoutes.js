@@ -229,51 +229,46 @@ const getDateRange = (dateRange) => {
 
 // Order history endpoint
 router.get("/history", authMiddleware, async (req, res) => {
-    try {
-      const restaurantId = req.user.id;
-      const { dateRange } = req.query; // Extract the dateRange query parameter
-  
-      if (!restaurantId || !isValidObjectId(restaurantId)) {
-        console.error("Invalid restaurant ID");
-        return res.status(400).json({ error: "Invalid restaurant ID." });
-      }
-  
-      const startDate = getDateRange(dateRange); // Use the getDateRange helper
-      if (!startDate) {
-        console.error("Invalid date range");
-        return res.status(400).json({ error: "Invalid date range." });
-      }
-  
-      // Fetch served orders within the date range
-      const servedOrders = await Order.find({
-        restaurantId,
-        status: "Served",
-        updatedAt: { $gte: startDate }, // Filter by startDate
-      })
-        .populate("customerIdentifier", "name")
-        .populate("items.productId", "name description img")
-        .select("orderNo total items status updatedAt customerIdentifier")
-        .sort({ updatedAt: -1 });
-  
-      if (servedOrders.length === 0) {
-        console.warn("No served orders found.");
-        return res.status(404).json({ error: `No served orders found within the last ${dateRange}.` });
-      }
-  
-      // Transform orders for the response
-      const transformedOrders = servedOrders.map((order) => ({
-        ...order.toObject(),
-        customerName: order.customerIdentifier?.name || "Unknown",
-        formattedDate: order.updatedAt.toLocaleString(),
-      }));
-  
-      res.status(200).json(transformedOrders);
-    } catch (error) {
-      console.error("Error fetching order history:", error);
-      res.status(500).json({ error: "Failed to fetch order history. Please try again later." });
+  try {
+    const restaurantId = req.user.id;
+    const { dateRange } = req.query; // Extract the dateRange query parameter
+
+    if (!restaurantId || !isValidObjectId(restaurantId)) {
+      console.error("Invalid restaurant ID");
+      return res.status(400).json([]); // Return empty array on error
     }
-  });
-  
+
+    const startDate = getDateRange(dateRange); // Use the getDateRange helper
+    if (!startDate) {
+      console.error("Invalid date range");
+      return res.status(400).json([]); // Return empty array on error
+    }
+
+    // Fetch served orders within the date range
+    const servedOrders = await Order.find({
+      restaurantId,
+      status: "Served",
+      updatedAt: { $gte: startDate }, // Filter by startDate
+    })
+      .populate("customerIdentifier", "name")
+      .populate("items.productId", "name description img")
+      .select("orderNo total items status updatedAt customerIdentifier")
+      .sort({ updatedAt: -1 });
+
+    // Transform orders for the response
+    const transformedOrders = servedOrders.map((order) => ({
+      ...order.toObject(),
+      customerName: order.customerIdentifier?.name || "Unknown",
+      formattedDate: order.updatedAt.toLocaleString(),
+    }));
+
+    res.status(200).json(transformedOrders); // Always return an array
+  } catch (error) {
+    console.error("Error fetching order history:", error);
+    res.status(500).json([]); // Return empty array on error
+  }
+});
+
   //routes for pending orders
   router.get("/pending", authMiddleware, async (req, res) => {
     try {
