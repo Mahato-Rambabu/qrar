@@ -2,7 +2,7 @@ import React, { memo, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Menu } from 'lucide-react'; // Import Lucide icons
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../../utils/axiosInstance';
 
 const Navbar = ({ toggleSidebar, title }) => {
 
@@ -19,7 +19,7 @@ const Navbar = ({ toggleSidebar, title }) => {
             const token = localStorage.getItem("authToken");
             if (!token) throw new Error("Authentication token is missing.");
     
-            const response = await axios.get("http://localhost:5001/restaurants/profile", {
+            const response = await axiosInstance.get("/restaurants/profile", {
               headers: { Authorization: `Bearer ${token}` },
             });
     

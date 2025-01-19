@@ -1,6 +1,6 @@
 // QR Code Generator Component
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../utils/axiosInstance';
 
 const QRCodeGenerator = () => {
     const [qrCodeImage, setQrCodeImage] = useState('');
@@ -16,7 +16,7 @@ const QRCodeGenerator = () => {
         }
   
         try {
-          const response = await axios.get('http://localhost:5001/generate-qr', {
+          const response = await axiosInstance.get('/generate-qr', {
             headers: { Authorization: `Bearer ${token}` }, // Authentication is still required for QR generation
           });
           setQrCodeImage(response.data.qrCodeImage);

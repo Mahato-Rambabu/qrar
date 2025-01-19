@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axiosInstance from '../../utils/axiosInstance';
 import { useNavigate } from "react-router-dom";
 
 const UserTable = () => {
@@ -17,7 +17,7 @@ const UserTable = () => {
       }
   
       try {
-        const response = await axios.get('http://localhost:5001/users', {
+        const response = await axiosInstance.get('/users', {
           headers: { Authorization: `Bearer ${token}` },
         });
   

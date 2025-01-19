@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import axios from 'axios';
+import axiosInstance from '../../../utils/axiosInstance';
 import {
   faTag,
   faFolderOpen,
@@ -47,7 +47,7 @@ const AddProductPage = ({onSuccess}) => {
         const token = localStorage.getItem('authToken');
         if (!token) throw new Error('Token is missing. Please log in.');
 
-        const response = await axios.get('http://localhost:5001/categories', {
+        const response = await axiosInstance.get('/categories', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -144,7 +144,7 @@ const AddProductPage = ({onSuccess}) => {
         data.append(key, formData[key]);
       });
   
-      const response = await axios.post('http://localhost:5001/products', data, {
+      const response = await axiosInstance.post('/products', data, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',

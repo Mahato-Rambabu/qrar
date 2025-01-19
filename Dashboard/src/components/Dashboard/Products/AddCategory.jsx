@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { FaImage, FaTag, FaRupeeSign } from 'react-icons/fa';
-import SliderImageUploader from './SliderImageManager';
+import axiosInstance from '../../../utils/axiosInstance';
 
 const AddCategory = ({ onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -76,7 +76,7 @@ const AddCategory = ({ onSuccess }) => {
         },
       };
 
-      const response = await axios.post('http://localhost:5001/categories', data, config);
+      const response = await axiosInstance.post('/categories', data, config);
 
       toast.success('Category added successfully!');
       setFormData({ catName: '', price: '' });

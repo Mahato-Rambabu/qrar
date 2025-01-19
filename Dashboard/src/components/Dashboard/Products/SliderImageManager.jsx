@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../../utils/axiosInstance';
 import imageCompression from 'browser-image-compression';
 
 const SliderImageUploader = () => {
@@ -37,7 +37,7 @@ const SliderImageUploader = () => {
       const token = localStorage.getItem('authToken');
 
       // Upload the compressed image
-      await axios.post('http://localhost:5001/imageSlider', formData, {
+      await axiosInstance.post('/imageSlider', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${token}`,

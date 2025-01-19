@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../../../utils/axiosInstance';
 import { FaPen } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
 
@@ -86,7 +86,7 @@ const EditProductPage = () => {
   
       console.log('FormData before submission:', Array.from(formData.entries()));
   
-      await axios.put(`http://localhost:5001/products/${productId}`, formData, {
+      await axiosInstance.put(`/products/${productId}`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',

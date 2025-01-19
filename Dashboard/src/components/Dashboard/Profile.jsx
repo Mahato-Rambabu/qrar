@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Edit3 } from "lucide-react";
-import axios from "axios";
+import axiosInstance from '../../utils/axiosInstance';
 import ImageEditModal from "./ImageEditModal"; // Import the modal component
 import { toast } from 'react-hot-toast';
 
@@ -21,7 +21,7 @@ const ProfilePage = () => {
         const token = localStorage.getItem("authToken");
         if (!token) throw new Error("Authentication token is missing.");
 
-        const response = await axios.get("http://localhost:5001/restaurants/profile", {
+        const response = await axiosInstance.get("/restaurants/profile", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -49,8 +49,8 @@ const ProfilePage = () => {
       const token = localStorage.getItem("authToken");
       if (!token) throw new Error("Authentication token is missing.");
 
-      const response = await axios.put(
-        "http://localhost:5001/restaurants/profile",
+      const response = await axiosInstance.put(
+        "/restaurants/profile",
         formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -92,8 +92,8 @@ const ProfilePage = () => {
       formData.append(currentImageType, file);
       console.log("FormData before submission:", Array.from(formData.entries()));
 
-      const response = await axios.post(
-        `http://localhost:5001/restaurants/${currentImageType}`,
+      const response = await axiosInstance.post(
+        `/restaurants/${currentImageType}`,
         formData,
         {
           headers: {

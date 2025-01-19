@@ -1,10 +1,9 @@
 import React, { useEffect, useState, useCallback, lazy, Suspense } from "react";
-import axios from "axios";
+import axiosInstance from '../../../utils/axiosInstance';
 import { useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
 import AddCategory from "./AddCategory";
 import { toast } from 'react-hot-toast';
-import SliderImageManager from "./SliderImageManager";
 
 const CategoryCard = lazy(() => import("./CategoryCard"));
 
@@ -21,7 +20,7 @@ const CategoryPage = () => {
         const token = localStorage.getItem("authToken");
         if (!token) throw new Error("Token is missing. Please log in.");
 
-        const response = await axios.get("http://localhost:5001/categories", {
+        const response = await axiosInstance.get("/categories", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -51,7 +50,7 @@ const CategoryPage = () => {
       const token = localStorage.getItem("authToken");
       if (!token) throw new Error("Token is missing. Please log in.");
 
-      const response = await axios.delete(`http://localhost:5001/categories/${categoryId}`, {
+      const response = await axiosInstance.delete(`/categories/${categoryId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

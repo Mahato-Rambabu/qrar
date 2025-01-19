@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from '../../../utils/axiosInstance';
 import { FaPen } from "react-icons/fa";
 import { toast } from 'react-hot-toast';
 
@@ -24,8 +24,8 @@ const EditCategoryPage = () => {
         const token = localStorage.getItem("authToken");
         if (!token) throw new Error("Authentication token is missing.");
 
-        const response = await axios.get(
-          `http://localhost:5001/categories/${categoryId}`,
+        const response = await axiosInstance.get(
+          `/categories/${categoryId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -75,8 +75,8 @@ const EditCategoryPage = () => {
         formData.append("img", imageFile); // Append the new image if it exists
       }
 
-      await axios.put(
-        `http://localhost:5001/categories/${categoryId}`,
+      await axiosInstance.put(
+        `/categories/${categoryId}`,
         formData,
         {
           headers: {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from '../../../utils/axiosInstance';
 import Pagination from "./Pagination";
 import ProductCard from "./ProductCard";
 import ProductTable from "./ProductTable";
@@ -49,7 +49,7 @@ const ProductPage = () => {
         const token = localStorage.getItem("authToken");
         if (!token) throw new Error("Authentication token is missing.");
 
-        const response = await axios.get("http://localhost:5001/products", {
+        const response = await axiosInstance.get("/products", {
           headers: { Authorization: `Bearer ${token}` },
           params: {
             search: debouncedSearchQuery,
@@ -85,7 +85,7 @@ const ProductPage = () => {
         const token = localStorage.getItem("authToken");
         if (!token) throw new Error("Authentication token is missing.");
 
-        const response = await axios.get("http://localhost:5001/categories", {
+        const response = await axiosInstance.get("/categories", {
           headers: { Authorization: `Bearer ${token}` },
         });
 

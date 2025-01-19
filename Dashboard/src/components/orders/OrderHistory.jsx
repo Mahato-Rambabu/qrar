@@ -5,7 +5,7 @@ import OrderTable from "../orders/OrderTable";
 import { FaArrowLeft } from "react-icons/fa";
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:5001");
+const socket = io("qrar.onrender.com");
 
 const OrderHistory = () => {
   const [orders, setOrders] = useState([]);
