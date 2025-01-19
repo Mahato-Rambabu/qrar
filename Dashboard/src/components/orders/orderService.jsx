@@ -34,16 +34,16 @@ export const fetchOrderHistory = async (dateRange) => {
       params: { dateRange },
     });
 
-    console.log("API Response for Order History:", response.data);
+    console.log("Raw API Response:", response.data);
 
-    if (!response.data || !Array.isArray(response.data.orders)) {
-      throw new Error("Invalid response format");
+    if (response.data && response.data.orders) {
+      return Array.isArray(response.data.orders) ? response.data.orders : [];
     }
 
-    return response.data.orders; // Return the orders array
+    throw new Error("Unexpected API response structure");
   } catch (error) {
     console.error("Error fetching order history:", error.message);
-    return []; // Return empty array on failure
+    return [];
   }
 };
 
