@@ -10,10 +10,5 @@ export default defineConfig({
   build: {
     outDir: "dist", // Ensure Vite outputs to "dist"
   },
-  resolve: {
-    alias: {
-      "@": "/src",
-    },
-  },
   base: "/", // Ensures correct path resolution on deployment
 });

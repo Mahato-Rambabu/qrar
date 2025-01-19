@@ -29,7 +29,7 @@ const OrderList = () => {
         });
 
         // Fetch pending orders
-        const pendingResponse = await axios.get(`http://localhost:5001/orders/pending`, {
+        const pendingResponse = await axiosInstance.get(`/orders/pending`, {
           headers: { Authorization: `Bearer ${token}` },
           params: { dateRange },
         });
