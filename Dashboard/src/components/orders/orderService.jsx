@@ -26,6 +26,7 @@ export const fetchPendingOrders = async (dateRange) => {
 
 export const fetchOrderHistory = async (dateRange) => {
   try {
+    const token = getAuthToken();
     const response = await axios.get(`${API_BASE_URL}/history`, {
       params: { dateRange },
       headers: {
