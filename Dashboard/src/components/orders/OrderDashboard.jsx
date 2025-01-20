@@ -33,8 +33,14 @@ const OrderDashboard = () => {
     getOrders();
 
      socket.on("order:created", (newOrder) => {
-      toast.success(New order placed by ${newOrder.customerName}!);
-      setOrders((prevOrders) => [newOrder, ...prevOrders]);
+      const updatedOrder = {
+    ...newOrder,
+    customerName: newOrder.customerName || "Guest",
+};
+
+toast.success(`New order placed by ${updatedOrder.customerName}!`);
+setOrders((prevOrders) => [updatedOrder, ...prevOrders]);
+
 
       if (audioRef.current) {
         try {
