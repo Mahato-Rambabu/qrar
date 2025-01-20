@@ -48,10 +48,10 @@ const handleOrderSubmission = async () => {
       }));
 
       const response = await axiosInstance.post(`/orders/${restaurantId}`, {
-          items: orderItems,
-          total: totalPrice,
-          customerIdentifier,
-      });
+    items: orderItems,
+    total: totalPrice,
+    customerIdentifier
+}, { withCredentials: true });
 
       if (response.status === 201) {
           toast.success("Order placed successfully!");
