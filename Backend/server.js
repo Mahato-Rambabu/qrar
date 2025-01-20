@@ -32,11 +32,9 @@ const io = initializeSocket(server);
 app.use(cookieParser()); 
 app.use(express.json());
 
-// ✅ Fix CORS for API and WebSockets
 app.use(cors({
     origin: ["https://qrar-lyart.vercel.app", "https://qrar-front-jet.vercel.app"],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
+    credentials: true,  
 }));
 
 app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
@@ -47,14 +45,54 @@ connect(process.env.MONGO_URI)
     .catch((err) => console.error('MongoDB connection error:', err));
 
 // Routes
-app.use('/restaurants', restaurantRoutes);
+app.use('/restaurants', restaurantRoutes,);
 app.use('/categories', categoryRoutes);
 app.use('/products', productRoutes);
 app.use('/imageSlider', sliderImages);
-app.use('/orders', configureOrderRoutes(io)); // ✅ Pass io instance
+app.use('/orders', configureOrderRoutes(io));
 app.use('/users', userRoutes);
 app.use('/', QrCodeGen);
 
 // Server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+
+orderRoutes
+//routes for pending orders
+  router.get("/pending", authMiddleware, async (req, res) => {
+    try {
+      const restaurantId = req.user.id;
+      const { dateRange } = req.query; // Extract the dateRange query parameter
+  
+      if (!isValidObjectId(restaurantId)) {
+        return res.status(400).json({ error: "Invalid restaurant ID." });
+      }
+  
+      const startDate = getDateRange(dateRange); // Use the getDateRange helper
+      if (!startDate) {
+        console.error("Invalid date range");
+        return res.status(400).json({ error: "Invalid date range." });
+      }
+  
+      // Fetch pending orders within the date range
+      const pendingOrders = await Order.find({
+        restaurantId,
+        status: "Pending",
+        createdAt: { $gte: startDate }, // Filter by startDate
+      })
+        .populate("customerIdentifier", "name")
+        .populate("items.productId", "name description img")
+        .select("orderNo total items status createdAt customerIdentifier")
+        .sort({ createdAt: -1 });
+  
+      const transformedOrders = pendingOrders.map((order) => ({
+        ...order.toObject(),
+        customerName: order.customerIdentifier?.name || "Unknown",
+      }));
+  
+      res.status(200).json(transformedOrders);
+    } catch (error) {
+      console.error("Error fetching pending orders:", error.message);
+      res.status(500).json({ error: "Failed to fetch pending orders. Please try again later." });
+    }
+  });
