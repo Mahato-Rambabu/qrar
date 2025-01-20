@@ -12,7 +12,6 @@ import configureOrderRoutes from './routes/orderRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import QrCodeGen from './routes/QrCodeGen.js';
 import initializeSocket from './sockets/socket.js';
-import http from 'http';
 import cookieParser from 'cookie-parser';
 import validateCustomer from './middlewares/validateCustomer.js';
 
@@ -23,16 +22,12 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// Create an HTTP server instance
-const server = http.createServer(app);
-
 // Initialize Socket.IO with the server instance
 const io = initializeSocket(server);
 
 app.use(cookieParser()); 
 app.use(express.json());
 
-// ✅ Fix CORS for API and WebSockets
 app.use(cors({
     origin: ["https://qrar-lyart.vercel.app", "https://qrar-front-jet.vercel.app"],
     methods: ["GET", "POST", "PUT", "DELETE"],
@@ -51,7 +46,7 @@ app.use('/restaurants', restaurantRoutes);
 app.use('/categories', categoryRoutes);
 app.use('/products', productRoutes);
 app.use('/imageSlider', sliderImages);
-app.use('/orders', configureOrderRoutes(io)); // ✅ Pass io instance
+app.use('/orders', configureOrderRoutes(io)); 
 app.use('/users', userRoutes);
 app.use('/', QrCodeGen);
 
