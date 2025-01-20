@@ -32,9 +32,11 @@ const io = initializeSocket(server);
 app.use(cookieParser()); 
 app.use(express.json());
 
+// ✅ Fix CORS for API and WebSockets
 app.use(cors({
     origin: ["https://qrar-lyart.vercel.app", "https://qrar-front-jet.vercel.app"],
-    credentials: true,  
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
 }));
 
 app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
@@ -45,11 +47,11 @@ connect(process.env.MONGO_URI)
     .catch((err) => console.error('MongoDB connection error:', err));
 
 // Routes
-app.use('/restaurants', restaurantRoutes,);
+app.use('/restaurants', restaurantRoutes);
 app.use('/categories', categoryRoutes);
 app.use('/products', productRoutes);
 app.use('/imageSlider', sliderImages);
-app.use('/orders', configureOrderRoutes(io));
+app.use('/orders', configureOrderRoutes(io)); // ✅ Pass io instance
 app.use('/users', userRoutes);
 app.use('/', QrCodeGen);
 
