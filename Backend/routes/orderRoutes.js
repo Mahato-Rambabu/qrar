@@ -376,6 +376,7 @@ try {
     console.error("Error placing order:", error.message);
     res.status(500).json({ error: "Failed to place order. Please try again later." });
 }
+    });
 
 
     // GET route: Fetch recent orders for a specific restaurant
