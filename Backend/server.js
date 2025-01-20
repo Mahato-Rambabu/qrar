@@ -31,7 +31,7 @@ const io = initializeSocket(server);
 
 app.use(
   cors({
-    origin: "https://qrar-lyart.vercel.app", // Allow your Vercel frontend URL
+    origin: ["https://qrar-lyart.vercel.app","https://qrar-front-jet.vercel.app"], // Allow your Vercel frontend URL
     credentials: true, // Allow cookies to be sent
   })
 );
