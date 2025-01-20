@@ -364,6 +364,7 @@ const configureOrderRoutes = (io) => {
 
         // Save the new order to the database
         const savedOrder = await newOrder.save();
+        req.io.emit("order:created", savedOrder);
 
         res.status(201).json({
             message: "Order placed successfully",
