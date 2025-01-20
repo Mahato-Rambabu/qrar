@@ -3,7 +3,6 @@ import { useLocation } from 'react-router-dom';
 import SearchBar from './SearchBar';
 import ImageSlider from './ImageSlider';
 import MenuCategory from './MenuCategory';
-import { IoCartSharp } from 'react-icons/io5';
 
 const HomePage = () => {
   const location = useLocation();
