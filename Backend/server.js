@@ -12,6 +12,7 @@ import configureOrderRoutes from './routes/orderRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import QrCodeGen from './routes/QrCodeGen.js';
 import initializeSocket from './sockets/socket.js';
+import http from 'http';
 import cookieParser from 'cookie-parser';
 import validateCustomer from './middlewares/validateCustomer.js';
 
@@ -22,18 +23,22 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// Create an HTTP server instance
+const server = http.createServer(app);
+
 // Initialize Socket.IO with the server instance
 const io = initializeSocket(server);
 
+app.use(
+  cors({
+    origin: ["https://qrar-lyart.vercel.app","https://qrar-front-jet.vercel.app"], // Allow your Vercel frontend URL
+    credentials: true, // Allow cookies to be sent
+  })
+);
+
+
 app.use(cookieParser()); 
 app.use(express.json());
-
-app.use(cors({
-    origin: ["https://qrar-lyart.vercel.app", "https://qrar-front-jet.vercel.app"],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
-}));
-
 app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 
 // MongoDB Connection
@@ -42,11 +47,11 @@ connect(process.env.MONGO_URI)
     .catch((err) => console.error('MongoDB connection error:', err));
 
 // Routes
-app.use('/restaurants', restaurantRoutes);
+app.use('/restaurants', restaurantRoutes,);
 app.use('/categories', categoryRoutes);
 app.use('/products', productRoutes);
 app.use('/imageSlider', sliderImages);
-app.use('/orders', configureOrderRoutes(io)); 
+app.use('/orders', configureOrderRoutes(io), validateCustomer);
 app.use('/users', userRoutes);
 app.use('/', QrCodeGen);
 
