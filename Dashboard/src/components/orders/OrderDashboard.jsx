@@ -6,7 +6,7 @@ import { FaHistory } from "react-icons/fa";
 import io from "socket.io-client";
 import { toast } from "react-hot-toast";
 
-const socket = io("https://qrar.onrender.com", { transports: ["websocket"] });
+const socket = io("https://qrar.onrender.com");
 
 const OrderDashboard = () => {
   const [orders, setOrders] = useState([]);
