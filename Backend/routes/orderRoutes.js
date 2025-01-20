@@ -337,56 +337,44 @@ const configureOrderRoutes = (io) => {
         return res.status(400).json({ error: "Total price is required and must be a number." });
     }
 
-    try {
-        // Debugging: Log received order data
-        console.log("Received Order Data:", { restaurantId, items, total, customerIdentifier });
+try {
+    // Create a new order
+    const newOrder = new Order({
+        restaurantId,
+        items,
+        total,
+        status: "Pending",
+        orderNo: orderCount + 1,
+        customerIdentifier,
+        createdAt: new Date(),
+    });
 
-        // Get the start of the day
-        const startOfDay = new Date();
-        startOfDay.setHours(0, 0, 0, 0);
+    // Save the new order to the database
+    const savedOrder = await newOrder.save();
 
-        // Count today's orders for the restaurant
-        const orderCount = await Order.countDocuments({
-            createdAt: { $gte: startOfDay }, // Created today
-            restaurantId, // Specific to the restaurant
-        });
+    // Populate the customer name in the saved order
+    await savedOrder.populate('customerIdentifier', 'name');  // Populate with name field from User model
 
-        // Create a new order
-        const newOrder = new Order({
-            restaurantId,
-            items,
-            total,
-            status: "Pending",
-            orderNo: orderCount + 1, // Start from 1 each day
-            customerIdentifier,
-            createdAt: new Date(),
-        });
+    const orderWithCustomerName = {
+        ...savedOrder.toObject(),
+        customerName: savedOrder.customerIdentifier.name || "Guest", // Set customer name or default to Guest
+    };
 
-        // Save the new order to the database
-        const savedOrder = await newOrder.save();
-       const populatedOrder = await savedOrder.populate("customerIdentifier", "name");
+    // Emit the order with the populated customer name
+    io.emit("order:created", orderWithCustomerName);
 
-const orderWithCustomerName = {
-    ...populatedOrder.toObject(),
-    customerName: populatedOrder.customerIdentifier?.name || "Guest", // Ensure name is always included
-};
+    res.status(201).json({
+        message: "Order placed successfully",
+        order: {
+            orderId: savedOrder._id,
+            orderNo: savedOrder.orderNo,
+        },
+    });
+} catch (error) {
+    console.error("Error placing order:", error.message);
+    res.status(500).json({ error: "Failed to place order. Please try again later." });
+}
 
-io.emit("order:created", orderWithCustomerName);
-
-
-        
-        res.status(201).json({
-            message: "Order placed successfully",
-            order: {
-                orderId: savedOrder._id,
-                orderNo: savedOrder.orderNo, // Order number for the day
-            },
-        });
-    } catch (error) {
-        console.error("Error placing order:", error.message);
-        res.status(500).json({ error: "Failed to place order. Please try again later." });
-    }
-});
     // GET route: Fetch recent orders for a specific restaurant
     router.get("/:restaurantId", validateCustomer, async (req, res) => {
         const { restaurantId } = req.params;
