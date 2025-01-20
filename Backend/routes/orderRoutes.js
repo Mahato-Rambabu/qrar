@@ -313,65 +313,64 @@ const configureOrderRoutes = (io) => {
     router.post("/:restaurantId", validateCustomer, async (req, res) => {
     const { restaurantId } = req.params;
     const { items, total } = req.body;
-
-    // Allow customerIdentifier from both body & query params
     const customerIdentifier = req.body.customerIdentifier || req.query.customerIdentifier;
 
-    // Validate restaurantId
     if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
         return res.status(400).json({ error: "Invalid restaurantId" });
     }
 
-    // Validate customerIdentifier
     if (!customerIdentifier) {
         return res.status(400).json({ error: "Customer identifier is required." });
     }
 
-    // Validate items
     if (!items || !Array.isArray(items) || items.length === 0) {
         return res.status(400).json({ error: "Items are required and must be a non-empty array." });
     }
 
-    // Validate total
     if (!total || typeof total !== "number") {
         return res.status(400).json({ error: "Total price is required and must be a number." });
     }
 
     try {
-        // Debugging: Log received order data
-        console.log("Received Order Data:", { restaurantId, items, total, customerIdentifier });
-
-        // Get the start of the day
         const startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0);
 
-        // Count today's orders for the restaurant
         const orderCount = await Order.countDocuments({
-            createdAt: { $gte: startOfDay }, // Created today
-            restaurantId, // Specific to the restaurant
+            createdAt: { $gte: startOfDay },
+            restaurantId,
         });
 
-        // Create a new order
+        // Fetch the customer name using customerIdentifier
+        const customer = await Customer.findOne({ identifier: customerIdentifier });
+        const customerName = customer ? customer.name : "N/A";
+
         const newOrder = new Order({
             restaurantId,
             items,
             total,
             status: "Pending",
-            orderNo: orderCount + 1, // Start from 1 each day
+            orderNo: orderCount + 1,
             customerIdentifier,
+            customerName, // Include customerName
             createdAt: new Date(),
         });
 
-        // Save the new order to the database
         const savedOrder = await newOrder.save();
-        io.emit("order:created", savedOrder);
 
-        
+        // Emit the order with customerName and items
+        io.emit("order:created", {
+            ...savedOrder.toObject(),
+            customerName,
+            items,
+        });
+
         res.status(201).json({
             message: "Order placed successfully",
             order: {
                 orderId: savedOrder._id,
-                orderNo: savedOrder.orderNo, // Order number for the day
+                orderNo: savedOrder.orderNo,
+                customerName,
+                items,
             },
         });
     } catch (error) {
