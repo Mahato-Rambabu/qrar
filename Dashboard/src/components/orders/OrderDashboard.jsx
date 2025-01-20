@@ -16,6 +16,7 @@ const OrderDashboard = () => {
   const audioRef = useRef(null);
 
   useEffect(() => {
+    // Fetch orders on component mount or date range change
     const getOrders = async () => {
       try {
         const data = await fetchPendingOrders(dateRange);
@@ -32,6 +33,7 @@ const OrderDashboard = () => {
 
     getOrders();
 
+    // Socket event listeners for real-time updates
     socket.on("order:created", (newOrder) => {
       const updatedOrder = {
         ...newOrder,
@@ -45,24 +47,29 @@ const OrderDashboard = () => {
         try {
           audioRef.current.play();
         } catch (error) {
-          console.error("Audio playback failed:", error);
+          console.error("Audio playback failed:", error.message);
         }
       }
     });
 
     return () => {
       socket.off("order:created");
-      socket.off("order:updated");
     };
   }, [dateRange]);
 
-  const handleSearch = (e) => {
-    setSearchQuery(e.target.value);
-  };
+  // Search filter
+  const filteredOrders = orders.filter((order) => {
+    const orderNo = order?.orderNo?.toString() || "";
+    const customerName = order?.customerName?.toLowerCase() || "";
+    return (
+      customerName.includes(searchQuery.toLowerCase()) ||
+      orderNo.includes(searchQuery)
+    );
+  });
 
-  const handleDateRangeChange = (e) => {
-    setDateRange(e.target.value);
-  };
+  // Event handlers
+  const handleSearch = (e) => setSearchQuery(e.target.value);
+  const handleDateRangeChange = (e) => setDateRange(e.target.value);
 
   const handleUpdateStatus = async (orderId, status) => {
     try {
@@ -74,19 +81,12 @@ const OrderDashboard = () => {
     }
   };
 
-  const filteredOrders = orders.filter((order) => {
-    const orderNo = order?.orderNo?.toString() || "";
-    const customerName = order?.customerName?.toLowerCase() || "";
-    return (
-      customerName.includes(searchQuery.toLowerCase()) ||
-      orderNo.includes(searchQuery)
-    );
-  });
-
   return (
     <div className="p-6 bg-white min-h-screen">
-      {/* Ensure the path points to the public directory */}
+      {/* Audio Element */}
       <audio ref={audioRef} src="/new_order.mp3" preload="auto"></audio>
+
+      {/* Breadcrumb Navigation */}
       <div className="mb-4">
         <nav className="text-sm text-gray-500">
           <span
@@ -104,6 +104,8 @@ const OrderDashboard = () => {
           </span>
         </nav>
       </div>
+
+      {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold text-gray-800">
           Order Management
@@ -116,6 +118,8 @@ const OrderDashboard = () => {
           <span>View History</span>
         </button>
       </div>
+
+      {/* Search and Filters */}
       <div className="mb-4 flex gap-4">
         <input
           type="text"
@@ -135,6 +139,23 @@ const OrderDashboard = () => {
           <option value="year">Last Year</option>
         </select>
       </div>
+
+      {/* Test Audio Button */}
+      <button
+        onClick={() => {
+          if (audioRef.current) {
+            audioRef.current.play().catch((error) => {
+              console.error("Audio playback failed:", error.message);
+              toast.error("Audio playback failed. Please interact with the page.");
+            });
+          }
+        }}
+        className="mb-4 px-4 py-2 bg-blue-500 text-white rounded-lg"
+      >
+        Test Audio
+      </button>
+
+      {/* Order Table */}
       <OrderTable orders={filteredOrders} onUpdateStatus={handleUpdateStatus} />
     </div>
   );
