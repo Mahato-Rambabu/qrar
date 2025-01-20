@@ -352,16 +352,18 @@ try {
     // Save the new order to the database
     const savedOrder = await newOrder.save();
 
-    // Populate the customer name in the saved order
-    await savedOrder.populate('customerIdentifier', 'name');  // Populate with name field from User model
+    // Populate the customer name
+    await savedOrder.populate('customerIdentifier', 'name'); // Populate customer name
+    await savedOrder.populate('items.productId'); // Populate productId for each item
 
-    const orderWithCustomerName = {
+    // Prepare the order with populated product data
+    const populatedOrder = {
         ...savedOrder.toObject(),
-        customerName: savedOrder.customerIdentifier.name || "Guest", // Set customer name or default to Guest
+        customerName: savedOrder.customerIdentifier.name || "Guest",
     };
 
-    // Emit the order with the populated customer name
-    io.emit("order:created", orderWithCustomerName);
+    // Emit the populated order with product data
+    io.emit("order:created", populatedOrder);
 
     res.status(201).json({
         message: "Order placed successfully",
@@ -374,6 +376,7 @@ try {
     console.error("Error placing order:", error.message);
     res.status(500).json({ error: "Failed to place order. Please try again later." });
 }
+
 
     // GET route: Fetch recent orders for a specific restaurant
     router.get("/:restaurantId", validateCustomer, async (req, res) => {
