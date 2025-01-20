@@ -32,26 +32,18 @@ const OrderDashboard = () => {
 
     getOrders();
 
-    socket.on("order:created", (newOrder) => {
-  const customerName = newOrder.customerName || "N/A";
-  const items = newOrder.items || [];
-  const itemDetails = items.map((item) => `${item.name} (x${item.quantity})`).join(", ");
+     socket.on("order:created", (newOrder) => {
+      toast.success(New order placed by ${newOrder.customerName}!);
+      setOrders((prevOrders) => [newOrder, ...prevOrders]);
 
-  // Display a toast notification with the customer name and items
-  toast.success(`New order from ${customerName}: ${itemDetails}`);
-
-  // Add the new order to the list
-  setOrders((prevOrders) => [newOrder, ...prevOrders]);
-
-  // Play notification sound
-  if (audioRef.current) {
-    try {
-      audioRef.current.play();
-    } catch (error) {
-      console.error("Audio playback failed:", error);
-    }
-  }
-});
+      if (audioRef.current) {
+        try {
+          audioRef.current.play();
+        } catch (error) {
+          console.error("Audio playback failed:", error);
+        }
+      }
+    });
 
     return () => {
       socket.off("order:created");
