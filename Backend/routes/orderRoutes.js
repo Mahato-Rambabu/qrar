@@ -337,46 +337,57 @@ const configureOrderRoutes = (io) => {
         return res.status(400).json({ error: "Total price is required and must be a number." });
     }
 
-try {
-    // Create a new order
-    const newOrder = new Order({
-        restaurantId,
-        items,
-        total,
-        status: "Pending",
-        orderNo: orderCount + 1,
-        customerIdentifier,
-        createdAt: new Date(),
-    });
+    try {
+        // Get the start of the day to calculate order count
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
 
-    // Save the new order to the database
-    const savedOrder = await newOrder.save();
+        // Count today's orders for the restaurant
+        const orderCount = await Order.countDocuments({
+            createdAt: { $gte: startOfDay },
+            restaurantId,
+        });
 
-    // Populate the customer name
-    await savedOrder.populate('customerIdentifier', 'name'); // Populate customer name
-    await savedOrder.populate('items.productId'); // Populate productId for each item
+        // Create a new order
+        const newOrder = new Order({
+            restaurantId,
+            items,
+            total,
+            status: "Pending",
+            orderNo: orderCount + 1, // Start order number from 1 each day
+            customerIdentifier,
+            createdAt: new Date(),
+        });
 
-    // Prepare the order with populated product data
-    const populatedOrder = {
-        ...savedOrder.toObject(),
-        customerName: savedOrder.customerIdentifier.name || "Guest",
-    };
+        // Save the new order to the database
+        const savedOrder = await newOrder.save();
 
-    // Emit the populated order with product data
-    io.emit("order:created", populatedOrder);
+        // Populate the customer name and product data
+        await savedOrder.populate("customerIdentifier", "name");
+        await savedOrder.populate("items.productId");
 
-    res.status(201).json({
-        message: "Order placed successfully",
-        order: {
-            orderId: savedOrder._id,
-            orderNo: savedOrder.orderNo,
-        },
-    });
-} catch (error) {
-    console.error("Error placing order:", error.message);
-    res.status(500).json({ error: "Failed to place order. Please try again later." });
-}
-    });
+        // Prepare the order with populated product data
+        const populatedOrder = {
+            ...savedOrder.toObject(),
+            customerName: savedOrder.customerIdentifier.name || "Guest",
+        };
+
+        // Emit the populated order with product data
+        io.emit("order:created", populatedOrder);
+
+        res.status(201).json({
+            message: "Order placed successfully",
+            order: {
+                orderId: savedOrder._id,
+                orderNo: savedOrder.orderNo,
+            },
+        });
+    } catch (error) {
+        console.error("Error placing order:", error.message);
+        res.status(500).json({ error: "Failed to place order. Please try again later." });
+    }
+});
+
 
 
     // GET route: Fetch recent orders for a specific restaurant
