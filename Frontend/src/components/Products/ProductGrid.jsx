@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { useCart } from '../../context/CartContext'; // Import CartContext
+import { useCart } from '@context/CartContext'; // Import CartContext
 
 const ProductGrid = memo(({ products = [], highlightedProduct }) => {
   const { cartItems, addToCart, updateQuantity } = useCart();
