@@ -72,14 +72,19 @@ const OrderDashboard = () => {
   const handleDateRangeChange = (e) => setDateRange(e.target.value);
 
   const handleUpdateStatus = async (orderId, status) => {
-    try {
-      await updateOrderStatus(orderId, status);
-      toast.success(`Order status updated to ${status}!`);
-    } catch (err) {
-      console.error("Failed to update order status:", err);
-      toast.error("Failed to update status.");
+  try {
+    await updateOrderStatus(orderId, status);
+    toast.success(`Order status updated to ${status}!`);
+
+    // Remove the order from the list if it is marked as served
+    if (status.toLowerCase() === "served") {
+      setOrders((prevOrders) => prevOrders.filter((order) => order._id !== orderId));
     }
-  };
+  } catch (err) {
+    console.error("Failed to update order status:", err);
+    toast.error("Failed to update status.");
+  }
+};
 
   return (
     <div className="p-6 bg-white min-h-screen">
