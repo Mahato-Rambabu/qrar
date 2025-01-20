@@ -364,7 +364,15 @@ const configureOrderRoutes = (io) => {
 
         // Save the new order to the database
         const savedOrder = await newOrder.save();
-        io.emit("order:created", savedOrder);
+       const populatedOrder = await savedOrder.populate("customerIdentifier", "name");
+
+const orderWithCustomerName = {
+    ...populatedOrder.toObject(),
+    customerName: populatedOrder.customerIdentifier?.name || "Guest", // Ensure name is always included
+};
+
+io.emit("order:created", orderWithCustomerName);
+
 
         
         res.status(201).json({
