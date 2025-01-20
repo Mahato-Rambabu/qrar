@@ -140,21 +140,6 @@ const OrderDashboard = () => {
         </select>
       </div>
 
-      {/* Test Audio Button */}
-      <button
-        onClick={() => {
-          if (audioRef.current) {
-            audioRef.current.play().catch((error) => {
-              console.error("Audio playback failed:", error.message);
-              toast.error("Audio playback failed. Please interact with the page.");
-            });
-          }
-        }}
-        className="mb-4 px-4 py-2 bg-blue-500 text-white rounded-lg"
-      >
-        Test Audio
-      </button>
-
       {/* Order Table */}
       <OrderTable orders={filteredOrders} onUpdateStatus={handleUpdateStatus} />
     </div>
