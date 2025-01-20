@@ -17,30 +17,29 @@ const OrderDashboard = () => {
 
   useEffect(() => {
     const getOrders = async () => {
-    try {
-      const data = await fetchPendingOrders(dateRange);
-      console.log("Fetched Orders:", data); // Debugging log
-      if (!Array.isArray(data)) {
-        console.error("API did not return an array:", data);
+      try {
+        const data = await fetchPendingOrders(dateRange);
+        console.log("Fetched Orders:", data); // Debugging log
+        if (!Array.isArray(data)) {
+          console.error("API did not return an array:", data);
+        }
+        setOrders(Array.isArray(data) ? data : []); // Ensure it's always an array
+      } catch (err) {
+        console.error("Failed to fetch orders:", err);
+        setOrders([]); // Set an empty array to prevent .filter error
       }
-      setOrders(Array.isArray(data) ? data : []); // Ensure it's always an array
-    } catch (err) {
-      console.error("Failed to fetch orders:", err);
-      setOrders([]); // Set an empty array to prevent .filter error
-    }
-  };
+    };
 
     getOrders();
 
-     socket.on("order:created", (newOrder) => {
+    socket.on("order:created", (newOrder) => {
       const updatedOrder = {
-    ...newOrder,
-    customerName: newOrder.customerName || "Guest",
-};
+        ...newOrder,
+        customerName: newOrder.customerName || "Guest",
+      };
 
-toast.success(`New order placed by ${updatedOrder.customerName}!`);
-setOrders((prevOrders) => [updatedOrder, ...prevOrders]);
-
+      toast.success(`New order placed by ${updatedOrder.customerName}!`);
+      setOrders((prevOrders) => [updatedOrder, ...prevOrders]);
 
       if (audioRef.current) {
         try {
@@ -86,6 +85,7 @@ setOrders((prevOrders) => [updatedOrder, ...prevOrders]);
 
   return (
     <div className="p-6 bg-white min-h-screen">
+      {/* Ensure the path points to the public directory */}
       <audio ref={audioRef} src="/order-notification.mp3" preload="auto"></audio>
       <div className="mb-4">
         <nav className="text-sm text-gray-500">
