@@ -90,7 +90,7 @@ const OrderDashboard = () => {
 
   return (
     <div className="p-6 bg-white min-h-screen">
-      <audio ref={audioRef} src="/notification.mp3" preload="auto"></audio>
+      <audio ref={audioRef} src="/order-notification.mp3" preload="auto"></audio>
       <div className="mb-4">
         <nav className="text-sm text-gray-500">
           <span
