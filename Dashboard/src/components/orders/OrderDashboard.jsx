@@ -33,19 +33,6 @@ const OrderDashboard = () => {
     getOrders();
 
     socket.on("order:created", (newOrder) => {
-      toast.success(`New order recieved by ${newOrder.customerName}!`);
-      setOrders((prevOrders) => [newOrder, ...prevOrders]);
-
-      if (audioRef.current) {
-        try {
-          audioRef.current.play();
-        } catch (error) {
-          console.error("Audio playback failed:", error);
-        }
-      }
-    });
-
-    socket.on("order:created", (newOrder) => {
   const customerName = newOrder.customerName || "N/A";
   const items = newOrder.items || [];
   const itemDetails = items.map((item) => `${item.name} (x${item.quantity})`).join(", ");
