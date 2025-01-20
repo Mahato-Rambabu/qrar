@@ -338,14 +338,14 @@ const configureOrderRoutes = (io) => {
     }
 
     try {
-        // Get the start of the day to calculate order count
+        // Get the start of the day (00:00:00) to calculate today's orders
         const startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0);
 
-        // Count today's orders for the restaurant
+        // Count today's orders for the restaurant (based on createdAt date)
         const orderCount = await Order.countDocuments({
-            createdAt: { $gte: startOfDay },
-            restaurantId,
+            createdAt: { $gte: startOfDay }, // Orders created after midnight today
+            restaurantId, // Filter by restaurantId
         });
 
         // Create a new order
@@ -354,7 +354,7 @@ const configureOrderRoutes = (io) => {
             items,
             total,
             status: "Pending",
-            orderNo: orderCount + 1, // Start order number from 1 each day
+            orderNo: orderCount + 1, // Start from 1 each day
             customerIdentifier,
             createdAt: new Date(),
         });
@@ -362,24 +362,25 @@ const configureOrderRoutes = (io) => {
         // Save the new order to the database
         const savedOrder = await newOrder.save();
 
-        // Populate the customer name and product data
-        await savedOrder.populate("customerIdentifier", "name");
-        await savedOrder.populate("items.productId");
+        // Populate the customer name and product data for each item
+        await savedOrder.populate("customerIdentifier", "name"); // Populate customer name
+        await savedOrder.populate("items.productId"); // Populate product data for each item
 
-        // Prepare the order with populated product data
+        // Prepare the populated order
         const populatedOrder = {
             ...savedOrder.toObject(),
-            customerName: savedOrder.customerIdentifier.name || "Guest",
+            customerName: savedOrder.customerIdentifier.name || "Guest", // Set customer name or "Guest"
         };
 
         // Emit the populated order with product data
         io.emit("order:created", populatedOrder);
 
+        // Send response back with the new order details
         res.status(201).json({
             message: "Order placed successfully",
             order: {
                 orderId: savedOrder._id,
-                orderNo: savedOrder.orderNo,
+                orderNo: savedOrder.orderNo, // Order number for the day
             },
         });
     } catch (error) {
