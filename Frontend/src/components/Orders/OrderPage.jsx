@@ -33,38 +33,51 @@ const OrderPage = () => {
 }, []);
 
 const handleOrderSubmission = async () => {
-  try {
-      setLoading(true);
+    try {
+        setLoading(true);
 
-      const customerIdentifier = Cookies.get("customerIdentifier");
-      if (!customerIdentifier) {
-          toast.error("Customer identifier not found. Please reload the page.");
-          return;
-      }
+        const customerIdentifier = Cookies.get("customerIdentifier");
+        if (!customerIdentifier) {
+            toast.error("Customer identifier not found. Please reload the page.");
+            return;
+        }
 
-      const orderItems = cartItems.map((item) => ({
-          productId: item._id,
-          quantity: item.quantity,
-      }));
+        const orderItems = cartItems.map((item) => ({
+            productId: item._id,
+            quantity: item.quantity,
+        }));
 
-      const response = await axiosInstance.post(`/orders/${restaurantId}`, {
-    items: orderItems,
-    total: totalPrice,
-    customerIdentifier
-}, { withCredentials: true });
+        // Debugging: Log order data before sending
+        console.log("Sending Order Data:", {
+            restaurantId,
+            orderItems,
+            total: totalPrice,
+            customerIdentifier,
+        });
 
-      if (response.status === 201) {
-          toast.success("Order placed successfully!");
-          setCartItems([]);
-          fetchRecentOrders(customerIdentifier);
-      }
-  } catch (error) {
-      console.error("Error placing order:", error.response?.data || error.message);
-      toast.error("Failed to place order.");
-  } finally {
-      setLoading(false);
-  }
+        const response = await axiosInstance.post(
+            `/orders/${restaurantId}`,
+            {
+                items: orderItems,
+                total: totalPrice,
+                customerIdentifier,
+            },
+            { withCredentials: true } // Ensure cookies are sent
+        );
+
+        if (response.status === 201) {
+            toast.success("Order placed successfully!");
+            setCartItems([]); // Clear cart
+            fetchRecentOrders(customerIdentifier);
+        }
+    } catch (error) {
+        console.error("Error placing order:", error.response?.data || error.message);
+        toast.error(error.response?.data?.error || "Failed to place order.");
+    } finally {
+        setLoading(false);
+    }
 };
+
 
 const fetchRecentOrders = async (customerIdentifier) => {
   try {
