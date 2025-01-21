@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axiosInstance from '../../../utils/axiosInstance';
 import imageCompression from 'browser-image-compression';
+import { toast } from 'react-hot-toast';
 
 const SliderImageUploader = () => {
   const [selectedImage, setSelectedImage] = useState(null);
@@ -17,7 +18,7 @@ const SliderImageUploader = () => {
   // Compress and upload the image
   const handleUpload = async () => {
     if (!selectedImage) {
-      alert('Please select an image to upload.');
+      toast.error('Please select an image to upload.');
       return;
     }
 
@@ -46,10 +47,10 @@ const SliderImageUploader = () => {
 
       setSelectedImage(null);
       setPreviewImage(null);
-      alert('Image uploaded successfully!');
+      toast.success('Image uploaded successfully!');
     } catch (error) {
       console.error('Error uploading image:', error);
-      alert('Failed to upload the image.');
+      toast.error('Failed to upload the image.');
     } finally {
       setIsUploading(false);
     }
