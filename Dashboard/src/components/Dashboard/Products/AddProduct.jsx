@@ -72,7 +72,7 @@ const AddProductPage = ({onSuccess}) => {
   
       // Check file size limit
       if (file.size > 5242880) {
-        setError('File size exceeds 2MB limit.');
+        setError('File size exceeds 5MB limit.');
         return;
       }
   
