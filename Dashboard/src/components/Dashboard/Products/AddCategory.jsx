@@ -41,8 +41,8 @@ const AddCategory = ({ onSuccess }) => {
       return;
     }
 
-    if (file && fileSize > 2) {
-      toast.error('File size exceeds the 2MB limit.');
+    if (file && fileSize > 5) {
+      toast.error('File size exceeds the 5MB limit.');
       setImageFile(null);
       return;
     }
