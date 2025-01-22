@@ -22,10 +22,10 @@ const EditProductPage = () => {
           if (!token) throw new Error('Authentication token is missing.');
       
           const [productResponse, categoriesResponse] = await Promise.all([
-            axios.get(`http://localhost:5001/products/${productId}`, {
+            axiosInstance.get(`/products/${productId}`, {
               headers: { Authorization: `Bearer ${token}` },
             }),
-            axios.get('http://localhost:5001/categories', {
+            axiosInstance.get('/categories', {
               headers: { Authorization: `Bearer ${token}` },
             }),
           ]);
