@@ -6,7 +6,10 @@ import { FaHistory } from "react-icons/fa";
 import io from "socket.io-client";
 import { toast } from "react-hot-toast";
 
-const socket = io("https://qrar.onrender.com");
+// Dynamically set the socket URL based on the environment
+const socketUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:5001"; // Default to localhost for development
+
+const socket = io(socketUrl);
 
 const OrderDashboard = () => {
   const [orders, setOrders] = useState([]);
@@ -72,19 +75,19 @@ const OrderDashboard = () => {
   const handleDateRangeChange = (e) => setDateRange(e.target.value);
 
   const handleUpdateStatus = async (orderId, status) => {
-  try {
-    await updateOrderStatus(orderId, status);
-    toast.success(`Order status updated to ${status}!`);
+    try {
+      await updateOrderStatus(orderId, status);
+      toast.success(`Order status updated to ${status}!`);
 
-    // Remove the order from the list if it is marked as served
-    if (status.toLowerCase() === "served") {
-      setOrders((prevOrders) => prevOrders.filter((order) => order._id !== orderId));
+      // Remove the order from the list if it is marked as served
+      if (status.toLowerCase() === "served") {
+        setOrders((prevOrders) => prevOrders.filter((order) => order._id !== orderId));
+      }
+    } catch (err) {
+      console.error("Failed to update order status:", err);
+      toast.error("Failed to update status.");
     }
-  } catch (err) {
-    console.error("Failed to update order status:", err);
-    toast.error("Failed to update status.");
-  }
-};
+  };
 
   return (
     <div className="p-6 bg-white min-h-screen">

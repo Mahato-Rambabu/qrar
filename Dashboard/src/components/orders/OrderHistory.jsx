@@ -5,7 +5,10 @@ import OrderTable from "../orders/OrderTable";
 import { FaArrowLeft } from "react-icons/fa";
 import { io } from "socket.io-client";
 
-const socket = io("https://qrar.onrender.com");
+// Dynamically set the socket URL based on the environment
+const socketUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:5001"; // Default to localhost for development
+
+const socket = io(socketUrl);
 
 const OrderHistory = () => {
   const [orders, setOrders] = useState([]);

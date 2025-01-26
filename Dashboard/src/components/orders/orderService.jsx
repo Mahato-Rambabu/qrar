@@ -1,43 +1,36 @@
 import axios from "axios";
 
-const API_BASE_URL = "https://qrar.onrender.com/orders"; // Ensure the correct protocol is used (http/https)
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-// Function to get the token from localStorage or cookies
-const getAuthToken = () => {
-  return localStorage.getItem("authToken"); // Adjust if you store the token differently
-};
+const getAuthToken = () => localStorage.getItem("authToken");
 
 export const fetchPendingOrders = async (dateRange) => {
   try {
     const token = getAuthToken();
-    const response = await axios.get(`${API_BASE_URL}/pending`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      params: { dateRange }, // Include date range as a query parameter
+    const response = await axios.get(`${API_BASE_URL}/orders/pending`, {
+      headers: { Authorization: `Bearer ${token}` },
+      params: { dateRange }
     });
 
-    return Array.isArray(response.data) ? response.data : []; // Ensure it's always an array
+    return Array.isArray(response.data) ? response.data : [];
   } catch (error) {
     console.error("Error fetching pending orders:", error.message);
-    return []; // Return empty array on failure
+    return [];
   }
 };
 
 export const fetchOrderHistory = async (dateRange) => {
   try {
     const token = getAuthToken();
-    const response = await axios.get(`${API_BASE_URL}/history`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      params: { dateRange }, // Include date range as a query parameter
+    const response = await axios.get(`${API_BASE_URL}/orders/history`, {
+      headers: { Authorization: `Bearer ${token}` },
+      params: { dateRange }
     });
 
-    return Array.isArray(response.data) ? response.data : []; // Ensure it's always an array
+    return Array.isArray(response.data) ? response.data : [];
   } catch (error) {
-    console.error("Error fetching pending orders:", error.message);
-    return []; // Return empty array on failure
+    console.error("Error fetching order history:", error.message);
+    return [];
   }
 };
 
@@ -45,17 +38,13 @@ export const updateOrderStatus = async (orderId, status) => {
   try {
     const token = getAuthToken();
     const response = await axios.patch(
-      `${API_BASE_URL}/${orderId}`,
+      `${API_BASE_URL}/orders/${orderId}`,
       { status },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
+      { headers: { Authorization: `Bearer ${token}` } }
     );
     return response.data;
   } catch (error) {
     console.error("Error updating order status:", error.message);
-    throw error; // Re-throw the error for further handling
+    throw error;
   }
 };
