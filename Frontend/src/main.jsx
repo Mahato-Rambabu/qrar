@@ -4,23 +4,30 @@ import { Toaster } from 'react-hot-toast';
 import App from './App.jsx';
 import './index.css';
 
-// Dynamically determine the service worker path based on environment
-const isLocalhost = window.location.hostname === 'localhost';
-
+// Check if service workers are supported
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    const swUrl = isLocalhost
-      ? '/service-worker.js' // For localhost
-      : `${window.location.origin}/service-worker.js`; // For production
-
-    navigator.serviceWorker
-      .register(swUrl)
-      .then((registration) => {
-        console.log('Service Worker registered successfully:', registration);
-      })
-      .catch((error) => {
-        console.error('Service Worker registration failed:', error);
-      });
+    if (import.meta.env.PROD) {
+      // Use absolute path for production
+      navigator.serviceWorker
+        .register('/service-worker.js')
+        .then((registration) => {
+          console.log('Service Worker registered successfully:', registration);
+        })
+        .catch((error) => {
+          console.error('Service Worker registration failed:', error);
+        });
+    } else {
+      // Use relative path for localhost
+      navigator.serviceWorker
+        .register('/service-worker.js')
+        .then((registration) => {
+          console.log('Service Worker registered successfully in localhost:', registration);
+        })
+        .catch((error) => {
+          console.error('Service Worker registration failed in localhost:', error);
+        });
+    }
   });
 }
 
