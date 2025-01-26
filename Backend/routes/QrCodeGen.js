@@ -13,7 +13,7 @@ router.get('/generate-qr', authMiddleware, async (req, res) => {
         }
 
         // Generate QR code with restaurant ID only
-        const frontendBaseURL = process.env.FRONTEND_BASE_URL || 'http://localhost:5173';
+        const frontendBaseURL = process.env.FFRONTEND_BASE_URL || 'http://localhost:5173';
         const qrCodeUrl = `${frontendBaseURL}/home?restaurantId=${restaurant._id}`; // Embed restaurantId in the URL
 
         // Generate QR Code as Base64 image
