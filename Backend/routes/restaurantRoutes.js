@@ -339,7 +339,7 @@ const icon512 = baseImageUrl.replace('/w_192,h_192,c_fill', '/w_512,h_512,c_fill
     const manifest = {
       name: restaurant.name || 'Restaurant PWA',
       short_name: restaurant.name || 'Restaurant',
-      start_url: `https://qrar-front-jet.vercel.app/home?restaurantId=${restaurantId}`,
+      start_url: `http://localhost:5173/home?restaurantId=${restaurantId}`,
       display_override: ["fullscreen", "minimal-ui"],
       display: 'standalone',
       background_color: '#ffffff',
