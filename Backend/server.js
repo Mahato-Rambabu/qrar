@@ -40,7 +40,8 @@ app.use(express.json());
 
 // CORS Setup: Dynamically configure allowed origins based on the environment
 const allowedOrigins = [
-  process.env.FRONTEND_BASE_URL,  // Dynamically read from environment variables
+  process.env.FRONTEND_BASE_URL,// Dynamically read from environment variables
+  process.env.FFRONTEND_BASE_URL,
   'http://localhost:5173',        // Allow localhost for development
 ];
 
