@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+const baseURL = import.meta.env.VITE_API_BASE_URL || 'https://qrar.onrender.com';
+
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://qrar.onrender.com',
+  baseURL,
   withCredentials: true, // Ensures cookies are sent with every request
   headers: {
     'Content-Type': 'application/json',

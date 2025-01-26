@@ -16,7 +16,15 @@ import http from 'http';
 import cookieParser from 'cookie-parser';
 import validateCustomer from './middlewares/validateCustomer.js';
 
-config();
+// Determine the current environment (default to 'development')
+const environment = process.env.NODE_ENV || 'development';
+
+// Load the corresponding .env file
+config({ path: path.resolve(process.cwd(), `.env.${environment}`) });
+
+console.log(`Environment: ${environment}`);
+console.log(`Frontend url: ${process.env.FRONTEND_BASE_URL}`); // Debug to confirm the correct .env is loaded
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -32,8 +40,10 @@ const io = initializeSocket(server);
 app.use(cookieParser()); 
 app.use(express.json());
 
+const allowedOrigins = ["https://qrar-lyart.vercel.app", "https://qrar-front-jet.vercel.app", "http://localhost:5173"];
+
 app.use(cors({
-    origin: ["https://qrar-lyart.vercel.app", "https://qrar-front-jet.vercel.app"],
+    origin: allowedOrigins,
     credentials: true,  
 }));
 
@@ -54,5 +64,5 @@ app.use('/users', userRoutes);
 app.use('/', QrCodeGen);
 
 // Server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

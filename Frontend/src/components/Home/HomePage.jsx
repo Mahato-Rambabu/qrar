@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import SearchBar from './SearchBar';
 import ImageSlider from './ImageSlider';
 import MenuCategory from './MenuCategory';
+import axiosInstance from '../../utils/axiosInstance';
 
 const HomePage = () => {
   const location = useLocation();
@@ -27,8 +28,8 @@ const HomePage = () => {
     // Fetch the profile image based on the restaurantId
     const fetchProfileImage = async () => {
       try {
-        const response = await fetch(
-          `https://qrar.onrender.com/restaurants/images/${restaurantId}`
+        const response = await axiosInstance.get(
+          `/restaurants/images/${restaurantId}`
         ); // Use the correct backend route
         if (!response.ok) {
           console.error(`Error ${response.status}: ${response.statusText}`);
