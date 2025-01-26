@@ -10,30 +10,27 @@ const STATIC_ASSETS = [
 
 // Install the service worker
 self.addEventListener('install', (event) => {
-  console.log('Service Worker: Installing...');
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('Service Worker: Caching Static Assets...');
-      return cache.addAll(STATIC_ASSETS);
-    })
-  );
+  console.log('[Service Worker] Installed');
+  // Force the waiting service worker to become active
+  self.skipWaiting();
 });
 
-// Activate the service worker and clean up old caches
 self.addEventListener('activate', (event) => {
-  console.log('Service Worker: Activating...');
+  console.log('[Service Worker] Activated');
+  // Clean up old caches if any
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
+    caches.keys().then((cacheNames) =>
+      Promise.all(
         cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            console.log('Service Worker: Clearing Old Cache...');
+          if (cache !== 'your-cache-name') {
+            console.log('[Service Worker] Clearing old cache:', cache);
             return caches.delete(cache);
           }
         })
-      );
-    })
+      )
+    )
   );
+  return self.clients.claim(); // Immediately start controlling pages
 });
 
 // Fetch event for caching dynamic content
