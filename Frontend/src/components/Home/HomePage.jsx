@@ -28,15 +28,15 @@ const HomePage = () => {
     // Fetch the profile image based on the restaurantId
     const fetchProfileImage = async () => {
       try {
-        const response = await axiosInstance.get(
-          `/restaurants/images/${restaurantId}`
-        ); // Use the correct backend route
-        if (!response.ok) {
-          console.error(`Error ${response.status}: ${response.statusText}`);
-          throw new Error('Failed to fetch profile image');
+        const response = await axiosInstance.get(`/restaurants/images/${restaurantId}`);
+
+        // Corrected way to handle Axios response
+        if (response.data && response.data.profileImage) {
+          setProfileImage(response.data.profileImage);
+        } else {
+          console.warn('No profile image found, using default.');
+          setProfileImage('/default-profile.png');
         }
-        const data = await response.json();
-        setProfileImage(data.profileImage || '/default-profile.png');
       } catch (error) {
         console.error('Error fetching profile image:', error);
         setProfileImage('/default-profile.png'); // Use default on error
@@ -82,7 +82,6 @@ const HomePage = () => {
             className="w-12 h-12 rounded-full border-2 border-gray-300 object-cover"
             loading="lazy"
           />
-
         </div>
       </header>
 

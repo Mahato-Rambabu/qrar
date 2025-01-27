@@ -39,7 +39,16 @@ const io = initializeSocket(server);
 app.use(cookieParser()); 
 app.use(express.json());
 
+<<<<<<< HEAD
 const allowedOrigins = ["https://qrar-lyart.vercel.app", "https://qrar-front-jet.vercel.app", "http://localhost:5173"];
+=======
+// CORS Setup: Dynamically configure allowed origins based on the environment
+const allowedOrigins = [
+  process.env.FRONTEND_BASE_URL,// Dynamically read from environment variables
+  process.env.FFRONTEND_BASE_URL,
+  'http://localhost:5173',        // Allow localhost for development
+];
+>>>>>>> f614361985d60b973c0eabf21aa72583863a8266
 
 app.use(cors({
     origin: allowedOrigins,

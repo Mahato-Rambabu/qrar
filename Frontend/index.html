@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" href="/logo.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AnandBhojan</title>
+  <title>QRAR-Frontend</title>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet" />
 
   <!-- Preload a placeholder manifest -->
@@ -21,15 +21,12 @@
       const restaurantId = urlParams.get("restaurantId");
 
       if (restaurantId) {
-        // Set the correct manifest URL dynamically
         const manifestLink = document.getElementById("dynamic-manifest");
         manifestLink.href = `https://qrar.onrender.com/restaurants/${restaurantId}/manifest.json`;
-
         console.log("Updated manifest URL:", manifestLink.href);
       }
     });
   </script>
-
 </body>
 
 </html>
