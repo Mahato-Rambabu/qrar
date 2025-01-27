@@ -8,7 +8,7 @@ import './index.css'
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
-      .register('/service-worker.js') // The file is expected at the root
+      .register('/service-worker.js') // This will now correctly point to the public folder
       .then((registration) => {
         console.log('Service Worker registered:', registration);
       })
@@ -17,7 +17,6 @@ if ('serviceWorker' in navigator) {
       });
   });
 }
-
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />
