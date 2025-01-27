@@ -1,14 +1,4 @@
 {
-  "routes": [
-    {
-      "src": "/service-worker.js",
-      "dest": "/public/service-worker.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ],
   "headers": [
     {
       "source": "/service-worker.js",
@@ -18,6 +8,16 @@
           "value": "application/javascript"
         }
       ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/service-worker.js",
+      "destination": "/public/service-worker.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
