@@ -80,27 +80,44 @@ router.post('/login', async (req, res) => {
     const token = jwt.sign(
       { id: restaurant._id, email: restaurant.email },
       process.env.JWT_SECRET,
-      { expiresIn: '7d' } // Token valid for 7 days
+      { expiresIn: '7d' }
     );
 
     // Set the token in an HTTP-only cookie
     res.cookie('authToken', token, {
-      httpOnly: false, // Prevent JavaScript access to the cookie
-      secure: true, // Use secure cookies in production
-      sameSite: 'none', // Protect against CSRF
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
+      httpOnly: true, // ✅ More secure, prevents JavaScript access
+      secure: process.env.NODE_ENV === 'production', // ✅ Secure in production
+      sameSite: 'None', // ✅ Needed for cross-origin requests
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
-    // Respond with a success message
+    // Send the token in the response body too (optional)
     res.status(200).json({
       message: 'Login successful',
       restaurantId: restaurant._id,
+      token, // ✅ Include token in response if needed for localStorage
     });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
+
+router.get('/check-auth', (req, res) => {
+  const token = req.cookies.authToken; // Get token from cookies
+
+  if (!token) {
+    return res.json({ authenticated: false });
+  }
+
+  try {
+    jwt.verify(token, process.env.JWT_SECRET); // Verify token
+    res.json({ authenticated: true });
+  } catch (error) {
+    res.json({ authenticated: false });
+  }
+});
+
 
 // Fetch the Restaurant Dashboard
 router.get('/dashboard', authMiddleware, async (req, res) => {
