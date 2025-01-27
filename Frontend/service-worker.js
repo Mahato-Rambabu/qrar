@@ -17,7 +17,6 @@ self.addEventListener('install', (event) => {
       return cache.addAll(STATIC_ASSETS);
     })
   );
-  self.skipWaiting(); // Force immediate activation
 });
 
 // Activate the service worker and clean up old caches
@@ -35,7 +34,6 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
-  return self.clients.claim(); // Start controlling pages
 });
 
 // Fetch event for caching dynamic content
@@ -43,17 +41,14 @@ self.addEventListener('fetch', (event) => {
   console.log('Service Worker: Fetching...', event.request.url);
   event.respondWith(
     caches.match(event.request).then((response) => {
-      return (
-        response ||
-        fetch(event.request).then((fetchResponse) => {
-          return caches.open(CACHE_NAME).then((cache) => {
-            if (event.request.url.startsWith('http')) {
-              cache.put(event.request, fetchResponse.clone());
-            }
-            return fetchResponse;
-          });
-        })
-      );
+      return response || fetch(event.request).then((fetchResponse) => {
+        return caches.open(CACHE_NAME).then((cache) => {
+          if (event.request.url.startsWith('http')) {
+            cache.put(event.request, fetchResponse.clone());
+          }
+          return fetchResponse;
+        });
+      });
     }).catch(() => {
       if (event.request.mode === 'navigate') {
         return caches.match('/index.html');
