@@ -1,15 +1,18 @@
-import axiosInstance from './axiosInstance';
+import Cookies from 'js-cookie';
+import jwtDecode from 'jwt-decode'; // Install with `npm install jwt-decode`
 
-export const isAuthenticated = async () => {
+export const isAuthenticated = () => {
+  const token = Cookies.get('authToken');
+
+  if (!token) return false; // No token means not authenticated
+
   try {
-    // Send a request to the backend to check authentication
-    const response = await axiosInstance.get('/restaurants/check-auth', {
-      withCredentials: true, // ✅ Ensures cookies are sent
-    });
+    const decoded = jwtDecode(token); // Decode the token
+    const isTokenExpired = decoded.exp * 1000 < Date.now(); // Check expiry
 
-    return response.data.authenticated; // Expecting { authenticated: true/false }
+    return !isTokenExpired; // Return false if expired
   } catch (error) {
-    console.error('Auth check failed:', error);
+    console.error('Invalid token:', error);
     return false;
   }
 };

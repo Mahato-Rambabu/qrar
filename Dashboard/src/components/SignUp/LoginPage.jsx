@@ -21,22 +21,14 @@ const LoginPage = () => {
     e.preventDefault();
     setError('');
     setSuccess('');
-  
     try {
-      const response = await axiosInstance.post('/restaurants/login', formData, {
-        withCredentials: true, // ✅ Ensures cookies are sent
-      });
-  
-      // Store the token in localStorage as a backup
-      localStorage.setItem('authToken', response.data.token);
-  
-      setSuccess('Login successful! Redirecting...');
-      setTimeout(() => navigate('/'), 2000);
+      const response = await axiosInstance.post('/restaurants/login', formData);
+      setSuccess('Login successful! Redirecting to your dashboard...');
+      setTimeout(() => navigate('/'),2000); // Redirect to dashboard after 2 seconds
     } catch (err) {
       setError(err.response?.data?.error || 'Invalid email or password.');
     }
   };
-  
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
