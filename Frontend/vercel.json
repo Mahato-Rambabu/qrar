@@ -10,14 +10,14 @@
       ]
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/service-worker.js",
-      "dest": "/public/service-worker.js"
+      "source": "/service-worker.js",
+      "destination": "/public/service-worker.js"
     },
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
