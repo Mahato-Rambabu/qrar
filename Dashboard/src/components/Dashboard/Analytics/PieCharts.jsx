@@ -11,9 +11,7 @@ const CustomPieChart = () => {
   useEffect(() => {
     const fetchAgeGroupData = async () => {
       try {
-        const response = await axiosInstance.get('/users/users-by-age-group',{
-          headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` },
-        });
+        const response = await axiosInstance.get('/users/users-by-age-group');
         const data = Object.entries(response.data).map(([key, value]) => ({
           name: key,
           value,

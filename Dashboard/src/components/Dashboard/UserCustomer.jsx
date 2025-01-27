@@ -10,16 +10,10 @@ const UserTable = () => {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      const token = localStorage.getItem('authToken'); // Ensure the key matches
-      if (!token) {
-        setError('User not authenticated. Please log in.');
-        return;
-      }
+
   
       try {
-        const response = await axiosInstance.get('/users', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await axiosInstance.get('/users');
   
         setUsers(response.data || []); // Set users from response
         setError(null); // Clear previous errors

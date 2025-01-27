@@ -1,14 +1,15 @@
 import axios from "axios";
+import Cookies from 'js-cookie'; // Import js-cookie
+import axiosInstance from "../../utils/axiosInstance";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-const getAuthToken = () => localStorage.getItem("authToken");
+
 
 export const fetchPendingOrders = async (dateRange) => {
   try {
-    const token = getAuthToken();
-    const response = await axios.get(`${API_BASE_URL}/orders/pending`, {
-      headers: { Authorization: `Bearer ${token}` },
+
+    const response = await axiosInstance.get(`${API_BASE_URL}/orders/pending`, {
       params: { dateRange }
     });
 
@@ -21,9 +22,8 @@ export const fetchPendingOrders = async (dateRange) => {
 
 export const fetchOrderHistory = async (dateRange) => {
   try {
-    const token = getAuthToken();
-    const response = await axios.get(`${API_BASE_URL}/orders/history`, {
-      headers: { Authorization: `Bearer ${token}` },
+
+    const response = await axiosInstance.get(`${API_BASE_URL}/orders/history`, {
       params: { dateRange }
     });
 
@@ -36,11 +36,9 @@ export const fetchOrderHistory = async (dateRange) => {
 
 export const updateOrderStatus = async (orderId, status) => {
   try {
-    const token = getAuthToken();
-    const response = await axios.patch(
+    const response = await axiosInstance.patch(
       `${API_BASE_URL}/orders/${orderId}`,
       { status },
-      { headers: { Authorization: `Bearer ${token}` } }
     );
     return response.data;
   } catch (error) {

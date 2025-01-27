@@ -21,20 +21,12 @@ const RestoDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem('authToken');
+        
         const [profitResponse, productResponse, orderResponse, usersResponse] = await Promise.all([
-          axiosInstance.get(`/orders/total-profit?dateRange=${dateRange}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axiosInstance.get('/products/count', {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axiosInstance.get(`/orders/order-count?dateRange=${dateRange}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axiosInstance.get('/users/total-users', {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
+          axiosInstance.get(`/orders/total-profit?dateRange=${dateRange}`),
+          axiosInstance.get('/products/count'),
+          axiosInstance.get(`/orders/order-count?dateRange=${dateRange}`),
+          axiosInstance.get('/users/total-users'),
         ]);
 
         setProfitData(profitResponse.data.data || { totalProfit: 0, dailyData: [], monthlyData: [] });
@@ -62,7 +54,7 @@ const RestoDashboard = () => {
       value: `${profitData.totalProfit.toFixed(2)}`,
       subtitle: `Last ${dateRange}`,
       color: 'bg-white hover:bg-gray-100',
-      onClick: () => navigate('/dashboard'),
+      onClick: () => navigate('/'),
     },
     {
       title: 'Total Products',

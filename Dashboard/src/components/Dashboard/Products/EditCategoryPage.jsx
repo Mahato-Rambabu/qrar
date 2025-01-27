@@ -21,14 +21,10 @@ const EditCategoryPage = () => {
   useEffect(() => {
     const fetchCategory = async () => {
       try {
-        const token = localStorage.getItem("authToken");
         if (!token) throw new Error("Authentication token is missing.");
 
         const response = await axiosInstance.get(
-          `/categories/${categoryId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          `/categories/${categoryId}`
         );
 
         setCategoryData({
@@ -65,7 +61,6 @@ const EditCategoryPage = () => {
     setError("");
 
     try {
-      const token = localStorage.getItem("authToken");
       if (!token) throw new Error("Authentication token is missing.");
 
       const formData = new FormData();
@@ -80,7 +75,6 @@ const EditCategoryPage = () => {
         formData,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data",
           },
         }

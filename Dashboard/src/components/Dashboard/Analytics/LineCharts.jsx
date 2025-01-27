@@ -39,10 +39,7 @@ const LineGraph = () => {
   const fetchProfitData = useCallback(async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await axiosInstance.get(`orders/total-profit?dateRange=${dateRange}`,{
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axiosInstance.get(`orders/total-profit?dateRange=${dateRange}`);
       const { data } = response.data;
 
       let formattedData = [];

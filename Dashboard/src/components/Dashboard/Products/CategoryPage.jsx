@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
 import AddCategory from "./AddCategory";
 import { toast } from 'react-hot-toast';
+import Cookies from 'js-cookie'; // Import js-cookie
 
 const CategoryCard = lazy(() => import("./CategoryCard"));
 
@@ -17,14 +18,8 @@ const CategoryPage = () => {
     const fetchCategories = async () => {
       setLoadingCategories(true);
       try {
-        const token = localStorage.getItem("authToken");
-        if (!token) throw new Error("Token is missing. Please log in.");
 
-        const response = await axiosInstance.get("/categories", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await axiosInstance.get("/categories");
         setCategories(response.data || []);
       } catch (error) {
         console.error("Error fetching categories:", error);
@@ -47,14 +42,9 @@ const CategoryPage = () => {
       );
       if (!confirmDelete) return;
 
-      const token = localStorage.getItem("authToken");
-      if (!token) throw new Error("Token is missing. Please log in.");
+  
 
-      const response = await axiosInstance.delete(`/categories/${categoryId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axiosInstance.delete(`/categories/${categoryId}`);
 
       if (response.status === 200) {
         toast.success("Category and its associated products deleted successfully!");
@@ -72,7 +62,7 @@ const CategoryPage = () => {
 
   const handleViewProducts = useCallback(
     (categoryId) => {
-      const token = localStorage.getItem("authToken");
+      const token = Cookies.get("authToken");
       if (!token) {
         toast.error("Please log in.");
         return;

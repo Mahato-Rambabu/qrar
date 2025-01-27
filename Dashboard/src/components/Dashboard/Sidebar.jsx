@@ -24,6 +24,7 @@ const Sidebar = memo(({ isOpen }) => {
     // Clear all local storage or session storage
     localStorage.clear();
     sessionStorage.clear();
+    Cookies.remove('authToken'); // Removes the cookie
 
     // Redirect to the login page
     navigate('/login');

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { FaImage, FaTag, FaRupeeSign } from 'react-icons/fa';
 import axiosInstance from '../../../utils/axiosInstance';
+import Cookies from 'js-cookie'; // Import js-cookie
 
 const AddCategory = ({ onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -14,7 +14,7 @@ const AddCategory = ({ onSuccess }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const getRestaurantIdFromToken = () => {
-    const token = localStorage.getItem('authToken');
+    const token = Cookies.get('authToken');
     if (!token) throw new Error('Authentication token missing');
 
     try {
@@ -71,7 +71,6 @@ const AddCategory = ({ onSuccess }) => {
 
       const config = {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
           'Content-Type': 'multipart/form-data',
         },
       };

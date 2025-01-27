@@ -8,14 +8,16 @@ const axiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Enable sending cookies with requests
 });
 
-// Request interceptor to include auth token if available
+// Request interceptor to handle cookies
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('authToken'); // Ensure the token key is consistent
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // Check if cookies are available (optional logic for manual handling)
+    const hasCookie = document.cookie.split('; ').find((row) => row.startsWith('authToken='));
+    if (!hasCookie) {
+      console.warn('No authentication cookie found.');
     }
     return config;
   },
@@ -27,8 +29,8 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // If unauthorized, clear token and redirect to login
-      localStorage.removeItem('authToken');
+      // If unauthorized, redirect to login
+      console.error('Unauthorized. Redirecting to login...');
       window.location.href = '/login';
     }
     return Promise.reject(error);

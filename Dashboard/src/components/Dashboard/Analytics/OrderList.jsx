@@ -19,18 +19,15 @@ const OrderList = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const token = localStorage.getItem('authToken');
         const dateRange = '24h'; // Adjust as needed
 
         // Fetch served orders
         const servedResponse = await axiosInstance.get(`/orders/history`, {
-          headers: { Authorization: `Bearer ${token}` },
           params: { dateRange },
         });
 
         // Fetch pending orders
         const pendingResponse = await axiosInstance.get(`/orders/pending`, {
-          headers: { Authorization: `Bearer ${token}` },
           params: { dateRange },
         });
 
