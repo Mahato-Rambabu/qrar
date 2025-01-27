@@ -16,12 +16,8 @@ const Navbar = ({ toggleSidebar, title }) => {
       useEffect(() => {
         const fetchProfileImage = async () => {
           try {
-            const token = localStorage.getItem("authToken");
-            if (!token) throw new Error("Authentication token is missing.");
     
-            const response = await axiosInstance.get("/restaurants/profile", {
-              headers: { Authorization: `Bearer ${token}` },
-            });
+            const response = await axiosInstance.get("/restaurants/profile");
     
             setProfileImage(response.data.profileImage);
             setRestaurantName(response.data.name);

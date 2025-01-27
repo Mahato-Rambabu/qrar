@@ -17,17 +17,10 @@ const EditProductPage = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-        try {
-          const token = localStorage.getItem('authToken');
-          if (!token) throw new Error('Authentication token is missing.');
-      
+        try {      
           const [productResponse, categoriesResponse] = await Promise.all([
-            axiosInstance.get(`/products/${productId}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            }),
-            axiosInstance.get('/categories', {
-              headers: { Authorization: `Bearer ${token}` },
-            }),
+            axiosInstance.get(`/products/${productId}`),
+            axiosInstance.get('/categories'),
           ]);
       
           const product = productResponse.data;
@@ -70,10 +63,7 @@ const EditProductPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const token = localStorage.getItem('authToken');
-      if (!token) throw new Error('Authentication token is missing.');
-  
+    try {  
       const formData = new FormData();
       formData.append('name', productData.name);
       formData.append('price', productData.price);
@@ -88,7 +78,6 @@ const EditProductPage = () => {
   
       await axiosInstance.put(`/products/${productId}`, formData, {
         headers: {
-          Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
         },
       });

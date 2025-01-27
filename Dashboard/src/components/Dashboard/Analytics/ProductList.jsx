@@ -8,12 +8,7 @@ const ProductList = ({ dateRange }) => {
   useEffect(() => {
     const fetchProductSales = async () => {
       try {
-        const token = localStorage.getItem('authToken');
-        const response = await axiosInstance.get(`/orders/product-sales?dateRange=${dateRange}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await axiosInstance.get(`/orders/product-sales?dateRange=${dateRange}`);
         setProducts(response.data.slice(0, 10)); // Only show top 10 products
       } catch (error) {
         console.error('Error fetching product sales data:', error);

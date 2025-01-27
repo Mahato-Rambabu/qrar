@@ -1,7 +1,7 @@
 // utils/auth.js
+import Cookies from 'js-cookie'; // Install this library with `npm install js-cookie`
+
 export const isAuthenticated = () => {
-    const token = localStorage.getItem('authToken');
-    // Add more checks if necessary (e.g., token decoding, expiry check)
-    return !!token; // Returns true if the token exists
-  };
-  
+  const token = Cookies.get('authToken'); // Retrieve the token from cookies
+  return !!token; // Returns true if the token exists
+};

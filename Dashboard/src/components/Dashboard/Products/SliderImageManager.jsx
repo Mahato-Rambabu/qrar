@@ -35,13 +35,10 @@ const SliderImageUploader = () => {
       const formData = new FormData();
       formData.append('img', compressedImage);
 
-      const token = localStorage.getItem('authToken');
-
       // Upload the compressed image
       await axiosInstance.post('/imageSlider', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}`,
         },
       });
 

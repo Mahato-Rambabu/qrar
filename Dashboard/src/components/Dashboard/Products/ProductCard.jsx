@@ -19,7 +19,7 @@ const ProductCard = ({ product, category }) => {
 
   return (
     <div
-      className="relative border rounded-lg shadow-md hover:shadow-lg transition z-10 bg-white flex flex-col cursor-pointer overflow-visible"
+      className="relative border rounded-lg shadow-md hover:shadow-lg transition  bg-white flex flex-col cursor-pointer overflow-visible"
       onClick={() => onViewDetails(product._id)}
       onMouseLeave={handleMouseLeave}
     >

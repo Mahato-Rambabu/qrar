@@ -9,16 +9,10 @@ const QRCodeGenerator = () => {
   
     useEffect(() => {
       const fetchQRCode = async () => {
-        const token = localStorage.getItem('authToken');
-        if (!token) {
-          setError('User not authenticated. Please log in.');
-          return;
-        }
+
   
         try {
-          const response = await axiosInstance.get('/generate-qr', {
-            headers: { Authorization: `Bearer ${token}` }, // Authentication is still required for QR generation
-          });
+          const response = await axiosInstance.get('/generate-qr');
           setQrCodeImage(response.data.qrCodeImage);
           setQrCodeUrl(response.data.qrCodeUrl);
         } catch (err) {

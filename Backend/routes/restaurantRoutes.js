@@ -61,34 +61,45 @@ router.post('/register', async (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
+  const { email, password } = req.body;
 
-    try {
-        const restaurant = await Restaurant.findOne({ email });
-        if (!restaurant) {
-            return res.status(400).json({ error: 'Invalid email or password' });
-        }
-
-        const isPasswordValid = await bcrypt.compare(password, restaurant.password);
-        if (!isPasswordValid) {
-            return res.status(400).json({ error: 'Invalid email or password' });
-        }
-
-        const token = jwt.sign(
-            { id: restaurant._id, email: restaurant.email },
-            process.env.JWT_SECRET,
-            { expiresIn: '7d' }
-        );
-
-        res.status(200).json({
-            message: 'Login successful',
-            token,
-            restaurantId: restaurant._id,
-        });
-    } catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({ error: 'Server error' });
+  try {
+    // Check if the restaurant exists
+    const restaurant = await Restaurant.findOne({ email });
+    if (!restaurant) {
+      return res.status(400).json({ error: 'Invalid email or password' });
     }
+
+    // Verify the password
+    const isPasswordValid = await bcrypt.compare(password, restaurant.password);
+    if (!isPasswordValid) {
+      return res.status(400).json({ error: 'Invalid email or password' });
+    }
+
+    // Generate a JWT token
+    const token = jwt.sign(
+      { id: restaurant._id, email: restaurant.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' } // Token valid for 7 days
+    );
+
+    // Set the token in an HTTP-only cookie
+    res.cookie('authToken', token, {
+      httpOnly: false, // Prevent JavaScript access to the cookie
+      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+      sameSite: 'strict', // Protect against CSRF
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
+    });
+
+    // Respond with a success message
+    res.status(200).json({
+      message: 'Login successful',
+      restaurantId: restaurant._id,
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // Fetch the Restaurant Dashboard

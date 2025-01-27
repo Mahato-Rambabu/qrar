@@ -44,14 +44,7 @@ const AddProductPage = ({onSuccess}) => {
     const fetchCategories = async () => {
       setLoadingCategories(true);
       try {
-        const token = localStorage.getItem('authToken');
-        if (!token) throw new Error('Token is missing. Please log in.');
-
-        const response = await axiosInstance.get('/categories', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await axiosInstance.get('/categories');
         setCategories(response.data || []);
       } catch (error) {
         console.error('Error fetching categories:', error);
@@ -134,8 +127,6 @@ const AddProductPage = ({onSuccess}) => {
     }
   
     try {
-      const token = localStorage.getItem('authToken');
-      if (!token) throw new Error('Token is missing. Please log in.');
   
       const data = new FormData();
   
@@ -146,7 +137,6 @@ const AddProductPage = ({onSuccess}) => {
   
       const response = await axiosInstance.post('/products', data, {
         headers: {
-          Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
         },
       });

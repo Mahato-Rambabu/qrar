@@ -46,11 +46,8 @@ const ProductPage = () => {
       setProductError(null);
 
       try {
-        const token = localStorage.getItem("authToken");
-        if (!token) throw new Error("Authentication token is missing.");
 
         const response = await axiosInstance.get("/products", {
-          headers: { Authorization: `Bearer ${token}` },
           params: {
             search: debouncedSearchQuery,
             categoryId: categoryFilter,
@@ -82,12 +79,8 @@ const ProductPage = () => {
       setCategoryError(null);
 
       try {
-        const token = localStorage.getItem("authToken");
-        if (!token) throw new Error("Authentication token is missing.");
 
-        const response = await axiosInstance.get("/categories", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await axiosInstance.get("/categories");
 
         setCategories(response.data || []);
       } catch (error) {
@@ -185,7 +178,7 @@ const ProductPage = () => {
   isOpen={isModalOpen}
   onRequestClose={closeModal}
   contentLabel="Add Product Modal"
-  className="relative bg-white rounded-lg shadow-lg p-6 max-w-full w-11/12 md:w-3/4 lg:w-1/2 mx-auto max-h-[80vh] mt-20 overflow-y-auto"
+  className="relative bg-white rounded-lg shadow-lg p-6 max-w-full w-11/12 md:w-3/4 lg:w-1/2 mx-auto max-h-[80vh] mt-20 overflow-y-auto z-10"
   overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
 >
   <button

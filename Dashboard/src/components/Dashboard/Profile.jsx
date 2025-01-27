@@ -18,12 +18,8 @@ const ProfilePage = () => {
     const fetchProfile = async () => {
       setLoading(true);
       try {
-        const token = localStorage.getItem("authToken");
-        if (!token) throw new Error("Authentication token is missing.");
 
-        const response = await axiosInstance.get("/restaurants/profile", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await axiosInstance.get("/restaurants/profile");
 
         setProfile(response.data);
         setFormData(response.data);
@@ -46,13 +42,10 @@ const ProfilePage = () => {
 
   const handleSave = async () => {
     try {
-      const token = localStorage.getItem("authToken");
-      if (!token) throw new Error("Authentication token is missing.");
 
       const response = await axiosInstance.put(
         "/restaurants/profile",
         formData,
-        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       // Update the profile state with the updated data
