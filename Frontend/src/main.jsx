@@ -6,21 +6,14 @@ import './index.css';
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    const isLocalhost = window.location.hostname === 'localhost';
-    const swUrl = `/service-worker.js`;
-
-    if (!isLocalhost) {
-      navigator.serviceWorker
-        .register(swUrl)
-        .then((registration) => {
-          console.log('Service Worker registered successfully:', registration);
-        })
-        .catch((error) => {
-          console.error('Service Worker registration failed:', error);
-        });
-    } else {
-      console.log('Service Worker not registered in development (localhost).');
-    }
+    navigator.serviceWorker
+      .register('/service-worker.js', { scope: '/' }) // ✅ Corrected path
+      .then((registration) => {
+        console.log('Service Worker registered successfully:', registration);
+      })
+      .catch((error) => {
+        console.error('Service Worker registration failed:', error);
+      });
   });
 }
 
