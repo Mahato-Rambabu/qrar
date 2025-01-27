@@ -38,21 +38,24 @@ self.addEventListener('activate', (event) => {
 
 // Fetch event for caching dynamic content
 self.addEventListener('fetch', (event) => {
-  console.log('Service Worker: Fetching...', event.request.url);
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request).then((fetchResponse) => {
-        return caches.open(CACHE_NAME).then((cache) => {
-          if (event.request.url.startsWith('http')) {
-            cache.put(event.request, fetchResponse.clone());
-          }
-          return fetchResponse;
+    if (event.request.url.includes('service-worker.js')) {
+      return;
+    }
+  
+    event.respondWith(
+      caches.match(event.request).then((response) => {
+        return response || fetch(event.request).then((fetchResponse) => {
+          return caches.open(CACHE_NAME).then((cache) => {
+            if (event.request.url.startsWith('http')) {
+              cache.put(event.request, fetchResponse.clone());
+            }
+            return fetchResponse;
+          });
         });
-      });
-    }).catch(() => {
-      if (event.request.mode === 'navigate') {
-        return caches.match('/index.html');
-      }
-    })
-  );
-});
+      }).catch(() => {
+        if (event.request.mode === 'navigate') {
+          return caches.match('/index.html');
+        }
+      })
+    );
+  });
