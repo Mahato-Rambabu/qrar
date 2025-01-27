@@ -19,9 +19,8 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, 'index.html'), // Entry point for the app
-        serviceWorker: path.resolve(__dirname, 'service-worker.js'), // Ensure service worker is included
+        serviceWorker: path.resolve(__dirname, 'service-worker.js'), // Include service-worker.js explicitly
       },
     },
   },
-  publicDir: 'public', // Ensures static files (like service-worker.js) are copied to the build output
 });

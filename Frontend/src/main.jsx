@@ -8,7 +8,7 @@ import './index.css'
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
-      .register('/service-worker.js') // Adjust the path as needed
+      .register('/service-worker.js') // The file is expected at the root
       .then((registration) => {
         console.log('Service Worker registered:', registration);
       })
