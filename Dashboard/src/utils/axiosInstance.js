@@ -35,10 +35,10 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response) {
+      console.error('Request failed with status:', error.response);
       switch (error.response.status) {
         case 401:
           alert('Unauthorized. Please log in.');
-          window.location.href = '/login';
           break;
         case 403:
           console.error('Access forbidden.');

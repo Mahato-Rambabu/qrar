@@ -2,6 +2,7 @@ import React, { memo, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom'; // Import useNavigate
 import { ShoppingCart, Package, Users, ChartLine, QrCode, LogOut } from 'lucide-react'; // Import LogOut icon
 import PropTypes from 'prop-types';
+import Cookies from 'js-cookie'; // Import js-cookie
 
 const Sidebar = memo(({ isOpen }) => {
   const location = useLocation();
