@@ -13,19 +13,21 @@ const axiosInstance = axios.create({
 });
 
 // Request interceptor to handle cookies or add Authorization header
-axiosInstance.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response) {
-      if (error.response.status === 401) {
-        console.warn('Unauthorized detected. Redirecting...');
-        if (window.location.pathname !== '/login') {
-          window.location.href = '/login';
-        }
-      }
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('authToken='))
+      ?.split('=')[1]; // Extract token from cookies
+
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`; // Add token to headers
+    } else {
+      console.warn('No authentication cookie found.');
     }
-    return Promise.reject(error);
-  }
+    return config;
+  },
+  (error) => Promise.reject(error)
 );
 
 // Response interceptor to handle errors globally
