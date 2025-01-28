@@ -90,8 +90,8 @@ router.post('/login', async (req, res) => {
 
     // 5. Set the token in a secure HTTP-only cookie
     res.cookie('authToken', token, {
-      httpOnly: true, // Prevent JavaScript access (important for security)
-      secure: process.env.NODE_ENV === 'production', // Use secure cookies only in production
+      httpOnly: false, // Prevent JavaScript access (important for security)
+      secure: true, // Use secure cookies only in production
       sameSite: 'None', // Protect against CSRF while allowing basic cross-origin usage
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
       partitioned: true,
