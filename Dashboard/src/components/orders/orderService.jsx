@@ -15,7 +15,7 @@ export const fetchPendingOrders = async (dateRange) => {
 
     return Array.isArray(response.data) ? response.data : [];
   } catch (error) {
-    console.error("Error fetching pending orders:", error.message);
+    // console.error("Error fetching pending orders:", error.message);
     return [];
   }
 };
@@ -29,7 +29,7 @@ export const fetchOrderHistory = async (dateRange) => {
 
     return Array.isArray(response.data) ? response.data : [];
   } catch (error) {
-    console.error("Error fetching order history:", error.message);
+    // console.error("Error fetching order history:", error.message);
     return [];
   }
 };
@@ -42,7 +42,7 @@ export const updateOrderStatus = async (orderId, status) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Error updating order status:", error.message);
+    // console.error("Error updating order status:", error.message);
     throw error;
   }
 };

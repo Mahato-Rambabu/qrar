@@ -21,7 +21,7 @@ const EditCategoryPage = () => {
   useEffect(() => {
     const fetchCategory = async () => {
       try {
-        if (!token) throw new Error("Authentication token is missing.");
+
 
         const response = await axiosInstance.get(
           `/categories/${categoryId}`
@@ -61,7 +61,6 @@ const EditCategoryPage = () => {
     setError("");
 
     try {
-      if (!token) throw new Error("Authentication token is missing.");
 
       const formData = new FormData();
       formData.append("catName", categoryData.catName);
