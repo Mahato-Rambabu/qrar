@@ -39,10 +39,12 @@ const io = initializeSocket(server);
 app.use(cookieParser()); 
 app.use(express.json());
 
+
+
 // CORS Setup: Dynamically configure allowed origins based on the environment
 const allowedOrigins = [
-  process.env.FRONTEND_BASE_URL,// Dynamically read from environment variables
-  process.env.FFRONTEND_BASE_URL,
+  'https://qrar-lyart.vercel.app',// Dynamically read from environment variables
+  'https://qrar-front-jet.vercel.app',
   'http://localhost:5173',        // Allow localhost for development
 ];
 
@@ -69,8 +71,5 @@ app.use('/users', userRoutes);
 app.use('/', QrCodeGen);
 
 // Server
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
+const PORT = process.env.PORT;
+server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
