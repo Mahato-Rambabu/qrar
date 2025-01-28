@@ -94,6 +94,7 @@ router.post('/login', async (req, res) => {
       secure: process.env.NODE_ENV === 'production', // Use secure cookies only in production
       sameSite: 'None', // Protect against CSRF while allowing basic cross-origin usage
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
+      partitioned: true,
     });
 
     // 6. Send a success response
