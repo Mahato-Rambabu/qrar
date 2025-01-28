@@ -64,41 +64,46 @@ router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Check if the restaurant exists
+    // 1. Validate request body
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+
+    // 2. Check if the restaurant exists
     const restaurant = await Restaurant.findOne({ email });
     if (!restaurant) {
-      return res.status(400).json({ error: 'Invalid email or password' });
+      return res.status(401).json({ error: 'Invalid email or password' }); // Use 401 for unauthorized
     }
 
-    // Verify the password
+    // 3. Verify the password
     const isPasswordValid = await bcrypt.compare(password, restaurant.password);
     if (!isPasswordValid) {
-      return res.status(400).json({ error: 'Invalid email or password' });
+      return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    // Generate a JWT token
+    // 4. Generate a JWT token
     const token = jwt.sign(
       { id: restaurant._id, email: restaurant.email },
       process.env.JWT_SECRET,
       { expiresIn: '7d' } // Token valid for 7 days
     );
 
-    // Set the token in an HTTP-only cookie
+    // 5. Set the token in a secure HTTP-only cookie
     res.cookie('authToken', token, {
-      httpOnly: true, // Prevent JavaScript access to the cookie
-      secure: true, // Use secure cookies in production
-      sameSite: 'None', // Protect against CSRF
+      httpOnly: true, // Prevent JavaScript access (important for security)
+      secure: process.env.NODE_ENV === 'production', // Use secure cookies only in production
+      sameSite: 'Lax', // Protect against CSRF while allowing basic cross-origin usage
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
     });
 
-    // Respond with a success message
+    // 6. Send a success response
     res.status(200).json({
       message: 'Login successful',
       restaurantId: restaurant._id,
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

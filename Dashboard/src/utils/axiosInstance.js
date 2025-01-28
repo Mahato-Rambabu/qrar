@@ -35,7 +35,7 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response) {
-      console.error('Request failed with status:', error.response);
+      alert('Request failed with status:', error.response);
       switch (error.response.status) {
         case 401:
           alert('Unauthorized. Please log in.');
