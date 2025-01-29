@@ -82,7 +82,7 @@ router.post("/:restaurantId", async (req, res) => {
 
       // Set a cookie with customerIdentifier
       res.cookie("customerIdentifier", newUser._id.toString(), {
-          httpOnly: false,
+          httpOnly: true,
           secure: true , // Change to true for production with HTTPS
           sameSite: "None", // Adjust based on your frontend-backend origin setup
           maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days

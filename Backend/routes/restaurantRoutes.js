@@ -89,7 +89,7 @@ router.post('/login', async (req, res) => {
     );
 
     res.cookie('authToken', token, {
-      httpOnly: false, // Prevent JavaScript access
+      httpOnly: true, // Prevent JavaScript access
       secure: true, // Required for cross-origin cookies (must be HTTPS)
       sameSite: 'None', // Required for cross-origin cookies
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
