@@ -32,39 +32,33 @@ const io = initializeSocket(server);
 app.use(cookieParser());
 app.use(express.json());
 
-// CORS Setup: Configure allowed origins dynamically
 const allowedOrigins = [
-  'https://qrar-lyart.vercel.app',
-  'https://qrar-front-jet.vercel.app',
+  'https://qrar-lyart.vercel.app', 
+  'https://qrar-front-jet.vercel.app', 
   'http://localhost:5173',
 ];
 
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true, // 🔥 Allow Cookies
+    origin: allowedOrigins,
+    credentials: true, // 🔥 Required for sending cookies
     allowedHeaders: ["Content-Type", "Authorization"],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   })
 );
 
-// 🔹 Ensure Access-Control Headers Are Set in Responses
+// 🔹 Ensure Response Headers Include Credentials
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
     res.header("Access-Control-Allow-Origin", origin);
+    res.header("Access-Control-Allow-Credentials", "true");
   }
-  res.header("Access-Control-Allow-Credentials", "true");
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
   next();
 });
+
 
 
 // MongoDB Connection
