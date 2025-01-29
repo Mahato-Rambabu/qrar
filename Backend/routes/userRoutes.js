@@ -85,7 +85,7 @@ router.post("/:restaurantId", async (req, res) => {
           httpOnly: true,
           secure: true , // Change to true for production with HTTPS
           sameSite: "None", // Adjust based on your frontend-backend origin setup
-          domain: "https://qrar.onrender.com",
+          domain: ".qrar.onrender.com",
           maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
 
