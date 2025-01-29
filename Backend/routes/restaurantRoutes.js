@@ -93,7 +93,8 @@ router.post('/login', async (req, res) => {
           httpOnly: true,
           secure: true,
           sameSite: 'None',
-          domain: ".qrar.onrender.com",
+          domain: "qrar.onrender.com",
+          path: '/',
           maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
