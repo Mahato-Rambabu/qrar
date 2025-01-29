@@ -90,10 +90,10 @@ router.post('/login', async (req, res) => {
 
       // 5. Set the cookie
       res.cookie('authToken', token, {
-          httpOnly: false,
+          httpOnly: true,
           secure: true,
           sameSite: 'None',
-          // domain: ".qrar.onrender.com",
+          domain: ".qrar.onrender.com",
           maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
