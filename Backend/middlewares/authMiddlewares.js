@@ -12,6 +12,7 @@ const authMiddleware = async (req, res, next) => {
   try {
     // Verify the token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("Decoded token:", decoded);
 
     // Find the restaurant in the database using the token payload
     const restaurant = await Restaurant.findById(decoded.id); // Adjust key if necessary
