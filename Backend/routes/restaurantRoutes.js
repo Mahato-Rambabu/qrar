@@ -93,7 +93,7 @@ router.post('/login', async (req, res) => {
           httpOnly: true,
           secure: true,
           sameSite: 'None',
-          domain: ".qrar-lyart.vercel.app",
+          // domain: ".qrar-lyart.vercel.app",
           path: '/',
           maxAge: 7 * 24 * 60 * 60 * 1000,
       });

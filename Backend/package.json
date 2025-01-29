@@ -4,9 +4,9 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
-      "start:dev": "cross-env NODE_ENV=development node server.js",
-      "start:prod": "cross-env NODE_ENV=production node server.js",
-      "dev": "nodemon server.js"
+    "start:dev": "cross-env NODE_ENV=development node server.js",
+    "start:prod": "cross-env NODE_ENV=production node server.js",
+    "dev": "nodemon server.js"
   },
   "keywords": [],
   "author": "",
@@ -16,10 +16,12 @@
     "@google-cloud/storage": "^7.14.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.41.3",
+    "connect-mongo": "^5.1.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
+    "express-session": "^1.18.1",
     "express-validator": "^7.2.1",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
