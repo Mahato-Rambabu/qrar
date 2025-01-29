@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
 import AddCategory from "./AddCategory";
 import { toast } from 'react-hot-toast';
-import Cookies from 'js-cookie'; // Import js-cookie
+
 
 const CategoryCard = lazy(() => import("./CategoryCard"));
 
@@ -62,16 +62,10 @@ const CategoryPage = () => {
 
   const handleViewProducts = useCallback(
     (categoryId) => {
-      const token = Cookies.get("authToken");
-      if (!token) {
-        toast.error("Please log in.");
-        return;
-      }
+
 
       const url = categoryId === "all" ? "/products" : `/products?categoryId=${categoryId}&page=1`;
-      navigate(url, {
-        state: { token },
-      });
+      navigate(url);
     },
     [navigate]
   );

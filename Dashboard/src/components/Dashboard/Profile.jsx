@@ -78,8 +78,6 @@ const ProfilePage = () => {
       // Create a File object from the Blob
       const file = new File([blob], `${currentImageType}.jpg`, { type: blob.type });
 
-      const token = localStorage.getItem("authToken");
-      if (!token) throw new Error("Authentication token is missing.");
 
       const formData = new FormData();
       formData.append(currentImageType, file);
@@ -90,7 +88,6 @@ const ProfilePage = () => {
         formData,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data",
           },
         }
