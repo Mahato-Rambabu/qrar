@@ -21,16 +21,19 @@ const LoginPage = () => {
     e.preventDefault();
     setError('');
     setSuccess('');
-
+  
     try {
-      const response = await axiosInstance.post('/restaurants/login', formData, { withCredentials: true });
-
+      const response = await axiosInstance.post('/restaurants/login', formData, {
+        withCredentials: true, // ✅ Always include this
+      });
+  
       setSuccess('Login successful! Redirecting to your dashboard...');
       setTimeout(() => navigate('/'), 2000);
     } catch (err) {
       setError(err.response?.data?.error || 'Invalid email or password.');
     }
   };
+  
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
