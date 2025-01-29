@@ -1,5 +1,3 @@
-// Import cookie-parser (ensure it's applied globally in your app)
-import cookieParser from "cookie-parser";
 
 // Middleware to validate customer
 const validateCustomer = (req, res, next) => {
