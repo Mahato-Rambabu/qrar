@@ -17,44 +17,48 @@ import cookieParser from 'cookie-parser';
 
 // Determine the current environment (default to 'development')
 const environment = process.env.NODE_ENV || 'development';
-
-// Load the corresponding .env file
 config({ path: path.resolve(process.cwd(), `.env.${environment}`) });
 
 console.log(`Environment: ${environment}`);
-console.log(`Frontend url: ${process.env.FRONTEND_BASE_URL}`); // Debug to confirm the correct .env is loaded
+console.log(`Frontend URL: ${process.env.FRONTEND_BASE_URL}`); // Debug
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-
-// Create an HTTP server instance
 const server = http.createServer(app);
-
-// Initialize Socket.IO with the server instance
 const io = initializeSocket(server);
 
 app.use(cookieParser());
 app.use(express.json());
 
-// CORS Setup: Dynamically configure allowed origins based on the environment
+// CORS Setup: Configure allowed origins dynamically
 const allowedOrigins = [
-  'https://qrar-lyart.vercel.app', // Your Vercel frontend URL
-  'https://qrar-front-jet.vercel.app', // Another Vercel frontend URL
-  'http://localhost:5173', // Allow localhost for development
+  'https://qrar-lyart.vercel.app',
+  'https://qrar-front-jet.vercel.app',
+  'http://localhost:5173',
 ];
 
 app.use(
   cors({
     origin: allowedOrigins,
-    credentials: true, // Allow credentials (cookies)
-    allowedHeaders: ["Content-Type", "Authorization"], // ✅ Ensure headers are allowed
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // ✅ Allow all methods
+    credentials: true, // Allow cookies
+    allowedHeaders: ["Content-Type", "Authorization"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   })
 );
 
-app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
+// Manual Headers to Strengthen CORS (Important for Safari)
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
 
 // MongoDB Connection
 connect(process.env.MONGO_URI)
@@ -69,6 +73,17 @@ app.use('/imageSlider', sliderImages);
 app.use('/orders', configureOrderRoutes(io));
 app.use('/users', userRoutes);
 app.use('/', QrCodeGen);
+
+// Secure Cookie Settings (Update Your Authentication Middleware)
+app.use((req, res, next) => {
+  res.cookie('token', req.cookies.token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'None',
+    domain: '.qrar.onrender.com', // Ensure correct domain
+  });
+  next();
+});
 
 // Server
 const PORT = process.env.PORT;
