@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'; // Import use
 import { ShoppingCart, Package, Users, ChartLine, QrCode, LogOut } from 'lucide-react'; // Import LogOut icon
 import PropTypes from 'prop-types';
 import Cookies from 'js-cookie'; // Import js-cookie
+import axiosInstance from '../../utils/axiosInstance';
 
 const Sidebar = memo(({ isOpen }) => {
   const location = useLocation();
@@ -23,9 +24,7 @@ const Sidebar = memo(({ isOpen }) => {
   // Handle Logout
   const handleLogout = () => {
     // Clear all local storage or session storage
-    localStorage.clear();
-    sessionStorage.clear();
-    Cookies.remove('authToken'); // Removes the cookie
+    axiosInstance.post('/restaurants/logout');
 
     // Redirect to the login page
     navigate('/login');

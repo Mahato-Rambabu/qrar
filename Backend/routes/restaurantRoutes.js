@@ -89,7 +89,7 @@ router.post('/login', async (req, res) => {
     );
 
     res.cookie('authToken', token, {
-      httpOnly: true, // Prevent JavaScript access
+      httpOnly: false, // Prevent JavaScript access
       secure: true, // Required for cross-origin cookies (must be HTTPS)
       sameSite: 'None', // Required for cross-origin cookies
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
@@ -175,6 +175,11 @@ router.put('/profile', authMiddleware, async (req, res) => {
     console.log('Error updating profile:', error);
     res.status(500).json({ error: 'Server error' });
   }
+});
+
+router.post('/logout', (req, res) => {
+  res.clearCookie('refreshToken', { httpOnly: true, secure: true, sameSite: 'None' });
+  res.json({ message: 'Logged out successfully' });
 });
 
 // Route to upload profile image
