@@ -94,6 +94,7 @@ router.post('/login', async (req, res) => {
       secure: true, // Use secure cookies in production
       sameSite: 'None', // Allow cross-origin usage
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
+      domain: '.render.com', // Set this to your backend domain (e.g., .render.com)
     });
 
     // 6. Send a success response
