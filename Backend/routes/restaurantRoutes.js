@@ -88,14 +88,13 @@ router.post('/login', async (req, res) => {
       { expiresIn: '7d' } // Token valid for 7 days
     );
 
-    // 5. Set the token in a secure HTTP-only cookie
     res.cookie('authToken', token, {
       httpOnly: true, // Prevent JavaScript access
-      secure: true, // Use secure cookies in production
-      sameSite: 'None', // Allow cross-origin usage
+      secure: true, // Required for cross-origin cookies (must be HTTPS)
+      sameSite: 'None', // Required for cross-origin cookies
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
-      domain: '.render.com', // Set this to your backend domain (e.g., .render.com)
     });
+    
 
     // 6. Send a success response
     res.status(200).json({

@@ -12,4 +12,50 @@ const axiosInstance = axios.create({
   withCredentials: true, // Enable sending cookies with requests
 });
 
+<<<<<<< Updated upstream
 export default axiosInstance;
+=======
+Request interceptor to handle cookies or add Authorization header
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('authToken='))
+      ?.split('=')[1]; // Extract token from cookies
+
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`; // Add token to headers
+    } else {
+      console.warn('No authentication cookie found.');
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Response interceptor to handle errors globally
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response) {
+      alert('Request failed with status:', error.response);
+      switch (error.response.status) {
+        case 401:
+          alert('Unauthorized. Please log in.');
+          break;
+        case 403:
+          console.error('Access forbidden.');
+          break;
+        case 500:
+          console.error('Server error:', error.response.data);
+          break;
+        default:
+          console.error('Unexpected error:', error.response.data);
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
+export default axiosInstance;
+>>>>>>> Stashed changes
