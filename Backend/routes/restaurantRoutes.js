@@ -72,7 +72,7 @@ router.post('/login', async (req, res) => {
     // 2. Check if the restaurant exists
     const restaurant = await Restaurant.findOne({ email });
     if (!restaurant) {
-      return res.status(401).json({ error: 'Invalid email or password' }); // Use 401 for unauthorized
+      return res.status(401).json({ error: 'Invalid email or password' });
     }
 
     // 3. Verify the password
@@ -90,11 +90,10 @@ router.post('/login', async (req, res) => {
 
     // 5. Set the token in a secure HTTP-only cookie
     res.cookie('authToken', token, {
-      httpOnly: false, // Prevent JavaScript access (important for security)
-      secure: true, // Use secure cookies only in production
-      sameSite: 'None', // Protect against CSRF while allowing basic cross-origin usage
+      httpOnly: true, // Prevent JavaScript access
+      secure: true, // Use secure cookies in production
+      sameSite: 'None', // Allow cross-origin usage
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
-      partitioned: true,
     });
 
     // 6. Send a success response

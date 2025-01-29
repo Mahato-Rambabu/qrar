@@ -21,10 +21,12 @@ const LoginPage = () => {
     e.preventDefault();
     setError('');
     setSuccess('');
+
     try {
-      const response = await axiosInstance.post('/restaurants/login', formData);
+      const response = await axiosInstance.post('/restaurants/login', formData, { withCredentials: true });
+
       setSuccess('Login successful! Redirecting to your dashboard...');
-      setTimeout(() => navigate('/'),2000); // Redirect to dashboard after 2 seconds
+      setTimeout(() => navigate('/'), 2000);
     } catch (err) {
       setError(err.response?.data?.error || 'Invalid email or password.');
     }
