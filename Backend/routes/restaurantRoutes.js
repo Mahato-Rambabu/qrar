@@ -92,7 +92,7 @@ router.post('/login', async (req, res) => {
       httpOnly: true, // Prevent JavaScript access
       secure: true, // Required for cross-origin cookies (must be HTTPS)
       sameSite: 'None', // Required for cross-origin cookies
-      domain: "qrar.onrender.com",
+      domain: ".qrar.onrender.com",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
     });
     
