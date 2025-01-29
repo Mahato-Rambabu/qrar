@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || 'https://qrar.onrender.com';
+const baseURL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 console.log('Axios baseURL:', baseURL);
 
@@ -9,25 +9,20 @@ const axiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true, // 🔥 Ensure Cookies Are Sent
+  withCredentials: true, // Enable sending cookies with requests
 });
 
-// Debug: Log the request headers before sending requests
-axiosInstance.interceptors.request.use((request) => {
-  console.log("Axios Request Headers:", request.headers);
-  return request;
-});
+// Function to check if the current page is login or register
+const isAuthPage = () => {
+  return window.location.pathname === '/login' || window.location.pathname === '/register';
+};
 
-// Axios Response Interceptor
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response) {
-      console.error('Axios Error:', error.response.status, error.response.data);
-      if (error.response.status === 401) {
-        console.warn('Unauthorized! Redirecting to login...');
-        window.location.href = '/login';
-      }
+    if (error.response && error.response.status === 401 && !isAuthPage()) {
+      console.warn('Unauthorized! Redirecting to login...');
+      window.location.href = '/login'; // Redirect if NOT on login or register page
     }
     return Promise.reject(error);
   }
