@@ -6,7 +6,7 @@ import { config } from 'dotenv';
 import productRoutes from './routes/productRoutes.js';
 import restaurantRoutes from './routes/restaurantRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
-import cors from "cors";
+import cors from 'cors';
 import sliderImages from './routes/sliderImages.js';
 import configureOrderRoutes from './routes/orderRoutes.js';
 import userRoutes from './routes/userRoutes.js';
@@ -24,7 +24,6 @@ config({ path: path.resolve(process.cwd(), `.env.${environment}`) });
 console.log(`Environment: ${environment}`);
 console.log(`Frontend url: ${process.env.FRONTEND_BASE_URL}`); // Debug to confirm the correct .env is loaded
 
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -36,33 +35,32 @@ const server = http.createServer(app);
 // Initialize Socket.IO with the server instance
 const io = initializeSocket(server);
 
-app.use(cookieParser()); 
+app.use(cookieParser());
 app.use(express.json());
-
-
 
 // CORS Setup: Dynamically configure allowed origins based on the environment
 const allowedOrigins = [
-  'https://qrar-lyart.vercel.app',// Dynamically read from environment variables
-  'https://qrar-front-jet.vercel.app',
-  'http://localhost:5173',        // Allow localhost for development
+  'https://qrar-lyart.vercel.app', // Your Vercel frontend URL
+  'https://qrar-front-jet.vercel.app', // Another Vercel frontend URL
+  'http://localhost:5173', // Allow localhost for development
 ];
 
-
-app.use(cors({
+app.use(
+  cors({
     origin: allowedOrigins,
-    credentials: true,  
-}));
+    credentials: true, // Allow credentials (cookies)
+  })
+);
 
 app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 
 // MongoDB Connection
 connect(process.env.MONGO_URI)
-    .then(() => console.log('MongoDB Connected'))
-    .catch((err) => console.error('MongoDB connection error:', err));
+  .then(() => console.log('MongoDB Connected'))
+  .catch((err) => console.error('MongoDB connection error:', err));
 
 // Routes
-app.use('/restaurants', restaurantRoutes,);
+app.use('/restaurants', restaurantRoutes);
 app.use('/categories', categoryRoutes);
 app.use('/products', productRoutes);
 app.use('/imageSlider', sliderImages);

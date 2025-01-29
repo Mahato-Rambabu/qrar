@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || 'https://qrar.onrender.com';
+const baseURL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 console.log('Axios baseURL:', baseURL);
 
