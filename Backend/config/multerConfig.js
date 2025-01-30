@@ -11,11 +11,6 @@ const storage = new CloudinaryStorage({
     format: async (req, file) => file.mimetype.split('/')[1], // Dynamically set format based on mimetype
     public_id: (req, file) => file.originalname.split('.')[0], // Use file's original name as public_id
     overwrite: true,
-    transformation: [
-      { width: 800, height: 800, crop: 'limit' }, // Resize image to a maximum of 800x800 pixels
-      { quality: 'auto:good' }, // Automatically optimize quality
-      { fetch_format: 'auto' }, // Automatically choose the best format (e.g., WebP)
-    ],
   },
 });
 
