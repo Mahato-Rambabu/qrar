@@ -370,13 +370,13 @@ router.get('/:restaurantId/manifest.json', async (req, res) => {
           src: baseImageUrl,
           sizes: '192x192',
           type: 'image/png',
-          purpose: 'any maskable'
+          purpose: 'any'
         },
         {
           src: icon512,
           sizes: '512x512',
           type: 'image/png',
-          purpose: 'any maskable'
+          purpose: 'any'
         }
       ],
       screenshots: [
