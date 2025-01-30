@@ -7,7 +7,7 @@ import mongoose from 'mongoose';
 
 const router = express.Router();
 
-// Create a Product
+// Add a Product
 router.post('/', authMiddleware, upload.single('img'), async (req, res) => {
   try {
     const restaurantId = req.user?.id;
