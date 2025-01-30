@@ -336,51 +336,44 @@ router.get('/:restaurantId/manifest.json', async (req, res) => {
       return res.status(400).json({ error: 'Invalid restaurant ID' });
     }
 
-    // Fetch restaurant details from the database
+    // Fetch restaurant details
     const restaurant = await Restaurant.findById(restaurantId);
     if (!restaurant) {
       return res.status(404).json({ error: 'Restaurant not found' });
     }
 
-// Extract the Cloudinary resource path or use a default
-let baseImageUrl = restaurant.profileImage || 'default.png'; // Fallback if no profileImage exists
+    // Image handling with Cloudinary transformations
+    let baseImageUrl = restaurant.profileImage || 
+      'https://res.cloudinary.com/dasuczqr9/image/upload/v1234/default-image.png';
 
-if (baseImageUrl.startsWith('https://res.cloudinary.com')) {
-  // Add transformation parameters in the correct position in the URL
-  const transformation = '/w_192,h_192,c_fill';
-  baseImageUrl = baseImageUrl.replace('/upload/', `/upload${transformation}/`);
-}
+    // Apply transformations
+    const transformation = '/w_192,h_192,c_fill';
+    baseImageUrl = baseImageUrl.replace('/upload/', `/upload${transformation}/`);
 
-// Generate transformed URLs for icons
-const icon192 = baseImageUrl;
-const icon512 = baseImageUrl.replace('/w_192,h_192,c_fill', '/w_512,h_512,c_fill');
+    // Generate icon URLs
+    const icon512 = baseImageUrl.replace(transformation, '/w_512,h_512,c_fill');
 
-// Define dynamic screenshots for each restaurant
-    const homepageScreenshot = `https://res.cloudinary.com/dasuczqr9/image/upload/v1737123716/Screenshot_2025-01-17_at_7.50.42_PM_y7zbcx.png`;
-    const productPageScreenshot = `https://res.cloudinary.com/dasuczqr9/image/upload/v1737123725/Screenshot_2025-01-17_at_7.50.51_PM_ljgx6o.png`;
-
-    // Generate the PWA manifest
+    // Manifest configuration
     const manifest = {
       name: restaurant.name || 'Restaurant PWA',
-      short_name: restaurant.name || 'Restaurant',
-      start_url: `https://qrar-front-jet.vercel.app/home?restaurantId=${restaurantId}`,
-      display_override: ["fullscreen", "minimal-ui"],
+      short_name: restaurant.name?.substring(0,12) || 'Restaurant', // Limit for homescreen
+      start_url: `https://qrar-front-jet.vercel.app/home?restaurantId=${restaurantId}&utm_source=pwa`,
       display: 'standalone',
       background_color: '#ffffff',
       theme_color: '#ff6600',
       icons: [
         {
-          src: icon192,
+          src: baseImageUrl,
           sizes: '192x192',
           type: 'image/png',
-          purpose:'any',
+          purpose: 'any maskable'
         },
         {
           src: icon512,
           sizes: '512x512',
           type: 'image/png',
-          purpose:'any',
-        },
+          purpose: 'any maskable'
+        }
       ],
       screenshots: [
         {
@@ -398,13 +391,16 @@ const icon512 = baseImageUrl.replace('/w_192,h_192,c_fill', '/w_512,h_512,c_fill
       ]
     };
 
-    // Set headers for proper manifest loading
+    // Set security and CORS headers
+    res.setHeader('Access-Control-Allow-Origin', 'https://qrar-front-jet.vercel.app');
     res.setHeader('Content-Type', 'application/manifest+json');
-    res.setHeader('Cache-Control', 'no-store'); // Prevent caching
+    res.setHeader('Cache-Control', 'no-store, max-age=0');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+
     res.json(manifest);
   } catch (error) {
-    console.error('Error generating manifest:', error);
-    res.status(500).json({ error: 'Server error' });
+    console.error('Manifest generation error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

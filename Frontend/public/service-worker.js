@@ -1,61 +1,75 @@
-const CACHE_NAME = 'qrar-cache-v1';
-const STATIC_ASSETS = [
+const CACHE_NAME = 'qrar-cache-v2';
+const API_CACHE_NAME = 'qrar-api-cache-v1';
+const ASSETS = [
   '/',
   '/index.html',
-  '/logo.png', // Adjust paths based on your setup
+  '/logo.png',
   '/src/main.jsx',
-  '/src/index.css',
-  'https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap',
+  '/src/index.css'
 ];
 
-// Install the service worker
 self.addEventListener('install', (event) => {
-  console.log('Service Worker: Installing...');
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('Service Worker: Caching Static Assets...');
-      return cache.addAll(STATIC_ASSETS);
-    })
+    caches.open(CACHE_NAME).then(cache => {
+      return cache.addAll(ASSETS);
+    }).then(() => self.skipWaiting())
   );
 });
 
-// Activate the service worker and clean up old caches
 self.addEventListener('activate', (event) => {
-  console.log('Service Worker: Activating...');
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            console.log('Service Worker: Clearing Old Cache...');
-            return caches.delete(cache);
-          }
-        })
-      );
-    })
-  );
-});
-
-// Fetch event for caching dynamic content
-self.addEventListener('fetch', (event) => {
-    if (event.request.url.includes('service-worker.js')) {
-      return;
-    }
-  
-    event.respondWith(
-      caches.match(event.request).then((response) => {
-        return response || fetch(event.request).then((fetchResponse) => {
-          return caches.open(CACHE_NAME).then((cache) => {
-            if (event.request.url.startsWith('http')) {
-              cache.put(event.request, fetchResponse.clone());
-            }
-            return fetchResponse;
-          });
-        });
-      }).catch(() => {
-        if (event.request.mode === 'navigate') {
-          return caches.match('/index.html');
+    caches.keys().then(keys => Promise.all(
+      keys.map(key => {
+        if (key !== CACHE_NAME && key !== API_CACHE_NAME) {
+          return caches.delete(key);
         }
       })
+    )).then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+  
+  // Exclude sensitive paths from caching
+  if (url.pathname.includes('/manifest.json') || 
+      url.pathname.includes('service-worker') ||
+      url.searchParams.has('nocache')) {
+    return event.respondWith(fetch(event.request));
+  }
+
+  // Cache strategy: StaleWhileRevalidate for API calls
+  if (url.pathname.includes('/api/')) {
+    event.respondWith(
+      caches.open(API_CACHE_NAME).then(cache => {
+        return cache.match(event.request).then(cached => {
+          const fetched = fetch(event.request).then(network => {
+            cache.put(event.request, network.clone());
+            return network;
+          });
+          return cached || fetched;
+        });
+      })
     );
-  });
+    return;
+  }
+
+  // Cache-first strategy for static assets
+  event.respondWith(
+    caches.match(event.request).then(cached => {
+      return cached || fetch(event.request).then(network => {
+        return caches.open(CACHE_NAME).then(cache => {
+          if (event.request.method === 'GET') {
+            cache.put(event.request, network.clone());
+          }
+          return network;
+        });
+      });
+    }).catch(() => {
+      if (event.request.mode === 'navigate') {
+        return caches.match('/index.html');
+      }
+      return Response.error();
+    })
+  );
+});

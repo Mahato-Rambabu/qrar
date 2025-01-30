@@ -1,32 +1,33 @@
 <!doctype html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" href="/logo.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>QRAR-Frontend</title>
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <meta name="theme-color" content="#ff6600">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" />
 
-  <!-- Preload a placeholder manifest -->
-  <link id="dynamic-manifest" rel="manifest">
+  <!-- Dynamic Manifest Injection -->
+  <link id="dynamic-manifest" rel="manifest" crossorigin="use-credentials">
+  <script>
+    (function() {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const restaurantId = urlParams.get('restaurantId');
+        
+        if (restaurantId && /^[a-f\d]{24}$/i.test(restaurantId)) {
+          const manifestLink = document.getElementById('dynamic-manifest');
+          manifestLink.href = `https://qrar.onrender.com/restaurants/${restaurantId}/manifest.json`;
+        }
+      } catch (error) {
+        console.error('Manifest injection failed:', error);
+      }
+    })();
+  </script>
 </head>
-
 <body>
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
-  <script>
-    window.addEventListener("DOMContentLoaded", function () {
-      const urlParams = new URLSearchParams(window.location.search);
-      const restaurantId = urlParams.get("restaurantId");
-
-      if (restaurantId) {
-        const manifestLink = document.getElementById("dynamic-manifest");
-        manifestLink.href = `https://qrar.onrender.com/restaurants/${restaurantId}/manifest.json`;
-        console.log("Updated manifest URL:", manifestLink.href);
-      }
-    });
-  </script>
 </body>
-
 </html>
