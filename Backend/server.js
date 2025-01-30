@@ -43,7 +43,7 @@ app.use(
     origin: allowedOrigins,
     credentials: true, // 🔥 Required for sending cookies
     allowedHeaders: ["Content-Type", "Authorization"],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
   })
 );
 
