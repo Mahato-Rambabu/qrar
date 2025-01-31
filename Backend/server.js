@@ -47,6 +47,24 @@ app.use(
   })
 );
 
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || 'your-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGO_URI, // Your MongoDB URL
+      ttl: 7 * 24 * 60 * 60, // 7 days
+    }),
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    },
+  })
+);
+
 // 🔹 Ensure Response Headers Include Credentials
 app.use((req, res, next) => {
   const origin = req.headers.origin;
@@ -75,16 +93,7 @@ app.use('/orders', configureOrderRoutes(io));
 app.use('/users', userRoutes);
 app.use('/', QrCodeGen);
 
-// Secure Cookie Settings (Update Your Authentication Middleware)
-app.use((req, res, next) => {
-  res.cookie('token', req.cookies.token, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'None',
-    domain: '.qrar.onrender.com', // Ensure correct domain
-  });
-  next();
-});
+
 
 // Server
 const PORT = process.env.PORT;
