@@ -24,7 +24,7 @@ const LoginPage = () => {
   
     try {
       const response = await axiosInstance.post('/restaurants/login', formData, {
-        withCredentials: true, // ✅ Always include this
+        withCredentials: true, // Always include this
       });
   
       setSuccess('Login successful! Redirecting to your dashboard...');
