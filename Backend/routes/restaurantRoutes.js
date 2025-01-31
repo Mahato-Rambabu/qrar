@@ -86,6 +86,8 @@ router.post('/login', async (req, res) => {
 
     // 🔥 Explicitly attach credentials to the response
     res.setHeader('Access-Control-Allow-Credentials', 'true');
+    console.log('Session after login:', req.session); // Debug session
+    console.log('Cookies being set:', req.get('Set-Cookie')); // Debug cookies
 
     res.status(200).json({
       message: 'Login successful',

@@ -20,6 +20,9 @@ const ProtectedRoute = ({ children }) => {
   if (checkingSession) {
     return <div>Loading...</div>;
   }
-
-  return isSessionValid ? children : <Navigate to="/login" />;
+  return isSessionValid ? (
+    children
+  ) : (
+    <Navigate to="/login" replace state={{ from: location }} />
+  );
 };
