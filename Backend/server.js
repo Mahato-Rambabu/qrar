@@ -68,16 +68,16 @@ app.use(
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
-      mongoUrl: process.env.MONGO_URI, // Your MongoDB URL
-      ttl: 7 * 24 * 60 * 60, // 7 days
+      mongoUrl: process.env.MONGO_URI,
+      ttl: 7 * 24 * 60 * 60 // 7 days
     }),
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'None',
+      secure: process.env.NODE_ENV === 'production', // MUST be true if sameSite='None'
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      domain: '.onrender.com'
-    },
+      // Remove domain: '.onrender.com' (causes cross-origin issues)
+    }
   })
 );
 

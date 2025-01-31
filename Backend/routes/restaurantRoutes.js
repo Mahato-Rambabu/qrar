@@ -100,15 +100,15 @@ router.post('/login', async (req, res) => {
 
 router.get('/validate-session', async (req, res) => {
   try {
-    // Check if session exists
-    if (!req.session.restaurantId) {
-      return res.status(401).json({ error: 'Session invalid' });
+    // Fix property access
+    if (!req.session.restaurant?.id) {
+      return res.status(401).json({ isValid: false, error: 'Session invalid' });
     }
 
-    // Optional: Validate against database
-    const restaurant = await Restaurant.findById(req.session.restaurant);
+    // Optional database check
+    const restaurant = await Restaurant.findById(req.session.restaurant.id);
     if (!restaurant) {
-      return res.status(401).json({ error: 'Restaurant not found' });
+      return res.status(401).json({ isValid: false, error: 'Restaurant not found' });
     }
 
     res.status(200).json({ isValid: true });
@@ -116,7 +116,6 @@ router.get('/validate-session', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
-
 // Fetch the Restaurant Dashboard
 router.get('/dashboard', authMiddleware, async (req, res) => {
   try {

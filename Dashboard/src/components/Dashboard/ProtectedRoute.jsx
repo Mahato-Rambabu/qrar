@@ -1,24 +1,18 @@
-import React from 'react';
-import { useState } from 'react';
-import { Navigate } from 'react-router-dom';
-import axiosInstance from '../../utils/axiosInstance';
-
 const ProtectedRoute = ({ children }) => {
   const [isSessionValid, setIsSessionValid] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
 
   React.useEffect(() => {
-    // Check server-side session validity
     const validateSession = async () => {
       try {
-        await axiosInstance.get('/restaurants/validate-session');
-        setIsSessionValid(true);
+        const response = await axiosInstance.get('/restaurants/validate-session');
+        setIsSessionValid(response.data.isValid);
       } catch (err) {
+        console.error('Session validation failed:', err);
         setIsSessionValid(false);
       } finally {
         setCheckingSession(false);
       }
-      
     };
     validateSession();
   }, []);
@@ -27,11 +21,5 @@ const ProtectedRoute = ({ children }) => {
     return <div>Loading...</div>;
   }
 
-  if (!isSessionValid) {
-    return <Navigate to="/login" />;
-  }
-
-  return children;
+  return isSessionValid ? children : <Navigate to="/login" />;
 };
-
-export default ProtectedRoute;
