@@ -64,30 +64,29 @@ router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // 1. Validate request body
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    // 2. Check if the restaurant exists
     const restaurant = await Restaurant.findOne({ email });
     if (!restaurant) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    // 3. Verify the password
     const isPasswordValid = await bcrypt.compare(password, restaurant.password);
     if (!isPasswordValid) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    // 4. Store restaurant ID in the session
+    // Store restaurant ID in session
     req.session.restaurant = {
       id: restaurant._id,
       email: restaurant.email,
     };
 
-    // 5. Send success response
+    // 🔥 Explicitly attach credentials to the response
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+
     res.status(200).json({
       message: 'Login successful',
       restaurantId: restaurant._id,
@@ -98,6 +97,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
+
 router.get('/validate-session', async (req, res) => {
   try {
     // Check if session exists
@@ -106,7 +106,7 @@ router.get('/validate-session', async (req, res) => {
     }
 
     // Optional: Validate against database
-    const restaurant = await Restaurant.findById(req.session.restaurantId);
+    const restaurant = await Restaurant.findById(req.session.restaurant);
     if (!restaurant) {
       return res.status(401).json({ error: 'Restaurant not found' });
     }
