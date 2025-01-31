@@ -40,6 +40,19 @@ const allowedOrigins = [
   'http://localhost:5173',
 ];
 
+
+// 🔹 Ensure Response Headers Include Credentials
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header("Access-Control-Allow-Credentials", "true");
+  }
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  next();
+});
+
 app.use(
   cors({
     origin: allowedOrigins,
@@ -63,23 +76,10 @@ app.use(
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'None',
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      domain:'.onrender.com'
+      domain: '.onrender.com'
     },
   })
 );
-
-// 🔹 Ensure Response Headers Include Credentials
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.header("Access-Control-Allow-Origin", origin);
-    res.header("Access-Control-Allow-Credentials", "true");
-  }
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  next();
-});
-
 
 
 // MongoDB Connection
