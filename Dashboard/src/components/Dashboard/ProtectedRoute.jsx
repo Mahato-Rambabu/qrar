@@ -1,20 +1,37 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { isAuthenticated } from '../../utils/auth';
-
-
-console.log('Is authenticated:', isAuthenticated());
+import React from 'react';
+import { Navigate } from 'react-router-dom';
+import { useAuth0 } from '@auth0/auth0-react';
+import axiosInstance from '../../utils/axiosInstance';
 
 const ProtectedRoute = ({ children }) => {
-  const navigate = useNavigate();
+  const { isAuthenticated, isLoading } = useAuth0();
+  const [isSessionValid, setIsSessionValid] = React.useState(false);
+  const [checkingSession, setCheckingSession] = React.useState(true);
 
-  useEffect(() => {
-    if (!isAuthenticated()) {
-      navigate('/login');
-    }
-  }, [navigate]);
+  React.useEffect(() => {
+    // Check server-side session validity
+    const validateSession = async () => {
+      try {
+        await axiosInstance.get('/restaurants/validate-session')
+        setIsSessionValid(true);
+      } catch (err) {
+        setIsSessionValid(false);
+      } finally {
+        setCheckingSession(false);
+      }
+    };
+    validateSession();
+  }, []);
 
-  return isAuthenticated() ? children : null;
+  if (isLoading || checkingSession) {
+    return <div>Loading...</div>;
+  }
+
+  if (!isAuthenticated || !isSessionValid) {
+    return <Navigate to="/login" />;
+  }
+
+  return children;
 };
 
 export default ProtectedRoute;
