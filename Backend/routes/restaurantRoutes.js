@@ -82,7 +82,10 @@ router.post('/login', async (req, res) => {
     }
 
     // 4. Store restaurant ID in the session
-    req.session.restaurantId = restaurant._id;
+    req.session.restaurant = {
+      id: restaurant._id,
+      email: restaurant.email,
+    };
 
     // 5. Send success response
     res.status(200).json({
