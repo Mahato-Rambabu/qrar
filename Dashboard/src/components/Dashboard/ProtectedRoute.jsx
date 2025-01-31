@@ -10,13 +10,14 @@ const ProtectedRoute = ({ children }) => {
     // Check server-side session validity
     const validateSession = async () => {
       try {
-        await axiosInstance.get('/auth/validate-session');
+        await axiosInstance.get('/restaurants/validate-session');
         setIsSessionValid(true);
       } catch (err) {
         setIsSessionValid(false);
       } finally {
         setCheckingSession(false);
       }
+      
     };
     validateSession();
   }, []);
