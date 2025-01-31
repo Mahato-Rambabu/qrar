@@ -5,8 +5,8 @@ import { useCart } from "@context/CartContext.jsx";
 import axiosInstance from "../../utils/axiosInstance";
 import OrderItem from "./OrderItem";
 import UserForm from "./UserForm";
-import Cookies from "js-cookie";
 import { toast } from 'react-hot-toast';
+
 const OrderPage = () => {
   const { cartItems, setCartItems, updateQuantity } = useCart();
   const navigate = useNavigate();
@@ -18,8 +18,7 @@ const OrderPage = () => {
   const [loading, setLoading] = useState(false);
 
   const totalPrice = useMemo(
-    () =>
-      cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    () => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
     [cartItems]
   );
 
@@ -32,62 +31,65 @@ const OrderPage = () => {
     }
   }, []);
 
-const handleOrderSubmission = async () => {
+  const handleOrderSubmission = async () => {
     try {
-        setLoading(true);
-        const customerIdentifier = localStorage.getItem("customerIdentifier");
-        if (!customerIdentifier) {
-          toast.error("Please complete user registration first");
-          setShowUserForm(true);
-          return;
+      setLoading(true);
+      const customerIdentifier = localStorage.getItem("customerIdentifier");
+
+      if (!customerIdentifier) {
+        toast.error("Please complete user registration first");
+        setShowUserForm(true);
+        return;
+      }
+
+      const orderItems = cartItems.map((item) => ({
+        productId: item._id,
+        quantity: item.quantity,
+      }));
+
+      const response = await axiosInstance.post(
+        `/orders/${restaurantId}`,
+        {
+          items: orderItems,
+          total: totalPrice,
+          customerIdentifier,
         }
-        const orderItems = cartItems.map((item) => ({
-            productId: item._id,
-            quantity: item.quantity,
-        }));
+      );
 
-        // Debugging: Log order data before sending
-        console.log("Sending Order Data:", {
-            restaurantId,
-            orderItems,
-            total: totalPrice,
-            customerIdentifier,
-        });
-
-        const response = await axiosInstance.post(
-            `/orders/${restaurantId}`,
-            {
-                items: orderItems,
-                total: totalPrice,
-                customerIdentifier,
-            },
-            { withCredentials: true } // Ensure cookies are sent
-        );
-
-        if (response.status === 201) {
-            toast.success("Order placed successfully!");
-            setCartItems([]); // Clear cart
-            fetchRecentOrders(customerIdentifier);
-        }
+      if (response.status === 201) {
+        toast.success("Order placed successfully!");
+        setCartItems([]);
+        fetchRecentOrders(customerIdentifier);
+      }
     } catch (error) {
-        console.error("Error placing order:", error.response?.data || error.message);
-        toast.error(error.response?.data?.error || "Failed to place order.");
+      console.error("Error placing order:", error);
+      toast.error(
+        error.response?.data?.error || 
+        "Failed to place order. Please try again."
+      );
+      
+      // Handle invalid customerIdentifier
+      if (error.response?.status === 400) {
+        localStorage.removeItem("customerIdentifier");
+        setShowUserForm(true);
+      }
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-};
+  };
 
-
-const fetchRecentOrders = async (customerIdentifier) => {
-  try {
-    const response = await axiosInstance.get(
-      `/orders/${restaurantId}?customerIdentifier=${customerIdentifier}`
-    );
-    setRecentOrders(response.data);
-  } catch (error) {
-    console.error("Error fetching recent orders:", error.message);
-  }
-};
+  const fetchRecentOrders = async (customerIdentifier) => {
+    try {
+      const response = await axiosInstance.get(
+        `/orders/${restaurantId}`,
+        { params: { customerIdentifier } }
+      );
+      setRecentOrders(response.data);
+    } catch (error) {
+      console.error("Error fetching recent orders:", error);
+      toast.error("Failed to load order history");
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -112,36 +114,7 @@ const fetchRecentOrders = async (customerIdentifier) => {
           <div className="mb-4 p-4 bg-gray-100 rounded-md shadow-sm">
             {recentOrders.length > 0 ? (
               recentOrders.map((order) => (
-                <div key={order._id} className="mb-6 border-b pb-4 flex flex-col gap-4">
-                  <div className="flex justify-between items-center">
-                    <h3 className="font-semibold text-black">Order No: {order.orderNo}</h3>
-                    <span className="text-pink-500 font-medium text-sm">
-                      Thanks For Ordering 😊
-                    </span>
-                  </div>
-                  <div className="flex flex-col gap-4">
-                    {order.items.map((item) => (
-                      <div key={item.productId._id} className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <img
-                            src={item.productId.img}
-                            alt={item.productId.name}
-                            className="w-20 h-20 object-cover rounded-md"
-                            loading="lazy"
-                          />
-                          <div className="flex flex-col">
-                            <h4 className="font-medium text-black">{item.productId.name}</h4>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex justify-end mt-4">
-                    <p className="font-bold text-gray-800 text-lg">
-                      Total: ₹{order.total.toFixed(2)}
-                    </p>
-                  </div>
-                </div>
+                <OrderSummary key={order._id} order={order} />
               ))
             ) : (
               <p className="text-gray-500">No recent orders available.</p>
@@ -164,15 +137,23 @@ const fetchRecentOrders = async (customerIdentifier) => {
           >
             + Add More Items
           </button>
-          <h3 className="font-bold">Total: ₹{totalPrice}</h3>
+          <h3 className="font-bold">Total: ₹{totalPrice.toFixed(2)}</h3>
         </div>
 
-        {showUserForm && <UserForm onFormSubmit={() => setShowUserForm(false)} />}
+        {showUserForm && (
+          <UserForm 
+            onFormSubmit={() => {
+              setShowUserForm(false);
+              const id = localStorage.getItem("customerIdentifier");
+              if (id) fetchRecentOrders(id);
+            }}
+          />
+        )}
       </main>
 
       <footer className="w-full h-[10%] p-4 bg-white shadow-lg">
         <button
-          className="w-full bg-pink-500 text-white py-3 rounded-md font-semibold"
+          className="w-full bg-pink-500 text-white py-3 rounded-md font-semibold disabled:opacity-50"
           onClick={handleOrderSubmission}
           disabled={loading || cartItems.length === 0}
         >
@@ -182,5 +163,39 @@ const fetchRecentOrders = async (customerIdentifier) => {
     </div>
   );
 };
+
+const OrderSummary = ({ order }) => (
+  <div className="mb-6 border-b pb-4 flex flex-col gap-4">
+    <div className="flex justify-between items-center">
+      <h3 className="font-semibold text-black">Order No: {order.orderNo}</h3>
+      <span className="text-pink-500 font-medium text-sm">
+        Thanks For Ordering 😊
+      </span>
+    </div>
+    <div className="flex flex-col gap-4">
+      {order.items.map((item) => (
+        <div key={item.productId._id} className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <img
+              src={item.productId.img}
+              alt={item.productId.name}
+              className="w-20 h-20 object-cover rounded-md"
+              loading="lazy"
+            />
+            <div className="flex flex-col">
+              <h4 className="font-medium text-black">{item.productId.name}</h4>
+              <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+    <div className="flex justify-end mt-4">
+      <p className="font-bold text-gray-800 text-lg">
+        Total: ₹{order.total.toFixed(2)}
+      </p>
+    </div>
+  </div>
+);
 
 export default OrderPage;
