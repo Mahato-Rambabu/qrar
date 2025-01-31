@@ -12,6 +12,8 @@ import configureOrderRoutes from './routes/orderRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import QrCodeGen from './routes/QrCodeGen.js';
 import initializeSocket from './sockets/socket.js';
+import session from 'express-session';
+import MongoStore from 'connect-mongo';
 import http from 'http';
 import cookieParser from 'cookie-parser';
 
