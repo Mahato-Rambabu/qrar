@@ -64,47 +64,34 @@ router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
-      // 1. Validate request body
-      if (!email || !password) {
-          return res.status(400).json({ error: 'Email and password are required' });
-      }
+    // 1. Validate request body
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
 
-      // 2. Check if the restaurant exists
-      const restaurant = await Restaurant.findOne({ email });
-      if (!restaurant) {
-          return res.status(401).json({ error: 'Invalid email or password' });
-      }
+    // 2. Check if the restaurant exists
+    const restaurant = await Restaurant.findOne({ email });
+    if (!restaurant) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
 
-      // 3. Verify the password
-      const isPasswordValid = await bcrypt.compare(password, restaurant.password);
-      if (!isPasswordValid) {
-          return res.status(401).json({ error: 'Invalid email or password' });
-      }
+    // 3. Verify the password
+    const isPasswordValid = await bcrypt.compare(password, restaurant.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
 
-      // 4. Generate a JWT token
-      const token = jwt.sign(
-          { id: restaurant._id, email: restaurant.email },
-          process.env.JWT_SECRET,
-          { expiresIn: '7d' } // Token valid for 7 days
-      );
+    // 4. Store restaurant ID in the session
+    req.session.restaurantId = restaurant._id;
 
-      // 5. Set the cookie
-      res.cookie('authToken', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production', // Enable in production (HTTPS)
-        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', // Safari compatibility
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
-
-
-      // 6. Send a success response
-      res.status(200).json({
-          message: 'Login successful',
-          restaurantId: restaurant._id,
-      });
+    // 5. Send success response
+    res.status(200).json({
+      message: 'Login successful',
+      restaurantId: restaurant._id,
+    });
   } catch (error) {
-      console.error('Login error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -198,8 +185,13 @@ router.put('/profile', authMiddleware, async (req, res) => {
 });
 
 router.post('/logout', (req, res) => {
-  res.clearCookie('refreshToken', { httpOnly: true, secure: true, sameSite: 'None' });
-  res.json({ message: 'Logged out successfully' });
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).json({ error: 'Logout failed' });
+    }
+    res.clearCookie('connect.sid'); // Session cookie name (default)
+    res.status(200).json({ message: 'Logout successful' });
+  });
 });
 
 // Route to upload profile image
