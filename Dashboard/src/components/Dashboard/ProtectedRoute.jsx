@@ -1,10 +1,8 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth0 } from '@auth0/auth0-react';
 import axiosInstance from '../../utils/axiosInstance';
 
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth0();
   const [isSessionValid, setIsSessionValid] = React.useState(false);
   const [checkingSession, setCheckingSession] = React.useState(true);
 
@@ -12,7 +10,7 @@ const ProtectedRoute = ({ children }) => {
     // Check server-side session validity
     const validateSession = async () => {
       try {
-        await axiosInstance.get('/restaurants/validate-session')
+        await axiosInstance.get('/auth/validate-session');
         setIsSessionValid(true);
       } catch (err) {
         setIsSessionValid(false);
@@ -23,11 +21,11 @@ const ProtectedRoute = ({ children }) => {
     validateSession();
   }, []);
 
-  if (isLoading || checkingSession) {
+  if (checkingSession) {
     return <div>Loading...</div>;
   }
 
-  if (!isAuthenticated || !isSessionValid) {
+  if (!isSessionValid) {
     return <Navigate to="/login" />;
   }
 
