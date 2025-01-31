@@ -34,14 +34,11 @@ const UserForm = ({ onFormSubmit }) => {
       );
 
       if (response.status === 201) {
-        const customerIdentifier = response.data.user._id;
-
-        // Store customerIdentifier in a cookie
-        Cookies.set("customerIdentifier", customerIdentifier, {
-          expires: 7, // Expires in 7 days
-          secure: false, // Set to true in production with HTTPS
-          sameSite: "Lax",
-        });
+        // Store in localStorage
+        localStorage.setItem(
+          "customerIdentifier", 
+          response.data.customerIdentifier
+        );
 
         onFormSubmit();
         toast.success("User details saved successfully! You can now place orders.");
@@ -53,7 +50,7 @@ const UserForm = ({ onFormSubmit }) => {
       setLoading(false);
     }
   };
-
+  
   return (
     <div
       className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"

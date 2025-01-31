@@ -68,31 +68,28 @@ router.post("/:restaurantId", async (req, res) => {
   const { name, phone, age } = req.body;
 
   if (!name || !phone || !age) {
-      return res.status(400).json({ error: "All fields are required" });
+    return res.status(400).json({ error: "All fields are required" });
   }
 
   try {
-      const existingUser = await User.findOne({ phone, restaurantId });
-      if (existingUser) {
-          return res.status(400).json({ error: "Phone number already registered for this restaurant" });
-      }
+    const existingUser = await User.findOne({ phone, restaurantId });
+    if (existingUser) {
+      return res.status(400).json({ error: "Phone number already registered for this restaurant" });
+    }
 
-      const newUser = new User({ name, phone, age, restaurantId });
-      await newUser.save();
+    const newUser = new User({ name, phone, age, restaurantId });
+    await newUser.save();
 
-      // Set a cookie with customerIdentifier
-      res.cookie("customerIdentifier", newUser._id.toString(), {
-          httpOnly: true,
-          secure: true , // Change to true for production with HTTPS
-          sameSite: "None", // Adjust based on your frontend-backend origin setup
-          domain: ".qrar.onrender.com",
-          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      });
+    // Return customerIdentifier in response instead of setting cookie
+    res.status(201).json({ 
+      message: "User registered successfully", 
+      user: newUser,
+      customerIdentifier: newUser._id.toString()
+    });
 
-      res.status(201).json({ message: "User registered successfully", user: newUser });
   } catch (error) {
-      console.error("Error saving user details:", error);
-      res.status(500).json({ error: "Internal server error" });
+    console.error("Error saving user details:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 

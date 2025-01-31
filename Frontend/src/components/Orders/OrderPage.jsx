@@ -24,24 +24,23 @@ const OrderPage = () => {
   );
 
   useEffect(() => {
-    const customerIdentifier = Cookies.get("customerIdentifier");
+    const customerIdentifier = localStorage.getItem("customerIdentifier");
     if (!customerIdentifier) {
-        setShowUserForm(true);
+      setShowUserForm(true);
     } else {
-        fetchRecentOrders(customerIdentifier);
+      fetchRecentOrders(customerIdentifier);
     }
-}, []);
+  }, []);
 
 const handleOrderSubmission = async () => {
     try {
         setLoading(true);
-
-        const customerIdentifier = Cookies.get("customerIdentifier");
+        const customerIdentifier = localStorage.getItem("customerIdentifier");
         if (!customerIdentifier) {
-            toast.error("Customer identifier not found. Please reload the page.");
-            return;
+          toast.error("Please complete user registration first");
+          setShowUserForm(true);
+          return;
         }
-
         const orderItems = cartItems.map((item) => ({
             productId: item._id,
             quantity: item.quantity,
@@ -81,13 +80,12 @@ const handleOrderSubmission = async () => {
 
 const fetchRecentOrders = async (customerIdentifier) => {
   try {
-      const response = await axiosInstance.get(
-          `/orders/${restaurantId}?customerIdentifier=${customerIdentifier}`,
-          { withCredentials: true }
-      );
-      setRecentOrders(response.data);
+    const response = await axiosInstance.get(
+      `/orders/${restaurantId}?customerIdentifier=${customerIdentifier}`
+    );
+    setRecentOrders(response.data);
   } catch (error) {
-      console.error("Error fetching recent orders:", error.message);
+    console.error("Error fetching recent orders:", error.message);
   }
 };
 
