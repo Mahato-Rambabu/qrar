@@ -1,10 +1,6 @@
-import axiosInstance from './axiosInstance';
-
-export const isAuthenticated = async () => {
-  try {
-    await axiosInstance.get('/restaurants/validate-session'); // Replace with your actual auth check endpoint
-    return true;
-  } catch (error) {
-    return false;
-  }
+// utils/auth.js
+export const isAuthenticated = () => {
+  const token = localStorage.getItem('authToken');
+  // Add more checks if necessary (e.g., token decoding, expiry check)
+  return !!token; // Returns true if the token exists
 };

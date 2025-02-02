@@ -24,7 +24,10 @@ const Sidebar = memo(({ isOpen }) => {
   // Handle Logout
   const handleLogout = () => {
     // Clear all local storage or session storage
+    localStorage.clear();
+    sessionStorage.clear();
     axiosInstance.post('/restaurants/logout');
+
 
     // Redirect to the login page
     navigate('/login');

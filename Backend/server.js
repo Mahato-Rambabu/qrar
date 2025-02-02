@@ -34,24 +34,7 @@ const io = initializeSocket(server);
 app.use(cookieParser());
 app.use(express.json());
 
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || 'your-secret-key',
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: process.env.MONGO_URI,
-      ttl: 7 * 24 * 60 * 60 // 7 days
-    }),
-    cookie: {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // MUST be true if sameSite='None'
-      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      // Remove domain: '.onrender.com' (causes cross-origin issues)
-    }
-  })
-);
+
 
 const allowedOrigins = [
   'https://qrar-lyart.vercel.app', 

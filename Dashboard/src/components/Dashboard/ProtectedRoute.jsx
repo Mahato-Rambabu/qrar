@@ -1,28 +1,12 @@
+import React from 'react';
+import { Navigate } from 'react-router-dom';
+import { isAuthenticated } from '../../utils/auth';
+
 const ProtectedRoute = ({ children }) => {
-  const [isSessionValid, setIsSessionValid] = useState(false);
-  const [checkingSession, setCheckingSession] = useState(true);
-
-  React.useEffect(() => {
-    const validateSession = async () => {
-      try {
-        const response = await axiosInstance.get('/restaurants/validate-session');
-        setIsSessionValid(response.data.isValid);
-      } catch (err) {
-        console.error('Session validation failed:', err);
-        setIsSessionValid(false);
-      } finally {
-        setCheckingSession(false);
-      }
-    };
-    validateSession();
-  }, []);
-
-  if (checkingSession) {
-    return <div>Loading...</div>;
+  if (!isAuthenticated()) {
+    return <Navigate to="/login" replace />; // Redirect to login if not authenticated
   }
-  return isSessionValid ? (
-    children
-  ) : (
-    <Navigate to="/login" replace state={{ from: location }} />
-  );
+  return children;
 };
+
+export default ProtectedRoute;

@@ -64,38 +64,30 @@ router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
-    }
+      const restaurant = await Restaurant.findOne({ email });
+      if (!restaurant) {
+          return res.status(400).json({ error: 'Invalid email or password' });
+      }
 
-    const restaurant = await Restaurant.findOne({ email });
-    if (!restaurant) {
-      return res.status(401).json({ error: 'Invalid email or password' });
-    }
+      const isPasswordValid = await bcrypt.compare(password, restaurant.password);
+      if (!isPasswordValid) {
+          return res.status(400).json({ error: 'Invalid email or password' });
+      }
 
-    const isPasswordValid = await bcrypt.compare(password, restaurant.password);
-    if (!isPasswordValid) {
-      return res.status(401).json({ error: 'Invalid email or password' });
-    }
+      const token = jwt.sign(
+          { id: restaurant._id, email: restaurant.email },
+          process.env.JWT_SECRET,
+          { expiresIn: '7d' }
+      );
 
-    // Store restaurant ID in session
-    req.session.restaurant = {
-      id: restaurant._id,
-      email: restaurant.email,
-    };
-
-    // 🔥 Explicitly attach credentials to the response
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    console.log('Session after login:', req.session); // Debug session
-    console.log('Cookies being set:', req.get('Set-Cookie')); // Debug cookies
-
-    res.status(200).json({
-      message: 'Login successful',
-      restaurantId: restaurant._id,
-    });
+      res.status(200).json({
+          message: 'Login successful',
+          token,
+          restaurantId: restaurant._id,
+      });
   } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+      console.error('Login error:', error);
+      res.status(500).json({ error: 'Server error' });
   }
 });
 
@@ -186,16 +178,6 @@ router.put('/profile', authMiddleware, async (req, res) => {
     console.log('Error updating profile:', error);
     res.status(500).json({ error: 'Server error' });
   }
-});
-
-router.post('/logout', (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      return res.status(500).json({ error: 'Logout failed' });
-    }
-    res.clearCookie('connect.sid'); // Session cookie name (default)
-    res.status(200).json({ message: 'Logout successful' });
-  });
 });
 
 // Route to upload profile image
