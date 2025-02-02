@@ -28,7 +28,7 @@ const LoginPage = () => {
       });
       setSuccess('Login successful! Redirecting to your dashboard...');
       localStorage.setItem('authToken', response.data.token); // Store token in localStorage
-      setTimeout(() => navigate('/'), 2000);
+      setTimeout(() => navigate('/'));
     } catch (err) {
       setError(err.response?.data?.error || 'Invalid email or password.');
     }
