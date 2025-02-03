@@ -69,7 +69,7 @@ const ImageSlider = () => {
   if (images.length === 0) return <div className="p-4 text-gray-500">No images available</div>;
 
   return (
-    <div className="relative w-full overflow-hidden rounded-b-3xl"
+    <div className="relative w-full h-full overflow-hidden rounded-b-3xl"
       style={{
         paddingTop: '56.25%', // 16:9 aspect ratio for mobile
         maxHeight: '60vh' // Limit height on desktop
@@ -96,9 +96,9 @@ const ImageSlider = () => {
           src={images[currentIndex]}
           alt={`Slider ${currentIndex + 1}`}
           className="w-full h-full object-cover rounded-b-3xl"
-          style={{
-            maxHeight: '60vh', // Desktop height limit
-            objectPosition: 'center center'
+          style={{ 
+            objectPosition: 'center center',
+            maxHeight: '40vh' // Matches container height
           }}
           loading="lazy"
         />

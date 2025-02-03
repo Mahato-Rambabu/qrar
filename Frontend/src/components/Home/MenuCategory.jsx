@@ -59,7 +59,7 @@ const MenuCategory = () => {
   return (
     <div className="w-full px-2 pb-1">
       <h1 className="text-lg font-bold text-center text-pink-500 pt-2">Menu</h1>
-      <div className="w-full grid grid-cols-3 md:grid-cols-4 gap-3 md:gap-4 mt-2">
+      <div className="w-full grid grid-cols-3 md:grid-cols-4 gap-2 md:gap-3 mt-2">
         {categories.map((category) => (
           <Card
             key={category._id}
@@ -81,11 +81,11 @@ const MenuCategory = () => {
 };
 
 const Card = ({ image, name, price, categoryId, restaurantId, navigate }) => (
-  <div className="bg-white rounded-lg p-1.5 shadow-sm hover:shadow-md transition-shadow duration-200">
+  <div className="bg-white rounded-lg p-1.5 shadow-sm hover:shadow-md transition-shadow duration-200 h-full">
     <img
-      src={image || '/placeholder.png'} 
+      src={image || '/placeholder.png'}
       alt={name}
-      className="w-full h-24 md:h-32 object-cover rounded-md mb-1"
+      className="w-full h-[100px] md:h-[120px] object-cover rounded-md mb-1"
       loading="lazy"
     />
     <h3 className="text-sm md:text-base font-semibold text-gray-800 truncate">{name}</h3>
@@ -102,10 +102,7 @@ const Card = ({ image, name, price, categoryId, restaurantId, navigate }) => (
 );
 
 const SeeAllCard = ({ restaurantId, navigate }) => (
-  <div
-    onClick={() => navigate(`/products?restaurantId=${restaurantId}`)}
-    className="bg-pink-500 rounded-lg p-2 flex flex-col items-center justify-center cursor-pointer hover:bg-pink-600 transition-colors min-h-[100px] md:min-h-[120px]"
-  >
+  <div className="bg-pink-500 rounded-lg p-2 flex flex-col items-center justify-center cursor-pointer hover:bg-pink-600 transition-colors h-full min-h-[100px]">
     <span className="text-white text-sm md:text-base font-medium text-center">View Full Menu</span>
     <FaCircleChevronRight size={24} className="text-white mt-1 md:mt-2" />
   </div>
