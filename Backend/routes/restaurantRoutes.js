@@ -349,8 +349,8 @@ router.get('/:restaurantId/manifest.json', async (req, res) => {
     const icon512 = baseImageUrl.replace(transformation, '/w_512,h_512,c_fill');
 
     // Define dynamic screenshots for each restaurant
-    const homepageScreenshot = `https://res.cloudinary.com/dasuczqr9/image/upload/v1737123716/Screenshot_2025-01-17_at_7.50.42_PM_y7zbcx.png`;
-    const productPageScreenshot = `https://res.cloudinary.com/dasuczqr9/image/upload/v1737123725/Screenshot_2025-01-17_at_7.50.51_PM_ljgx6o.png`;
+    const homepageScreenshot = `https://res.cloudinary.com/dasuczqr9/image/upload/v1738606735/Screenshot_2025-02-03_at_11.48.38_PM_qxf9em.png`;
+    const productPageScreenshot = `https://res.cloudinary.com/dasuczqr9/image/upload/v1738606912/Screenshot_2025-02-03_at_11.50.58_PM_ohqtcx.png;
 
     // Manifest configuration
     const manifest = {
