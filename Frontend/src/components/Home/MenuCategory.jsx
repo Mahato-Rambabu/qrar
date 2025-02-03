@@ -4,15 +4,13 @@ import { FaCircleChevronRight } from 'react-icons/fa6';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
-const SERVER_BASE_URL = 'https://qrar.onrender.com';
-
 const MenuCategory = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const [searchParams] = useSearchParams();
-  const restaurantId = searchParams.get('restaurantId'); // Extract restaurantId from URL
+  const restaurantId = searchParams.get('restaurantId');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,22 +32,22 @@ const MenuCategory = () => {
     };
 
     getCategories();
-  }, [restaurantId]); // Fetch categories whenever restaurantId changes
+  }, [restaurantId]);
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-32">
-        <AiOutlineLoading3Quarters className="animate-spin text-gray-500 text-3xl" />
+      <div className="flex justify-center items-center h-24">
+        <AiOutlineLoading3Quarters className="animate-spin text-gray-500 text-2xl" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center text-red-500">
-        <p>{error}</p>
+      <div className="text-center text-red-500 px-2">
+        <p className="text-sm">{error}</p>
         <button
-          className="mt-4 px-4 py-2 bg-pink-500 text-white rounded"
+          className="mt-2 px-3 py-1.5 bg-pink-500 text-white rounded text-sm"
           onClick={() => window.location.reload()}
         >
           Refresh
@@ -59,13 +57,18 @@ const MenuCategory = () => {
   }
 
   return (
-    <div className="w-full px-2 pb-2">
-      <h1 className="text-xl font-bold text-center text-pink-500 mb-2">Menu</h1>
-      <div className="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 md:gap-3">
+    <div className="w-full px-2 pb-1">
+      <h1 className="text-lg font-bold text-center text-pink-500 pt-2">Menu</h1>
+      <div className="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mt-2">
         {categories.map((category) => (
           <Card
             key={category._id}
-            // ... [keep existing props]
+            image={category.img}
+            name={category.catName}
+            price={category.price}
+            categoryId={category._id}
+            restaurantId={restaurantId}
+            navigate={navigate}
           />
         ))}
         <SeeAllCard
@@ -75,38 +78,37 @@ const MenuCategory = () => {
       </div>
     </div>
   );
-  
-  // Updated Card component
-  const Card = ({ image, name, price, categoryId, restaurantId, navigate }) => (
-    <div className="bg-white rounded-lg p-1.5 shadow-sm hover:shadow-md transition-shadow duration-200">
-      <img
-        src={image || '/placeholder.png'} 
-        alt={name}
-        className="w-full h-20 object-cover rounded-md mb-1"
-        loading="lazy"
-      />
-      <h3 className="text-sm font-semibold text-gray-800 truncate">{name}</h3>
-      <div className="flex justify-between items-center mt-1">
-        <p className="text-xs text-gray-600">{price}*</p>
-        <button
-          className="px-2 py-1 text-pink-500 border border-pink-500 rounded-full text-xs hover:bg-pink-600 hover:text-white transition-colors"
-          onClick={() => navigate(`/products?restaurantId=${restaurantId}&categoryId=${categoryId}`)}
-        >
-          More
-        </button>
-      </div>
+};
+
+const Card = ({ image, name, price, categoryId, restaurantId, navigate }) => (
+  <div className="bg-white rounded-lg p-1.5 shadow-sm hover:shadow-md transition-shadow duration-200">
+    <img
+      src={image || '/placeholder.png'} 
+      alt={name}
+      className="w-full h-20 object-cover rounded-md mb-1"
+      loading="lazy"
+    />
+    <h3 className="text-xs font-semibold text-gray-800 truncate">{name}</h3>
+    <div className="flex justify-between items-center mt-1">
+      <p className="text-xs text-gray-600">{price}*</p>
+      <button
+        className="px-2 py-0.5 text-pink-500 border border-pink-500 rounded-full text-xs hover:bg-pink-600 hover:text-white transition-colors"
+        onClick={() => navigate(`/products?restaurantId=${restaurantId}&categoryId=${categoryId}`)}
+      >
+        More
+      </button>
     </div>
-  );
-  
-  // Updated SeeAllCard component
-  const SeeAllCard = ({ restaurantId, navigate }) => (
-    <div
-      onClick={() => navigate(`/products?restaurantId=${restaurantId}`)}
-      className="bg-pink-500 rounded-lg p-2 flex flex-col items-center justify-center cursor-pointer hover:bg-pink-600 transition-colors min-h-[110px]"
-    >
-      <span className="text-white text-sm font-medium text-center">View Full Menu</span>
-      <FaCircleChevronRight size={24} className="text-white mt-1" />
-    </div>
-  );
-}
+  </div>
+);
+
+const SeeAllCard = ({ restaurantId, navigate }) => (
+  <div
+    onClick={() => navigate(`/products?restaurantId=${restaurantId}`)}
+    className="bg-pink-500 rounded-lg p-1.5 flex flex-col items-center justify-center cursor-pointer hover:bg-pink-600 transition-colors min-h-[90px]"
+  >
+    <span className="text-white text-xs font-medium text-center">View Full Menu</span>
+    <FaCircleChevronRight size={20} className="text-white mt-1" />
+  </div>
+);
+
 export default MenuCategory;
