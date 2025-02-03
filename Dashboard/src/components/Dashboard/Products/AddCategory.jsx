@@ -14,7 +14,7 @@ const AddCategory = ({ onSuccess }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const getRestaurantIdFromToken = () => {
-    const token = Cookies.get('authToken');
+    const token = localStorage.get('authToken');
     if (!token) throw new Error('Authentication token missing');
 
     try {
