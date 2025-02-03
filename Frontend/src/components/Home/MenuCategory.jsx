@@ -59,58 +59,54 @@ const MenuCategory = () => {
   }
 
   return (
-    <div className="w-full px-4 pb-2">
-      <h1 className="text-xl font-bold text-center pt-4 text-pink-500">Menu</h1>
-      <div className="w-full grid grid-cols-3 md:grid-cols-4 gap-4 mt-4">
+    <div className="w-full px-2 pb-2">
+      <h1 className="text-xl font-bold text-center text-pink-500 mb-2">Menu</h1>
+      <div className="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 md:gap-3">
         {categories.map((category) => (
           <Card
             key={category._id}
-            image={category.img}
-            name={category.catName}
-            price={category.price}
-            categoryId={category._id}
-            restaurantId={restaurantId}  // Pass restaurantId to Card
-            navigate={navigate}
+            // ... [keep existing props]
           />
         ))}
         <SeeAllCard
-          restaurantId={restaurantId}  // Pass restaurantId to SeeAllCard
+          restaurantId={restaurantId}
           navigate={navigate}
         />
       </div>
     </div>
   );
-};
-
-const Card = ({ image, name, price, categoryId, restaurantId, navigate }) => (
-  <div className="bg-none rounded-lg p-2 flex flex-col justify-between transform hover:scale-105 transition-transform duration-200">
-    <img
-     src={image || '/placeholder.png'} 
-      alt={name}
-      className="w-full h-20 md:h-32 object-cover rounded-md mb-2"
-      loading="lazy"
-    />
-    <h3 className="text-sm font-medium">{name}</h3>
-    <div className="flex justify-between items-center mt-2">
-      <p className="text-sm text-gray-500">{price}*</p>
-      <button
-        className="px-3 py-1 text-pink-500 border border-pink-500 rounded-full text-xs hover:bg-pink-600 hover:text-white transition-colors"
-        onClick={() => navigate(`/products?restaurantId=${restaurantId}&categoryId=${categoryId}`)} // Include restaurantId
-      >
-        More
-      </button>
+  
+  // Updated Card component
+  const Card = ({ image, name, price, categoryId, restaurantId, navigate }) => (
+    <div className="bg-white rounded-lg p-1.5 shadow-sm hover:shadow-md transition-shadow duration-200">
+      <img
+        src={image || '/placeholder.png'} 
+        alt={name}
+        className="w-full h-20 object-cover rounded-md mb-1"
+        loading="lazy"
+      />
+      <h3 className="text-sm font-semibold text-gray-800 truncate">{name}</h3>
+      <div className="flex justify-between items-center mt-1">
+        <p className="text-xs text-gray-600">{price}*</p>
+        <button
+          className="px-2 py-1 text-pink-500 border border-pink-500 rounded-full text-xs hover:bg-pink-600 hover:text-white transition-colors"
+          onClick={() => navigate(`/products?restaurantId=${restaurantId}&categoryId=${categoryId}`)}
+        >
+          More
+        </button>
+      </div>
     </div>
-  </div>
-);
-
-const SeeAllCard = ({ restaurantId, navigate }) => (
-  <div
-    onClick={() => navigate(`/products?restaurantId=${restaurantId}`)} // Include restaurantId
-    className="bg-pink-500 rounded-lg shadow-md flex flex-col items-center justify-center p-4 cursor-pointer hover:bg-pink-600 transition-colors"
-  >
-    <button className="text-white text-lg font-semibold">See All</button>
-    <FaCircleChevronRight size={28} className="text-white mt-2" />
-  </div>
-);
-
+  );
+  
+  // Updated SeeAllCard component
+  const SeeAllCard = ({ restaurantId, navigate }) => (
+    <div
+      onClick={() => navigate(`/products?restaurantId=${restaurantId}`)}
+      className="bg-pink-500 rounded-lg p-2 flex flex-col items-center justify-center cursor-pointer hover:bg-pink-600 transition-colors min-h-[110px]"
+    >
+      <span className="text-white text-sm font-medium text-center">View Full Menu</span>
+      <FaCircleChevronRight size={24} className="text-white mt-1" />
+    </div>
+  );
+}
 export default MenuCategory;

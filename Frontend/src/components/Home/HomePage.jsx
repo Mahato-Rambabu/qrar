@@ -72,24 +72,31 @@ const HomePage = () => {
   }, []);
 
   return (
-    <div className="h-screen w-full relative">
-      <header className="w-full h-[10%] flex justify-around items-center">
+    <div className="h-screen w-full relative flex flex-col">
+      {/* Header Section */}
+      <header className="w-full h-[10%] min-h-[60px] flex justify-around items-center px-4 bg-white shadow-sm z-20">
         <SearchBar restaurantId={restaurantId} />
         <div className="flex items-center">
           <img
             src={profileImage}
             alt="Restaurant logo"
-            className="w-12 h-12 rounded-full border-2 border-gray-300 object-cover"
+            className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-gray-300 object-cover"
             loading="lazy"
           />
         </div>
       </header>
 
-      <main className="h-[45%] w-full bg-white rounded-b-[15%] overflow-hidden" id="image-slider">
+      {/* Image Slider Section */}
+      <main className="flex-grow-0 w-full bg-white" id="image-slider">
         {loadSlider && <ImageSlider />}
       </main>
 
-      <section className="w-full flex items-center justify-center" id="menu-category">
+      {/* Menu Categories Section */}
+      <section 
+        className="flex-grow w-full px-2 md:px-4 pt-2 pb-4" 
+        id="menu-category"
+        style={{ marginTop: '-2%' }} // Compensate for slider's rounded bottom
+      >
         {loadCategory && <MenuCategory />}
       </section>
     </div>
@@ -97,3 +104,4 @@ const HomePage = () => {
 };
 
 export default HomePage;
+
