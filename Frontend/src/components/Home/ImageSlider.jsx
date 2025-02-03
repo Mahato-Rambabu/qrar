@@ -74,41 +74,35 @@ const ImageSlider = () => {
   }
 
   return (
-    <div className="relative w-full overflow-hidden rounded-b-3xl"
-      style={{
-        aspectRatio: '16/9',
-        maxHeight: '60vh'
-      }}>
+    <div className="relative h-full w-full overflow-hidden rounded-b-3xl">
       <div className="absolute inset-0 flex items-center justify-between z-10">
         <button
           onClick={handlePrev}
-          className="p-2 text-gray-100 text-3xl md:text-4xl hover:bg-black/10 transition-all"
+          className="text-gray-100 text-4xl px-4 focus:outline-none"
         >
           <RiArrowLeftWideFill />
         </button>
         <button
           onClick={handleNext}
-          className="p-2 text-gray-100 text-3xl md:text-4xl hover:bg-black/10 transition-all"
+          className="text-gray-100 text-4xl px-4 focus:outline-none"
         >
           <RiArrowRightWideFill />
         </button>
       </div>
-
-      <div className="relative w-full h-full">
+      <div className="w-full h-full">
         <img
           src={images[currentIndex]}
           alt={`Slider ${currentIndex + 1}`}
-          className="w-full h-full object-cover object-center rounded-b-3xl"
+          className="w-full h-full object-cover rounded-b-3xl"
           loading="lazy"
         />
       </div>
-
-      <div className="absolute bottom-2 md:bottom-4 w-full px-4 flex justify-center gap-1.5 md:gap-2 z-10">
+      <div className="absolute bottom-4 w-full p-4 flex justify-center gap-2 z-10">
         {images.map((_, index) => (
-          <button
+          <span
             key={index}
-            className={`h-2 w-2 md:h-2.5 md:w-2.5 rounded-full transition-all duration-300 ${
-              currentIndex === index ? 'bg-white scale-125' : 'bg-white/50'
+            className={`block h-1 cursor-pointer rounded-2xl transition-all duration-300 ${
+              currentIndex === index ? 'w-8 bg-white' : 'w-4 bg-white/50'
             }`}
             onClick={() => setCurrentIndex(index)}
           />
@@ -117,6 +111,5 @@ const ImageSlider = () => {
     </div>
   );
 };
-
 
 export default ImageSlider;
