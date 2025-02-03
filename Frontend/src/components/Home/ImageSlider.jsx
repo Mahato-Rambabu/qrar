@@ -24,8 +24,8 @@ const ImageSlider = () => {
     const loadImages = async () => {
       try {
         const fetchedImages = await fetchSliderImages(restaurantId);
-        
-        const formattedImages = fetchedImages.map((image) => 
+
+        const formattedImages = fetchedImages.map((image) =>
           image.img ? `${image.img}?w=auto:500:1000&c=scale&dpr=auto&f=auto` : '/placeholder.png'
         );
 
@@ -69,9 +69,11 @@ const ImageSlider = () => {
   if (images.length === 0) return <div className="p-4 text-gray-500">No images available</div>;
 
   return (
-    <div className="relative w-full overflow-hidden rounded-b-3xl" 
-         style={{ paddingTop: '56.25%' }}>
-      
+    <div className="relative w-full overflow-hidden rounded-b-3xl"
+      style={{
+        paddingTop: '56.25%', // 16:9 aspect ratio for mobile
+        maxHeight: '60vh' // Limit height on desktop
+      }}>
       {/* Navigation Arrows */}
       <div className="absolute inset-0 flex items-center justify-between z-10">
         <button
@@ -93,9 +95,11 @@ const ImageSlider = () => {
         <img
           src={images[currentIndex]}
           alt={`Slider ${currentIndex + 1}`}
-          className={`w-full h-full object-cover rounded-b-3xl transition-opacity duration-500 ${
-            fade ? 'opacity-100' : 'opacity-0'
-          }`}
+          className="w-full h-full object-cover rounded-b-3xl"
+          style={{
+            maxHeight: '60vh', // Desktop height limit
+            objectPosition: 'center center'
+          }}
           loading="lazy"
         />
       </div>
@@ -105,9 +109,8 @@ const ImageSlider = () => {
         {images.map((_, index) => (
           <button
             key={index}
-            className={`h-1.5 md:h-2 rounded-full transition-all duration-300 ${
-              currentIndex === index ? 'w-6 md:w-8 bg-white' : 'w-3 md:w-4 bg-white/50'
-            }`}
+            className={`h-1.5 md:h-2 rounded-full transition-all duration-300 ${currentIndex === index ? 'w-6 md:w-8 bg-white' : 'w-3 md:w-4 bg-white/50'
+              }`}
             onClick={() => setCurrentIndex(index)}
             aria-label={`Go to slide ${index + 1}`}
           />

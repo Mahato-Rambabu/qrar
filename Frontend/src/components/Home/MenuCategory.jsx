@@ -59,7 +59,7 @@ const MenuCategory = () => {
   return (
     <div className="w-full px-2 pb-1">
       <h1 className="text-lg font-bold text-center text-pink-500 pt-2">Menu</h1>
-      <div className="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mt-2">
+      <div className="w-full grid grid-cols-3 md:grid-cols-4 gap-3 md:gap-4 mt-2">
         {categories.map((category) => (
           <Card
             key={category._id}
@@ -85,14 +85,14 @@ const Card = ({ image, name, price, categoryId, restaurantId, navigate }) => (
     <img
       src={image || '/placeholder.png'} 
       alt={name}
-      className="w-full h-20 object-cover rounded-md mb-1"
+      className="w-full h-24 md:h-32 object-cover rounded-md mb-1"
       loading="lazy"
     />
-    <h3 className="text-xs font-semibold text-gray-800 truncate">{name}</h3>
+    <h3 className="text-sm md:text-base font-semibold text-gray-800 truncate">{name}</h3>
     <div className="flex justify-between items-center mt-1">
-      <p className="text-xs text-gray-600">{price}*</p>
+      <p className="text-xs md:text-sm text-gray-600">{price}*</p>
       <button
-        className="px-2 py-0.5 text-pink-500 border border-pink-500 rounded-full text-xs hover:bg-pink-600 hover:text-white transition-colors"
+        className="px-2 py-0.5 text-pink-500 border border-pink-500 rounded-full text-xs md:text-sm hover:bg-pink-600 hover:text-white transition-colors"
         onClick={() => navigate(`/products?restaurantId=${restaurantId}&categoryId=${categoryId}`)}
       >
         More
@@ -104,10 +104,10 @@ const Card = ({ image, name, price, categoryId, restaurantId, navigate }) => (
 const SeeAllCard = ({ restaurantId, navigate }) => (
   <div
     onClick={() => navigate(`/products?restaurantId=${restaurantId}`)}
-    className="bg-pink-500 rounded-lg p-1.5 flex flex-col items-center justify-center cursor-pointer hover:bg-pink-600 transition-colors min-h-[90px]"
+    className="bg-pink-500 rounded-lg p-2 flex flex-col items-center justify-center cursor-pointer hover:bg-pink-600 transition-colors min-h-[100px] md:min-h-[120px]"
   >
-    <span className="text-white text-xs font-medium text-center">View Full Menu</span>
-    <FaCircleChevronRight size={20} className="text-white mt-1" />
+    <span className="text-white text-sm md:text-base font-medium text-center">View Full Menu</span>
+    <FaCircleChevronRight size={24} className="text-white mt-1 md:mt-2" />
   </div>
 );
 
