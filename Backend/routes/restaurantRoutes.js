@@ -350,7 +350,7 @@ router.get('/:restaurantId/manifest.json', async (req, res) => {
 
     // Define dynamic screenshots for each restaurant
     const homepageScreenshot = `https://res.cloudinary.com/dasuczqr9/image/upload/v1738606735/Screenshot_2025-02-03_at_11.48.38_PM_qxf9em.png`;
-    const productPageScreenshot = `https://res.cloudinary.com/dasuczqr9/image/upload/v1738606912/Screenshot_2025-02-03_at_11.50.58_PM_ohqtcx.png;
+    const productPageScreenshot = `https://res.cloudinary.com/dasuczqr9/image/upload/v1738606912/Screenshot_2025-02-03_at_11.50.58_PM_ohqtcx.png`;
 
     // Manifest configuration
     const manifest = {
