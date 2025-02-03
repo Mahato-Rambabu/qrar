@@ -71,28 +71,27 @@ const MenuCategory = () => {
             navigate={navigate}
           />
         ))}
-        <SeeAllCard
-          restaurantId={restaurantId}
-          navigate={navigate}
-        />
+        <SeeAllCard restaurantId={restaurantId} navigate={navigate} />
       </div>
     </div>
   );
 };
 
 const Card = ({ image, name, price, categoryId, restaurantId, navigate }) => (
-  <div className="bg-white rounded-lg p-1.5 shadow-sm hover:shadow-md transition-shadow duration-200 h-full">
-    <img
-      src={image || '/placeholder.png'}
-      alt={name}
-      className="w-full h-[100px] md:h-[120px] object-cover rounded-md mb-1"
-      loading="lazy"
-    />
-    <h3 className="text-sm md:text-base font-semibold text-gray-800 truncate">{name}</h3>
+  <div className="bg-white rounded-lg p-1.5 shadow-sm hover:shadow-md transition-shadow h-full">
+    <div className="aspect-square overflow-hidden rounded-md mb-1">
+      <img
+        src={`${image || '/placeholder.png'}?w=400&h=400&c=fill`}
+        alt={name}
+        className="w-full h-full object-cover"
+        loading="lazy"
+      />
+    </div>
+    <h3 className="text-sm font-semibold text-gray-800 truncate">{name}</h3>
     <div className="flex justify-between items-center mt-1">
-      <p className="text-xs md:text-sm text-gray-600">{price}*</p>
+      <p className="text-xs text-gray-600">{price}*</p>
       <button
-        className="px-2 py-0.5 text-pink-500 border border-pink-500 rounded-full text-xs md:text-sm hover:bg-pink-600 hover:text-white transition-colors"
+        className="px-2 py-0.5 text-pink-500 border border-pink-500 rounded-full text-xs hover:bg-pink-600 hover:text-white transition-colors"
         onClick={() => navigate(`/products?restaurantId=${restaurantId}&categoryId=${categoryId}`)}
       >
         More
@@ -102,9 +101,12 @@ const Card = ({ image, name, price, categoryId, restaurantId, navigate }) => (
 );
 
 const SeeAllCard = ({ restaurantId, navigate }) => (
-  <div className="bg-pink-500 rounded-lg p-2 flex flex-col items-center justify-center cursor-pointer hover:bg-pink-600 transition-colors h-full min-h-[100px]">
-    <span className="text-white text-sm md:text-base font-medium text-center">View Full Menu</span>
-    <FaCircleChevronRight size={24} className="text-white mt-1 md:mt-2" />
+  <div
+    onClick={() => navigate(`/products?restaurantId=${restaurantId}`)}
+    className="bg-pink-500 rounded-lg p-2 flex flex-col items-center justify-center cursor-pointer hover:bg-pink-600 transition-colors h-full"
+  >
+    <span className="text-white text-sm text-center font-medium">View All</span>
+    <FaCircleChevronRight size={20} className="text-white mt-1" />
   </div>
 );
 

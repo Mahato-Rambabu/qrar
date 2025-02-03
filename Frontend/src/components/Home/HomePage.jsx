@@ -85,16 +85,14 @@ const HomePage = () => {
         </div>
       </header>
 
-      {/* Image Slider Section */}
-      <main className="w-full" id="image-slider" style={{ height: '40vh' }}>
+      <main className="w-full" id="image-slider">
         {loadSlider && <ImageSlider />}
       </main>
 
-      {/* Menu Categories Section */}
       <section 
-        className="flex-grow w-full px-2 md:px-4 pt-2 pb-4" 
+        className="flex-grow w-full px-2 md:px-4 pb-4"
         id="menu-category"
-        style={{ marginTop: '-2vh' }} // Compensate for slider's rounded bottom
+        style={{ marginTop: '-1.5vh' }}
       >
         {loadCategory && <MenuCategory />}
       </section>
