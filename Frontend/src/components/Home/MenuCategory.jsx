@@ -12,7 +12,7 @@ const MenuCategory = () => {
   const [error, setError] = useState(null);
 
   const [searchParams] = useSearchParams();
-  const restaurantId = searchParams.get('restaurantId'); // Extract restaurantId from URL
+  const restaurantId = searchParams.get('restaurantId');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,7 +34,7 @@ const MenuCategory = () => {
     };
 
     getCategories();
-  }, [restaurantId]); // Fetch categories whenever restaurantId changes
+  }, [restaurantId]);
 
   if (loading) {
     return (
@@ -61,55 +61,47 @@ const MenuCategory = () => {
   return (
     <div className="w-full px-4 pb-2 bg-gray-100">
       <h1 className="text-xl font-bold text-center pt-4 text-black">Menu</h1>
-      <div className="w-full grid grid-cols-3 md:grid-cols-4 gap-4 mt-4">
+      <div className="w-full grid grid-cols-3 md:grid-cols-4 gap-3 mt-4">
         {categories.map((category) => (
           <Card
             key={category._id}
             image={category.img}
             name={category.catName}
-            price={category.price}
             categoryId={category._id}
-            restaurantId={restaurantId}  // Pass restaurantId to Card
+            restaurantId={restaurantId}
             navigate={navigate}
           />
         ))}
-        <SeeAllCard
-          restaurantId={restaurantId}  // Pass restaurantId to SeeAllCard
-          navigate={navigate}
-        />
+        <SeeAllCard restaurantId={restaurantId} navigate={navigate} />
       </div>
     </div>
   );
 };
 
-const Card = ({ image, name, price, categoryId, restaurantId, navigate }) => (
-  <div className="bg-none rounded-lg p-2 flex flex-col justify-between transform hover:scale-105 transition-transform duration-200">
+const Card = ({ image, name, categoryId, restaurantId, navigate }) => (
+  <div
+    className="flex flex-col items-center cursor-pointer"
+    onClick={() => navigate(`/products?restaurantId=${restaurantId}&categoryId=${categoryId}`)}
+  >
     <img
-     src={image || '/placeholder.png'} 
+      src={image || '/placeholder.png'}
       alt={name}
-      className="w-full h-20 md:h-32 object-cover rounded-md mb-2"
+      className="w-24 h-24 md:w-28 md:h-28 object-cover rounded-xl shadow-sm"
       loading="lazy"
     />
-    <h3 className="text-sm font-medium">{name}</h3>
-    <div className="flex justify-between items-center mt-2">
-      <p className="text-sm text-gray-500">{price}*</p>
-      <button
-        className="px-3 py-1 text-pink-500 border border-pink-500 rounded-full text-xs hover:bg-pink-600 hover:text-white transition-colors"
-        onClick={() => navigate(`/products?restaurantId=${restaurantId}&categoryId=${categoryId}`)} // Include restaurantId
-      >
-        More
-      </button>
-    </div>
+    <h3 className="text-sm font-semibold text-center mt-2 text-black">{name}</h3>
   </div>
 );
 
 const SeeAllCard = ({ restaurantId, navigate }) => (
   <div
-    onClick={() => navigate(`/products?restaurantId=${restaurantId}`)} // Include restaurantId
-    className="bg-pink-500 rounded-lg shadow-md flex flex-col items-center justify-center p-4 cursor-pointer hover:bg-pink-600 transition-colors"
+    onClick={() => navigate(`/products?restaurantId=${restaurantId}`)}
+    className="flex flex-col items-center justify-center cursor-pointer"
   >
-    <button className="text-white text-lg font-semibold">See All</button>
-    <FaCircleChevronRight size={28} className="text-white mt-2" />
+    <div className="w-24 h-24 md:w-28 md:h-28 bg-pink-500 rounded-xl flex items-center justify-center shadow-sm">
+      <FaCircleChevronRight size={28} className="text-white" />
+    </div>
+    <h3 className="text-sm font-semibold text-center mt-2 text-black">See All</h3>
   </div>
 );
 

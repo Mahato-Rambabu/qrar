@@ -67,7 +67,7 @@ const SearchBar = ({ restaurantId }) => {
     <div className="relative w-[70%] sm:w-1/2" aria-label="Search Bar">
       {/* Search Input */}
       <div
-        className="p-4 flex gap-4 items-center bg-gray-100 rounded-lg h-12"
+        className="p-4 flex gap-4 items-center bg-white rounded-lg h-12 border"
         role="search"
       >
         <GrSearch
@@ -77,7 +77,7 @@ const SearchBar = ({ restaurantId }) => {
         <input
           type="text"
           placeholder="Search"
-          className="outline-none pl-2 bg-gray-100 w-full"
+          className="outline-none pl-2 bg-white w-full"
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
           aria-label="Search Input"
