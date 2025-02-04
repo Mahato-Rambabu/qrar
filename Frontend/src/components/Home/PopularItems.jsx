@@ -69,7 +69,7 @@ const PopularItems = () => {
 
         {/* Bottom left (#2) product */}
         {popularItems.length >= 2 && (
-          <div className="absolute bottom-2 left-4 flex flex-col items-center">
+          <div className="absolute bottom-4 left-4 flex flex-col items-center">
             <div className="relative">
               <img
                 src={popularItems[1].productImage}
@@ -86,7 +86,7 @@ const PopularItems = () => {
 
         {/* Bottom right (#3) product */}
         {popularItems.length >= 3 && (
-          <div className="absolute bottom-2 right-4 flex flex-col items-center">
+          <div className="absolute bottom-4 right-4 flex flex-col items-center">
             <div className="relative">
               <img
                 src={popularItems[2].productImage}
