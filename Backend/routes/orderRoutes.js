@@ -379,67 +379,67 @@ const configureOrderRoutes = (io) => {
     }
   });
 
-  //top selling items
-  router.get("/top-products/:restaurantId", async (req, res) => {
-    try {
-      const { restaurantId } = req.params;
-      const { dateRange } = req.query;
+  // Weekly popular items
+router.get("/top-products/:restaurantId", async (req, res) => {
+  try {
+    const { restaurantId } = req.params;
 
-      // Validate restaurantId
-      if (!isValidObjectId(restaurantId)) {
-        return res.status(400).json({ message: "Invalid restaurant ID" });
-      }
-
-      // Calculate start date based on dateRange
-      const startDate = getDateRange(dateRange);
-
-      // Aggregation pipeline to fetch top products
-      const aggregationPipeline = [
-        {
-          $match: {
-            restaurantId: new mongoose.Types.ObjectId(restaurantId),
-            status: "Served",
-            ...(startDate && { createdAt: { $gte: startDate } }),
-          },
-        },
-        { $unwind: "$items" },
-        {
-          $group: {
-            _id: "$items.productId",
-            totalQuantity: { $sum: "$items.quantity" },
-          },
-        },
-        { $sort: { totalQuantity: -1 } },
-        { $limit: 3 },
-        {
-          $lookup: {
-            from: "products",
-            localField: "_id",
-            foreignField: "_id",
-            as: "productDetails",
-          },
-        },
-        { $unwind: "$productDetails" },
-        {
-          $project: {
-            productId: "$_id",
-            productName: "$productDetails.name",
-            productImage: "$productDetails.img",
-            totalQuantity: 1,
-            _id: 0,
-          },
-        },
-      ];
-
-      // Execute the aggregation
-      const topProducts = await Order.aggregate(aggregationPipeline);
-
-      res.status(200).json(topProducts);
-    } catch (error) {
-      console.error("Error fetching top products:", error);
-      res.status(500).json({ message: "Error fetching top products" });
+    // Validate restaurantId
+    if (!isValidObjectId(restaurantId)) {
+      return res.status(400).json({ message: "Invalid restaurant ID" });
     }
-  });
+
+    // Calculate start date for last 7 days
+    const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    // Aggregation pipeline to fetch weekly popular products
+    const aggregationPipeline = [
+      {
+        $match: {
+          restaurantId: new mongoose.Types.ObjectId(restaurantId),
+          status: "Served",
+          createdAt: { $gte: startDate }
+        }
+      },
+      { $unwind: "$items" },
+      {
+        $group: {
+          _id: "$items.productId",
+          totalQuantity: { $sum: "$items.quantity" },
+        }
+      },
+      { $sort: { totalQuantity: -1 } },
+      { $limit: 3 },
+      {
+        $lookup: {
+          from: "products",
+          localField: "_id",
+          foreignField: "_id",
+          as: "productDetails",
+        }
+      },
+      { $unwind: "$productDetails" },
+      {
+        $project: {
+          productId: "$_id",
+          productName: "$productDetails.name",
+          productImage: "$productDetails.img",
+          categoryId: "$productDetails.category", 
+          totalQuantity: 1,
+          _id: 0,
+        }
+      },
+    ];
+
+    // Execute the aggregation
+    const weeklyPopularProducts = await Order.aggregate(aggregationPipeline);
+
+    res.status(200).json(weeklyPopularProducts);
+  } catch (error) {
+    console.error("Error fetching weekly popular products:", error);
+    res.status(500).json({ message: "Error fetching weekly popular products" });
+  }
+});
 
   // GET route: Fetch recent orders for a specific restaurant
   router.get("/:restaurantId", async (req, res) => {

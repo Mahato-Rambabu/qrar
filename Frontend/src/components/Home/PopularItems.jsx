@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosInstance';
 
 const PopularItems = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
   const restaurantId = searchParams.get('restaurantId');
 
@@ -29,6 +30,12 @@ const PopularItems = () => {
     fetchPopularItems();
   }, [restaurantId]);
 
+  const handleProductClick = (product) => {
+    navigate(
+      `/products?categoryId=${product.categoryId || 'all'}&highlightedProductId=${product.productId}&restaurantId=${restaurantId}`
+    );
+  };
+
   if (loading) {
     return (
       <section className="popular-items my-4 px-4">
@@ -47,12 +54,16 @@ const PopularItems = () => {
 
   return (
     <section className="popular-items px-4 bg-gray-100">
-      <h1 className="text-xl font-bold text-center pt-4 text-black">Popular <span className="text-yellow-500 italic"> Weekly</span></h1>
-      {/* Adjusted container height and spacing for reduced vertical gap */}
+      <h1 className="text-xl font-bold text-center pt-4 text-black">
+        Popular <span className="text-yellow-500 italic">Weekly</span>
+      </h1>
       <div className="relative h-56 w-full">
         {/* Top (#1) product centered */}
         {popularItems.length >= 1 && (
-          <div className="absolute top-6 left-1/2 transform -translate-x-1/2 flex flex-col items-center">
+          <div 
+            className="absolute top-6 left-1/2 transform -translate-x-1/2 flex flex-col items-center cursor-pointer hover:scale-105 transition-transform duration-200"
+            onClick={() => handleProductClick(popularItems[0])}
+          >
             <div className="relative">
               <img
                 src={popularItems[0].productImage}
@@ -63,13 +74,18 @@ const PopularItems = () => {
                 #1
               </span>
             </div>
-            <span className="mt-1 text-sm text-center font-bold">{popularItems[0].productName}</span>
+            <span className="mt-1 text-sm text-center font-bold hover:underline">
+              {popularItems[0].productName}
+            </span>
           </div>
         )}
 
         {/* Bottom left (#2) product */}
         {popularItems.length >= 2 && (
-          <div className="absolute bottom-4 left-4 flex flex-col items-center">
+          <div 
+            className="absolute bottom-4 left-4 flex flex-col items-center cursor-pointer hover:scale-105 transition-transform duration-200"
+            onClick={() => handleProductClick(popularItems[1])}
+          >
             <div className="relative">
               <img
                 src={popularItems[1].productImage}
@@ -80,13 +96,18 @@ const PopularItems = () => {
                 #2
               </span>
             </div>
-            <span className="mt-1 text-sm text-center font-bold">{popularItems[1].productName}</span>
+            <span className="mt-1 text-sm text-center font-bold hover:underline">
+              {popularItems[1].productName}
+            </span>
           </div>
         )}
 
         {/* Bottom right (#3) product */}
         {popularItems.length >= 3 && (
-          <div className="absolute bottom-4 right-4 flex flex-col items-center">
+          <div 
+            className="absolute bottom-4 right-4 flex flex-col items-center cursor-pointer hover:scale-105 transition-transform duration-200"
+            onClick={() => handleProductClick(popularItems[2])}
+          >
             <div className="relative">
               <img
                 src={popularItems[2].productImage}
@@ -97,7 +118,9 @@ const PopularItems = () => {
                 #3
               </span>
             </div>
-            <span className="mt-1 text-sm text-center font-bold">{popularItems[2].productName}</span>
+            <span className="mt-1 text-sm text-center font-bold hover:underline">
+              {popularItems[2].productName}
+            </span>
           </div>
         )}
       </div>
