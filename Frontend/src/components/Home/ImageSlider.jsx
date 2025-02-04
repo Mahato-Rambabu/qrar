@@ -74,7 +74,7 @@ const ImageSlider = () => {
   }
 
     return (
-    <div className="relative w-full overflow-hidden rounded-b-[10%]"
+    <div className="relative w-full overflow-hidden rounded-b-[8%] bg-yellow-50 "
       style={{
         aspectRatio: '16/9',
         maxHeight: '45vh'
