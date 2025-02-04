@@ -98,7 +98,7 @@ const ImageSlider = () => {
         <img
           src={images[currentIndex]}
           alt={`Slider ${currentIndex + 1}`}
-          className="w-full h-full object-cover object-center rounded-b-3xl"
+          className="w-full h-full object-cover object-center rounded-b-xl"
           loading="lazy"
         />
       </div>
