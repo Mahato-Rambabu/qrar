@@ -47,7 +47,7 @@ const PopularItems = () => {
 
   return (
     <section className="popular-items mt-4 px-4 bg-gray-100">
-      <h1 className="text-xl font-bold text-center pt-4 text-black">Popular</h1>
+      <h1 className="text-xl font-bold text-center pt-4 text-black">Popular <span className="text-yellow-500 italic"> Weekly</span></h1>
       {/* Adjusted container height and spacing for reduced vertical gap */}
       <div className="relative h-56 w-full">
         {/* Top (#1) product centered */}
@@ -57,13 +57,13 @@ const PopularItems = () => {
               <img
                 src={popularItems[0].productImage}
                 alt={popularItems[0].productName}
-                className="w-16 h-16 rounded-full object-cover border border-gray-300"
+                className="w-20 h-20 rounded-full object-cover border border-gray-300"
               />
               <span className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full text-xs w-6 h-6 flex items-center justify-center">
                 #1
               </span>
             </div>
-            <span className="mt-1 text-sm text-center">{popularItems[0].productName}</span>
+            <span className="mt-1 text-sm text-center font-bold">{popularItems[0].productName}</span>
           </div>
         )}
 
@@ -80,7 +80,7 @@ const PopularItems = () => {
                 #2
               </span>
             </div>
-            <span className="mt-1 text-sm text-center">{popularItems[1].productName}</span>
+            <span className="mt-1 text-sm text-center font-bold">{popularItems[1].productName}</span>
           </div>
         )}
 
@@ -97,7 +97,7 @@ const PopularItems = () => {
                 #3
               </span>
             </div>
-            <span className="mt-1 text-sm text-center">{popularItems[2].productName}</span>
+            <span className="mt-1 text-sm text-center font-bold">{popularItems[2].productName}</span>
           </div>
         )}
       </div>
