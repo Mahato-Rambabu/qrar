@@ -73,12 +73,13 @@ const ImageSlider = () => {
     return <div>No images available for the slider.</div>;
   }
 
-  return (
-    <div className="relative w-full overflow-hidden rounded-b-3xl"
+    return (
+    <div className="relative w-full overflow-hidden rounded-b-xl"
       style={{
         aspectRatio: '16/9',
-        maxHeight: '60vh'
+        maxHeight: '45vh'
       }}>
+      {/* Navigation Arrows */}
       <div className="absolute inset-0 flex items-center justify-between z-10">
         <button
           onClick={handlePrev}
@@ -94,15 +95,17 @@ const ImageSlider = () => {
         </button>
       </div>
 
+      {/* Image Container */}
       <div className="relative w-full h-full">
         <img
           src={images[currentIndex]}
           alt={`Slider ${currentIndex + 1}`}
-          className="w-full h-full object-cover object-center rounded-br-md"
+          className="w-full h-full object-cover object-center rounded-b-xl"
           loading="lazy"
         />
       </div>
 
+      {/* Indicator Dots */}
       <div className="absolute bottom-2 md:bottom-4 w-full px-4 flex justify-center gap-1.5 md:gap-2 z-10">
         {images.map((_, index) => (
           <button
@@ -117,6 +120,5 @@ const ImageSlider = () => {
     </div>
   );
 };
-
 
 export default ImageSlider;
