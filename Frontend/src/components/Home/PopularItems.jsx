@@ -46,7 +46,7 @@ const PopularItems = () => {
   }
 
   return (
-    <section className="popular-items mt-4 px-4 bg-gray-100">
+    <section className="popular-items px-4 bg-gray-100">
       <h1 className="text-xl font-bold text-center pt-4 text-black">Popular <span className="text-yellow-500 italic"> Weekly</span></h1>
       {/* Adjusted container height and spacing for reduced vertical gap */}
       <div className="relative h-56 w-full">
