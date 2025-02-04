@@ -4,7 +4,7 @@ import { Menu } from 'lucide-react'; // Import Lucide icons
 import { Link } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosInstance';
 
-const Navbar = ({ toggleSidebar, title }) => {
+const Navbar = ({ toggleSidebar }) => {
 
   const [profileImage, setProfileImage] = useState(null);
   const [restaurantName, setRestaurantName] = useState('');
@@ -45,7 +45,7 @@ const Navbar = ({ toggleSidebar, title }) => {
         </button>
 
         {/* Page Title */}
-        <h1 className="text-lg font-semibold text-black">{title}</h1>
+        <h1 className="text-lg font-semibold text-black">QRAR</h1>
         </div>
 
         {/* Restaurant Name */}

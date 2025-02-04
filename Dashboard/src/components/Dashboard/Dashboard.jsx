@@ -31,18 +31,6 @@ const Dashboard = () => {
 
   const location = useLocation();
 
-  const pageTitle = useMemo(() => {
-    switch (location.pathname) {
-      case '/products':
-        return 'Products';
-      case '/orders':
-        return 'Orders';
-      case '/':
-        return 'Dashboard';
-      default:
-        return 'Restaurant';
-    }
-  }, [location.pathname]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -57,7 +45,7 @@ const Dashboard = () => {
     <ErrorBoundary>
       <div className="w-screen h-screen flex flex-col overflow-hidden">
         {/* Navbar */}
-        <Navbar toggleSidebar={toggleSidebar} title={pageTitle} />
+        <Navbar toggleSidebar={toggleSidebar} />
 
         <div className="flex flex-1 overflow-hidden">
           {/* Sidebar */}

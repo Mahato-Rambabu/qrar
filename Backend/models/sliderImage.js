@@ -14,3 +14,4 @@ const sliderImageSchema = new mongoose.Schema({
 const SliderImage = mongoose.model('SliderImage', sliderImageSchema);
 
 export default SliderImage;
+
