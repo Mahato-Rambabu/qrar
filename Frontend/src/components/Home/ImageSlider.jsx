@@ -74,7 +74,7 @@ const ImageSlider = () => {
   }
 
     return (
-    <div className="relative w-full overflow-hidden rounded-b-xl"
+    <div className="relative w-full overflow-hidden"
       style={{
         aspectRatio: '16/9',
         maxHeight: '45vh'
@@ -100,7 +100,7 @@ const ImageSlider = () => {
         <img
           src={images[currentIndex]}
           alt={`Slider ${currentIndex + 1}`}
-          className="w-full h-full object-cover object-center rounded-b-xl"
+          className="w-full h-full object-cover object-center "
           loading="lazy"
         />
       </div>

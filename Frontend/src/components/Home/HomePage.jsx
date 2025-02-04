@@ -85,7 +85,7 @@ const HomePage = () => {
         </div>
       </header>
 
-      <main className=" w-full bg-white rounded-b-[15%] overflow-hidden" id="image-slider">
+      <main className=" w-full bg-white overflow-hidden" id="image-slider">
         {loadSlider && <ImageSlider />}
       </main>
 
