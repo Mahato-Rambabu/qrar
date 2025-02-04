@@ -306,7 +306,6 @@ router.get("/pending", authMiddleware, async (req, res) => {
   }
 });
 
-
 // Pass io to your route file if needed
 const configureOrderRoutes = (io) => {
   // POST route: Place a new order
@@ -380,6 +379,68 @@ const configureOrderRoutes = (io) => {
     }
   });
 
+  //top selling items
+  router.get("/top-products/:restaurantId", async (req, res) => {
+    try {
+      const { restaurantId } = req.params;
+      const { dateRange } = req.query;
+
+      // Validate restaurantId
+      if (!isValidObjectId(restaurantId)) {
+        return res.status(400).json({ message: "Invalid restaurant ID" });
+      }
+
+      // Calculate start date based on dateRange
+      const startDate = getDateRange(dateRange);
+
+      // Aggregation pipeline to fetch top products
+      const aggregationPipeline = [
+        {
+          $match: {
+            restaurantId: new mongoose.Types.ObjectId(restaurantId),
+            status: "Served",
+            ...(startDate && { createdAt: { $gte: startDate } }),
+          },
+        },
+        { $unwind: "$items" },
+        {
+          $group: {
+            _id: "$items.productId",
+            totalQuantity: { $sum: "$items.quantity" },
+          },
+        },
+        { $sort: { totalQuantity: -1 } },
+        { $limit: 3 },
+        {
+          $lookup: {
+            from: "products",
+            localField: "_id",
+            foreignField: "_id",
+            as: "productDetails",
+          },
+        },
+        { $unwind: "$productDetails" },
+        {
+          $project: {
+            productId: "$_id",
+            productName: "$productDetails.name",
+            productImage: "$productDetails.img",
+            totalQuantity: 1,
+            _id: 0,
+          },
+        },
+      ];
+
+      // Execute the aggregation
+      const topProducts = await Order.aggregate(aggregationPipeline);
+
+      res.status(200).json(topProducts);
+    } catch (error) {
+      console.error("Error fetching top products:", error);
+      res.status(500).json({ message: "Error fetching top products" });
+    }
+  });
+
   // GET route: Fetch recent orders for a specific restaurant
   router.get("/:restaurantId", async (req, res) => {
     const { restaurantId } = req.params;
@@ -446,6 +507,7 @@ const configureOrderRoutes = (io) => {
       res.status(500).json({ error: "Failed to update order status." });
     }
   });
+
   return router;
 };
 

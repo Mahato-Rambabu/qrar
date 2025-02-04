@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import SearchBar from './SearchBar';
 import ImageSlider from './ImageSlider';
 import MenuCategory from './MenuCategory';
+import PopularItems from './PopularItems'; // Import the PopularItems component
 import axiosInstance from '../../utils/axiosInstance';
 
 const HomePage = () => {
@@ -30,7 +31,6 @@ const HomePage = () => {
       try {
         const response = await axiosInstance.get(`/restaurants/images/${restaurantId}`);
 
-        // Corrected way to handle Axios response
         if (response.data && response.data.profileImage) {
           setProfileImage(response.data.profileImage);
         } else {
@@ -39,7 +39,7 @@ const HomePage = () => {
         }
       } catch (error) {
         console.error('Error fetching profile image:', error);
-        setProfileImage('/default-profile.png'); // Use default on error
+        setProfileImage('/default-profile.png');
       }
     };
 
@@ -85,9 +85,12 @@ const HomePage = () => {
         </div>
       </header>
 
-      <main className=" w-full bg-white overflow-hidden" id="image-slider">
+      <main className="w-full bg-white overflow-hidden" id="image-slider">
         {loadSlider && <ImageSlider />}
       </main>
+
+      {/* Render the PopularItems component just below the ImageSlider */}
+        <PopularItems />
 
       <section className="w-full flex items-center justify-center" id="menu-category">
         {loadCategory && <MenuCategory />}
