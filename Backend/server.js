@@ -6,7 +6,6 @@ import { config } from 'dotenv';
 import productRoutes from './routes/productRoutes.js';
 import restaurantRoutes from './routes/restaurantRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
-import loyaltyRoutes from "./routes/loyalty/loyaltyRoutes.js";
 import cors from 'cors';
 import sliderImages from './routes/sliderImages.js';
 import configureOrderRoutes from './routes/orderRoutes.js';
@@ -76,7 +75,6 @@ app.use('/products', productRoutes);
 app.use('/imageSlider', sliderImages);
 app.use('/orders', configureOrderRoutes(io));
 app.use('/users', userRoutes);
-app.use('/loyaltyProgram', loyaltyRoutes)
 app.use('/', QrCodeGen);
 
 
