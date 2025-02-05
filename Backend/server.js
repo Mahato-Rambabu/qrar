@@ -8,7 +8,9 @@ import restaurantRoutes from './routes/restaurantRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 import cors from 'cors';
 import updatedSliderImages from './routes/loyalty/updatedSliderImage.js';
+import offer from './routes/loyalty/offer.js';
 import couponCode from './routes/loyalty/couponCode.js'
+import comboDealRoutes from './routes/loyalty/comboDealsRoutes.js'
 import sliderImages from './routes/sliderImages.js'
 import configureOrderRoutes from './routes/orderRoutes.js';
 import userRoutes from './routes/userRoutes.js';
@@ -77,6 +79,8 @@ app.use('/products', productRoutes);
 app.use('/imageSlider', sliderImages);
 app.use('/coupon', couponCode);
 app.use('/updatedImageSlider', updatedSliderImages);
+app.use('/offer', offer);
+app.use('/combo-deals', comboDealRoutes);
 app.use('/orders', configureOrderRoutes(io));
 app.use('/users', userRoutes);
 app.use('/', QrCodeGen);
