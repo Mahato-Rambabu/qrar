@@ -89,10 +89,10 @@ const HomePage = () => {
         {loadSlider && <ImageSlider />}
       </main>
 
-      {/* Render the PopularItems component just below the ImageSlider */}
-        <PopularItems />
+      {/* Remove any unnecessary spacing wrappers */}
+      <PopularItems />
 
-      <section className="w-full flex items-center justify-center" id="menu-category">
+      <section className="w-full bg-gray-100" id="menu-category"> {/* Added bg-gray-100 here */}
         {loadCategory && <MenuCategory />}
       </section>
     </div>
