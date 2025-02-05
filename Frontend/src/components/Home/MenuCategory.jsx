@@ -61,7 +61,7 @@ const MenuCategory = () => {
   return (
     <div className="w-full px-4 pb-2 pt-2 bg-gray-100">
       <h1 className="text-xl font-bold text-center pt-4 text-black">Menu</h1>
-      <div className="w-full grid grid-cols-3 md:grid-cols-4 gap-3 mt-2">
+      <div className="w-full grid grid-cols-3 md:grid-cols-4 gap-3 mt-4">
         {categories.map((category) => (
           <Card
             key={category._id}
@@ -86,7 +86,7 @@ const Card = ({ image, name, categoryId, restaurantId, navigate }) => (
     <img
       src={image || '/placeholder.png'}
       alt={name}
-      className="w-24 h-24 md:w-28 md:h-28 object-cover rounded-xl shadow-sm"
+      className="w-24 h-24 md:w-28 md:h-28 object-cover rounded-xl shadow-gray-500 shadow-lg"
       loading="lazy"
     />
     <h3 className="text-sm font-semibold text-center mt-2 text-black">{name}</h3>
@@ -98,7 +98,7 @@ const SeeAllCard = ({ restaurantId, navigate }) => (
     onClick={() => navigate(`/products?restaurantId=${restaurantId}`)}
     className="flex flex-col items-center justify-center cursor-pointer"
   >
-    <div className="w-24 h-24 md:w-28 md:h-28 bg-pink-500 rounded-xl flex items-center justify-center shadow-sm">
+    <div className="w-24 h-24 md:w-28 md:h-28 bg-gray-500  rounded-xl shadow-gray-500 shadow-lg flex items-center justify-center">
       <FaCircleChevronRight size={28} className="text-white" />
     </div>
     <h3 className="text-sm font-semibold text-center mt-2 text-black">See All</h3>
