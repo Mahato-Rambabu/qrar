@@ -38,7 +38,7 @@ const ProductGrid = memo(({ products = [], highlightedProduct }) => {
               <img
                 src={product.img || 'https://via.placeholder.com/150'}
                 alt={product.name}
-                className="w-full h-44 object-cover rounded-2xl"
+                className="w-full h-40 object-cover rounded-2xl"
                 loading="lazy"
               />
 
@@ -46,22 +46,24 @@ const ProductGrid = memo(({ products = [], highlightedProduct }) => {
               <div className="absolute bottom-[-14px] left-1/2 transform -translate-x-1/2">
                 {quantity === 0 ? (
                   <button
-                    className="bg-gray-100 px-6 py-[3px] rounded-xl shadow-sm shadow-gray-500 text-black text-sm font-semibold "
+                    className="bg-gray-100 px-4 py-[3px] rounded-xl shadow-sm shadow-gray-500 
+                             text-black text-sm font-semibold flex items-center justify-center whitespace-nowrap"
                     onClick={() => handleOrderClick(product)}
                   >
                     Add +
                   </button>
+
                 ) : (
-                  <div className="bg-white flex items-center px-4 rounded-xl gap-4">
+                  <div className="bg-white flex items-center justify-between px-2 py-1 rounded-lg shadow-sm shadow-gray-500 w-auto">
                     <button
-                      className="text-black text-[2rem]"
+                      className="text-black text-lg px-2 leading-none"
                       onClick={() => handleDecrement(product._id)}
                     >
-                      -
+                      −
                     </button>
-                    <span className="text-black mx-2 font-semibold">{quantity}</span>
+                    <span className="text-black font-semibold text-sm w-6 text-center">{quantity}</span>
                     <button
-                      className="text-black text-2xl  "
+                      className="text-black text-lg px-2 leading-none"
                       onClick={() => handleIncrement(product._id)}
                     >
                       +
@@ -73,9 +75,9 @@ const ProductGrid = memo(({ products = [], highlightedProduct }) => {
 
             {/* Product Details */}
             <div className="mt-5 flex-grow px-2">
-              <p className="text-[14px] font-bold line-clamp-3 ">{product.name}</p>
-              <p className="text-[14px] text-gray-500 truncate">{product.description}</p>
-              <p className="font-bold text-[16px]  py-2">₹{product.price}.00</p>
+              <p className="text-[12px] font-bold line-clamp-3 ">{product.name}</p>
+              <p className="text-[12px] text-gray-500 truncate">{product.description}</p>
+              <p className="font-bold text-[14px]  py-2">₹{product.price}.00</p>
             </div>
           </div>
         );
