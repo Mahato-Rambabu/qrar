@@ -38,7 +38,7 @@ const ProductGrid = memo(({ products = [], highlightedProduct }) => {
               <img
                 src={product.img || 'https://via.placeholder.com/150'}
                 alt={product.name}
-                className="w-full h-[9.6rem] object-cover rounded-xl"
+                className="w-full h-[9.4rem] object-cover rounded-xl"
                 loading="lazy"
               />
 
