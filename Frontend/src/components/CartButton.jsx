@@ -22,7 +22,7 @@ const CartButton = () => {
   return (
     <button
       aria-label="Cart button"
-      className="fixed bottom-8 right-8 md:bottom-16 md:right-16 bg-yellow-500 hover:bg-pink-600 rounded-full p-3 shadow-lg cursor-pointer"
+      className="fixed bottom-8 right-8 md:bottom-16 md:right-16 bg-gray-500 hover:bg-pink-600 rounded-full p-3 shadow-lg cursor-pointer"
       onClick={() => {
         if (restaurantId) {
           navigate(`/orders/${restaurantId}`);
@@ -35,7 +35,7 @@ const CartButton = () => {
       {uniqueItemCount > 0 && (
         <span
           aria-live="polite"
-          className="absolute top-0 right-0 bg-green-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
+          className="absolute top-0 right-0 bg-yellow-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
         >
           {uniqueItemCount}
         </span>

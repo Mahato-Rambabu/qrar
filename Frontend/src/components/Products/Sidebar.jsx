@@ -53,7 +53,7 @@ const Sidebar = ({ selectedCategory, onSelectCategory, restaurantId }) => {
   }
 
   return (
-    <div className="w-1/4 bg-gray-100 border-r overflow-y-auto pb-4">
+    <div className="w-[20%] bg-gray-100 border-r overflow-y-auto pb-4">
       {/* "All Categories" Button */}
       <button
         className={`w-full flex items-center lg:flex-row flex-col lg:text-left text-center py-2 px-4 transition-all ${
@@ -79,7 +79,7 @@ const Sidebar = ({ selectedCategory, onSelectCategory, restaurantId }) => {
           key={category._id}
           className={`w-full flex items-center lg:flex-row flex-col lg:text-left text-center py-2 px-4 mt-4 transition-all ${
             selectedCategory === category._id
-              ? 'bg-pink-500 text-white border-l-4 border-blue-950'
+              ? 'bg-gray-500 text-white border-l-4 border-black'
               : 'hover:bg-gray-200'
           }`}
           onClick={() => onSelectCategory(category._id)}

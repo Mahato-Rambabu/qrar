@@ -72,7 +72,7 @@ const HomePage = () => {
   }, []);
 
   return (
-    <div className="h-screen w-full relative bg-gray-100">
+    <div className="h-screen w-full relative bg-gray-200">
       <header className="w-full h-[10%] flex justify-around items-center">
         <SearchBar restaurantId={restaurantId} />
         <div className="flex items-center">

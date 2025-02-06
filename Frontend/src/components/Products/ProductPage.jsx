@@ -66,7 +66,7 @@ const ProductPage = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-screen flex flex-col bg-gray-200">
       <Navbar
         categoryName={
           categories.find((cat) => cat._id === selectedCategory)?.catName || 'All Categories'

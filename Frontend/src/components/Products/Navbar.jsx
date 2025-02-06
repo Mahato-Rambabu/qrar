@@ -97,7 +97,7 @@ const Navbar = ({ categoryName }) => {
   };
 
   return (
-    <div className="flex justify-between items-center text-black px-4 py-2 shadow h-[8%] relative">
+    <div className="flex justify-between items-center text-black px-4 py-2 shadow h-[8%] relative bg-gray-100">
       <div className="flex items-center gap-2">
         <button
           onClick={handleBackButtonClick}

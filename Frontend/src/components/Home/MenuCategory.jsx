@@ -86,7 +86,7 @@ const Card = ({ image, name, categoryId, restaurantId, navigate }) => (
     <img
       src={image || '/placeholder.png'}
       alt={name}
-      className="w-24 h-24 md:w-28 md:h-28 object-cover rounded-xl shadow-gray-500 shadow-lg"
+      className="w-24 h-24 md:w-28 md:h-28 object-cover rounded-xl shadow-gray-500 shadow-sm"
       loading="lazy"
     />
     <h3 className="text-sm font-semibold text-center mt-2 text-black">{name}</h3>
@@ -98,7 +98,7 @@ const SeeAllCard = ({ restaurantId, navigate }) => (
     onClick={() => navigate(`/products?restaurantId=${restaurantId}`)}
     className="flex flex-col items-center justify-center cursor-pointer"
   >
-    <div className="w-24 h-24 md:w-28 md:h-28 bg-gray-500  rounded-xl shadow-gray-500 shadow-lg flex items-center justify-center">
+    <div className="w-24 h-24 md:w-28 md:h-28 bg-gray-500  shadow-gray-500 shadow-sm rounded-xl flex items-center justify-center">
       <FaCircleChevronRight size={28} className="text-white" />
     </div>
     <h3 className="text-sm font-semibold text-center mt-2 text-black">See All</h3>
