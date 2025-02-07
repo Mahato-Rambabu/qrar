@@ -47,7 +47,6 @@ const Sidebar = memo(({ isOpen: pcSidebarOpen }) => {
         { path: '/loyalty/combo-deals', label: 'Combo-deals', icon: Image },
         { path: '/loyalty/coupon-code', label: 'Coupon Code', icon: Image },
         { path: '/loyalty/offers', label: 'Offer Page', icon: Sliders },
-        { path: '/loyalty/analytics', label: 'Loyalty Analytics', icon: BarChart2 },
       ],
     },
   ];
