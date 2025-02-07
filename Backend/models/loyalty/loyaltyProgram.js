@@ -8,28 +8,14 @@ const loyaltyProgramSchema = new mongoose.Schema({
   restaurantId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Restaurant',
-  },
-  type: {
-    type: String,
-    enum: ['seasonal', 'category', 'product'],
     required: true,
   },
-  categoryId: {
+  // Instead of attaching product/category info, we attach an offer.
+  offer: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Category',
-    required: function () {
-      return this.type === 'category';
-    },
-  },
-  products: [
-    {
-      productId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Product',
-      },
-      discountPercentage: Number,
-    },
-  ],
+    ref: 'Offer',
+    required: true,
+  }
 }, { timestamps: true });
 
 const LoyaltyProgram = mongoose.model('LoyaltyProgram', loyaltyProgramSchema);

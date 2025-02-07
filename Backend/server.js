@@ -9,6 +9,7 @@ import categoryRoutes from './routes/categoryRoutes.js';
 import cors from 'cors';
 import updatedSliderImages from './routes/loyalty/updatedSliderImage.js';
 import offer from './routes/loyalty/offer.js';
+import popUp from './routes/loyalty/popUp.js'
 import couponCode from './routes/loyalty/couponCode.js'
 import comboDealRoutes from './routes/loyalty/comboDealsRoutes.js'
 import sliderImages from './routes/sliderImages.js'
@@ -80,6 +81,7 @@ app.use('/imageSlider', sliderImages);
 app.use('/coupon', couponCode);
 app.use('/updatedImageSlider', updatedSliderImages);
 app.use('/offer', offer);
+app.use('/popups', popUp);
 app.use('/combo-deals', comboDealRoutes);
 app.use('/orders', configureOrderRoutes(io));
 app.use('/users', userRoutes);
