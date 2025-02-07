@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom'; // For accessing query parameters
 import { RiArrowLeftWideFill, RiArrowRightWideFill } from 'react-icons/ri';
 import { fetchSliderImages } from '../../api/fetchSliderImages'; // Adjust the import path as needed
@@ -15,6 +15,8 @@ const ImageSlider = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const touchStartX = useRef(null); // To store the starting touch position
+  const swipeThreshold = 50; // Minimum distance (in pixels) to be considered a swipe
 
   useEffect(() => {
     if (!restaurantId) {
@@ -27,9 +29,9 @@ const ImageSlider = () => {
       try {
         const fetchedImages = await fetchSliderImages(restaurantId);
 
-        // Use the Cloudinary URL directly
+        // Use the Cloudinary URL directly, or a placeholder if no image is available
         const formattedImages = fetchedImages.map((image) =>
-          image.img ? image.img : '/placeholder.png' // Use a placeholder if no image URL is available
+          image.img ? image.img : '/placeholder.png'
         );
 
         setImages(formattedImages);
@@ -56,10 +58,27 @@ const ImageSlider = () => {
     if (images.length > 0) {
       const interval = setInterval(() => {
         handleNext();
-      }, 5000); 
+      }, 5000); // Auto slide every 5 seconds
       return () => clearInterval(interval); // Clean up on component unmount
     }
   }, [images]);
+
+  // Touch event handlers for swipe functionality
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e) => {
+    const touchEndX = e.changedTouches[0].clientX;
+    const deltaX = touchEndX - touchStartX.current;
+    if (deltaX > swipeThreshold) {
+      // User swiped right: show previous image
+      handlePrev();
+    } else if (deltaX < -swipeThreshold) {
+      // User swiped left: show next image
+      handleNext();
+    }
+  };
 
   if (loading) {
     return <div>Loading...</div>;
@@ -73,12 +92,16 @@ const ImageSlider = () => {
     return <div>No images available for the slider.</div>;
   }
 
-    return (
-    <div className="relative w-full overflow-hidden rounded-b-[8%] bg-gray-100 "
+  return (
+    <div
+      className="relative w-full overflow-hidden rounded-b-[8%] bg-gray-100"
       style={{
         aspectRatio: '16/9',
-        maxHeight: '45vh'
-      }}>
+        maxHeight: '45vh',
+      }}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       {/* Navigation Arrows */}
       <div className="absolute inset-0 flex items-center justify-between z-10">
         <button

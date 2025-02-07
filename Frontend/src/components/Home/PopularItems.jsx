@@ -15,6 +15,7 @@ const PopularItems = () => {
   const sliderRef = useRef(null);
   const intervalRef = useRef(null);
   const isVisibleRef = useRef(true);
+  const touchStartX = useRef(null); // To track the starting X position for swipe
 
   const cardMargin = 16;
   const step = cardWidth + cardMargin;
@@ -53,12 +54,13 @@ const PopularItems = () => {
     return () => window.removeEventListener("resize", resizeHandler);
   }, []);
 
-  // Slides setup
-  const slides = popularItems.length > 0 
-    ? [popularItems[popularItems.length - 1], ...popularItems, popularItems[0]]
-    : [];
+  // Slides setup with clones for infinite scrolling
+  const slides =
+    popularItems.length > 0
+      ? [popularItems[popularItems.length - 1], ...popularItems, popularItems[0]]
+      : [];
 
-  // Improved carousel logic with visibility handling
+  // Auto slide with visibility handling
   useEffect(() => {
     const handleVisibilityChange = () => {
       isVisibleRef.current = !document.hidden;
@@ -97,7 +99,7 @@ const PopularItems = () => {
     }, 3000);
   };
 
-  // Transition handling
+  // Transition handling for infinite looping
   const handleTransitionEnd = () => {
     if (currentIndex === 0) {
       sliderRef.current.style.transition = 'none';
@@ -153,6 +155,31 @@ const PopularItems = () => {
     return <span>#{rank}</span>;
   };
 
+  // Touch event handlers for swipe functionality
+  const swipeThreshold = 50; // Minimum swipe distance in pixels
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e) => {
+    const touchEndX = e.changedTouches[0].clientX;
+    const deltaX = touchEndX - touchStartX.current;
+    if (deltaX > swipeThreshold) {
+      // Swipe right: go to previous slide
+      setCurrentIndex(prev => {
+        const newIndex = prev - 1;
+        return newIndex < 0 ? slides.length - 1 : newIndex;
+      });
+    } else if (deltaX < -swipeThreshold) {
+      // Swipe left: go to next slide
+      setCurrentIndex(prev => {
+        const newIndex = prev + 1;
+        return newIndex >= slides.length ? 0 : newIndex;
+      });
+    }
+  };
+
   return (
     <section className="popular-items bg-gray-100">
       <h1 className="text-xl font-bold text-center pt-4 text-black">
@@ -170,6 +197,9 @@ const PopularItems = () => {
             willChange: 'transform'
           }}
           onTransitionEnd={handleTransitionEnd}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          onTouchCancel={handleTouchEnd}
         >
           {slides.map((item, index) => {
             const rank = getRank(index);
