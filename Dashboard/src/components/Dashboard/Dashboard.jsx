@@ -3,6 +3,10 @@ import { Route, Routes, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import ErrorBoundary from './ErrorBoundary';
+import PopCardsPage from './Loyalty/PopupCard';
+import OffersPage from './Loyalty/OfferPage';
+import CouponCodesPage from './Loyalty/CouponCodePage';
+import ComboDealsPage from './Loyalty/ComboDealsPage';
 // import OrderDashboard from '../orders/OrderDashboard';
 
 // Lazy load components for optimization
@@ -73,6 +77,38 @@ const Dashboard = () => {
                   element={
                     <ProtectedRoute>
                       <UserTable />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/loyalty/popups"
+                  element={
+                    <ProtectedRoute>
+                      <PopCardsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/loyalty/coupon-code"
+                  element={
+                    <ProtectedRoute>
+                      <CouponCodesPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/loyalty/combo-deals"
+                  element={
+                    <ProtectedRoute>
+                      <ComboDealsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/loyalty/offers"
+                  element={
+                    <ProtectedRoute>
+                      <OffersPage />
                     </ProtectedRoute>
                   }
                 />

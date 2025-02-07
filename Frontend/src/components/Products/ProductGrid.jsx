@@ -171,3 +171,4 @@ const ProductGrid = memo(({ products = [] }) => {
 });
 
 export default ProductGrid;
+

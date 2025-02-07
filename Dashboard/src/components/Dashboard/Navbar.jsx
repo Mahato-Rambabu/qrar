@@ -83,7 +83,6 @@ const Navbar = ({ toggleSidebar }) => {
 
 Navbar.propTypes = {
   toggleSidebar: PropTypes.func.isRequired,
-  title: PropTypes.string.isRequired,
 };
 
 export default memo(Navbar);

@@ -1,5 +1,5 @@
 import express from 'express';
-import PopUpImage from '../../models/loyalty/popUpImage.js';
+import PopUpImage from '../../models/loyalty/popUp.js';
 import { upload } from '../../config/multerConfig.js'; // Multer for file upload
 import authMiddleware from '../../middlewares/authMiddlewares.js';
 
@@ -32,7 +32,7 @@ router.post('/', authMiddleware, upload.single('img'), async (req, res) => {
 });
 
 // ✅ Fetch all pop-up images for a restaurant
-router.get('/:restaurantId',authMiddleware, async (req, res) => {
+router.get('/',authMiddleware, async (req, res) => {
     try {
       const restaurantId = req.user.restaurantId; // Get restaurant ID from token
       const popUpImages = await PopUpImage.find({ restaurantId });
@@ -48,7 +48,7 @@ router.get('/:restaurantId',authMiddleware, async (req, res) => {
   });
   
   // ✅ Fetch the active pop-up image for a restaurant
-router.get('/active/:restaurantId',authMiddleware, async (req, res) => {
+router.get('/active',authMiddleware, async (req, res) => {
     try {
         const restaurantId = req.user.restaurantId; // Get restaurant ID from token
       const activePopUp = await PopUpImage.findOne({ restaurantId, isActive: true });
