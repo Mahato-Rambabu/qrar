@@ -97,15 +97,16 @@ const Navbar = ({ categoryName }) => {
   };
 
   return (
-    <div className="flex justify-between items-center text-black px-4 py-2 shadow h-[8%] relative bg-gray-100">
+    // Added z-50 here to ensure the navbar (and its dropdown) appears above later elements.
+    <div className="flex justify-between items-center text-black px-4 py-2 shadow h-[8%] relative bg-gray-100 z-50">
       <div className="flex items-center gap-2">
         <button
           onClick={handleBackButtonClick}
-          className="flex items-center gap-1"
+          className="flex items-center gap-1 text-gray-500 hover:text-pink-600"
         >
           <RiArrowLeftSLine size={32} />
         </button>
-        <h1 className={`font-bold ${showSearchBar && "hidden sm:block"} sm:block`}>
+        <h1 className={`font-bold ${showSearchBar && "hidden sm:block"} sm:block text-gray-800`}>
           {categoryName}
         </h1>
       </div>
@@ -116,7 +117,7 @@ const Navbar = ({ categoryName }) => {
           className="absolute top-2/4 right-4 transform -translate-y-2/4 w-[70%] sm:w-1/2"
           role="search"
         >
-          <div className="p-4 flex gap-4 items-center bg-gray-100 rounded-lg h-12">
+          <div className="p-4 flex gap-4 items-center bg-white rounded-lg h-12">
             <FaSearch
               className="text-gray-500 text-xl hover:rounded-full hover:bg-gray-200 p-2 cursor-pointer"
               size={40}
@@ -124,7 +125,7 @@ const Navbar = ({ categoryName }) => {
             <input
               type="text"
               placeholder="Search"
-              className="outline-none pl-2 bg-gray-100 w-full"
+              className="outline-none pl-2 bg-white w-full"
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
               aria-label="Search Input"
@@ -139,8 +140,9 @@ const Navbar = ({ categoryName }) => {
           </div>
 
           {searchTerm && (
+            // Updated z-index from z-20 to z-50 so the dropdown appears above other elements.
             <div
-              className="absolute top-full left-0 w-full bg-white shadow-md rounded-lg mt-1 z-20"
+              className="absolute top-full left-0 w-full bg-white shadow-md rounded-lg mt-1 z-50"
               role="listbox"
               aria-expanded="true"
             >
@@ -181,7 +183,7 @@ const Navbar = ({ categoryName }) => {
         </div>
       ) : (
         <FaSearch
-          className="cursor-pointer mr-6 text-lg"
+          className="cursor-pointer mr-6 text-lg text-gray-800"
           onClick={handleSearchToggle}
           aria-label="Toggle search"
         />

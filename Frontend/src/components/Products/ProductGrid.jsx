@@ -22,23 +22,22 @@ const ProductGrid = memo(({ products = [], highlightedProduct }) => {
   };
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 ">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {products.map((product) => {
         const isHighlighted = product._id === highlightedProduct;
         const quantity = getProductQuantity(product._id);
-
         return (
           <div
             key={product._id}
             id={`product-${product._id}`}
-            className="flex flex-col rounded-2xl overflow-hidden"
+            className={`flex flex-col rounded-2xl overflow-hidden ${isHighlighted ? 'bg-gray-100' : ''}`}
           >
             {/* Image container with "Add" button overlay */}
             <div className="relative">
               <img
                 src={product.img || 'https://via.placeholder.com/150'}
                 alt={product.name}
-                className="w-full h-[9.4rem] object-cover rounded-xl"
+                className="w-full h-[9.2rem] object-cover rounded-xl"
                 loading="lazy"
               />
 
@@ -47,12 +46,11 @@ const ProductGrid = memo(({ products = [], highlightedProduct }) => {
                 {quantity === 0 ? (
                   <button
                     className="bg-gray-100 px-4 py-[3px] rounded-xl shadow-sm shadow-gray-500 
-                             text-black text-sm font-semibold flex items-center justify-center whitespace-nowrap"
+                               text-black text-sm font-semibold flex items-center justify-center whitespace-nowrap"
                     onClick={() => handleOrderClick(product)}
                   >
                     Add +
                   </button>
-
                 ) : (
                   <div className="bg-white flex items-center justify-between px-2 py-1 rounded-lg shadow-sm shadow-gray-500 w-auto">
                     <button
@@ -75,9 +73,9 @@ const ProductGrid = memo(({ products = [], highlightedProduct }) => {
 
             {/* Product Details */}
             <div className="mt-5 flex-grow px-2">
-              <p className="text-[12px] font-bold line-clamp-2 ">{product.name}</p>
+              <p className="text-[12px] font-bold line-clamp-2">{product.name}</p>
               <p className="text-[10px] text-gray-500 truncate">{product.description}</p>
-              <p className="font-bold text-[13px]  py-2">₹{product.price}.00</p>
+              <p className="font-bold text-[13px] py-2">₹{product.price}.00</p>
             </div>
           </div>
         );

@@ -58,7 +58,7 @@ const Sidebar = ({ selectedCategory, onSelectCategory, restaurantId }) => {
       <button
         className={`w-full flex items-center lg:flex-row flex-col lg:text-left text-center py-2 px-4 transition-all ${
           selectedCategory === 'all'
-            ? 'bg-pink-500 text-white border-l-4 border-blue-950'
+            ? 'bg-gray-500 text-white border-l-4 border-x-gray-900'
             : 'hover:bg-gray-200'
         }`}
         onClick={() => onSelectCategory('all')}
@@ -79,7 +79,7 @@ const Sidebar = ({ selectedCategory, onSelectCategory, restaurantId }) => {
           key={category._id}
           className={`w-full flex items-center lg:flex-row flex-col lg:text-left text-center py-2 px-4 mt-4 transition-all ${
             selectedCategory === category._id
-              ? 'bg-gray-500 text-white border-l-4 border-black'
+              ? 'bg-gray-500 text-white border-l-4 border-x-gray-900'
               : 'hover:bg-gray-200'
           }`}
           onClick={() => onSelectCategory(category._id)}
