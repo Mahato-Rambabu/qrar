@@ -221,7 +221,7 @@ const PopularItems = () => {
                   <img
                     src={item.productImage}
                     alt={item.productName}
-                    className="w-full h-64 object-cover rounded-2xl shadow-gray-500 shadow-lg"
+                    className="w-full h-64 object-cover rounded-2xl shadow-gray-500 shadow-md"
                     loading="lazy"
                   />
                 </div>

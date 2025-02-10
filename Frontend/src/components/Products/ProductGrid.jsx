@@ -79,7 +79,7 @@ const ProductGrid = memo(({ products = [] }) => {
               <div className="mt-5 px-2">
                 <p className="text-[12px] font-bold line-clamp-2">{product.name}</p>
                 <p className="text-[10px] text-gray-500 truncate">{product.description}</p>
-                <p className="font-bold text-[13px] py-2">₹{product.price}.00</p>
+                <p className="font-bold text-[12px] py-2">₹{product.price}.00</p>
               </div>
             </div>
           );
@@ -128,8 +128,8 @@ const ProductGrid = memo(({ products = [] }) => {
               </div>
 
               <div className="flex-1 overflow-auto px-3 mt-3 pb-24">
-                <h2 className="text-2xl font-bold">{selectedProduct.name}</h2>
-                <p className="text-gray-500 text-lg mt-2 ">{selectedProduct.description}</p>
+                <h2 className="text-lg font-bold">{selectedProduct.name}</h2>
+                <p className=" text-lg mt-2 ">{selectedProduct.description}</p>
               </div>
 
               {/* Bottom Section: Price & Quantity - Fixed at bottom */}
@@ -145,7 +145,7 @@ const ProductGrid = memo(({ products = [] }) => {
                 ) : (
                   <div className="relative top-4 bg-white flex items-center justify-between px-4 py-2 rounded-lg shadow-md border border-gray-300">
                     <button
-                      className="text-black text-xl flex items-center justify-center w-10 h-10"
+                      className="text-black text-xl flex items-center justify-center w-8 h-8"
                       onClick={() => handleDecrement(selectedProduct._id)}
                     >
                       −
@@ -154,7 +154,7 @@ const ProductGrid = memo(({ products = [] }) => {
                       {getProductQuantity(selectedProduct._id)}
                     </span>
                     <button
-                      className="text-black text-xl flex items-center justify-center w-10 h-10"
+                      className="text-black text-xl flex items-center justify-center w-8 h-8"
                       onClick={() => handleIncrement(selectedProduct._id)}
                     >
                       +
