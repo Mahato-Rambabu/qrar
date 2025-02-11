@@ -65,7 +65,7 @@ router.get('/active', authMiddleware, async (req, res) => {
 });
 
 //active pop-up image for frontend
-router.get("/active/:restaurantId", async (req, res) => {
+router.get("/:restaurantId/active", async (req, res) => {
   const { restaurantId } = req.params;
 
   // Validate restaurantId

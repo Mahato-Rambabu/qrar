@@ -1,31 +1,44 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route, useParams, useLocation } from "react-router-dom";
-import HomePage from "./components/Home/HomePage";
-import ProductPage from "./components/Products/ProductPage";
-import OrderPage from "./components/Orders/OrderPage";
-import { CartProvider } from "@context/CartContext";
-import CartButton from "./components/CartButton";
-import PopUp from "./components/Offers/PopUp";
+// src/App.jsx
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import HomePage from './components/Home/HomePage';
+import ProductPage from './components/Products/ProductPage';
+import OrderPage from './components/Orders/OrderPage';
+import { CartProvider } from '@context/CartContext';
+import CartButton from './components/CartButton';
+import PopUp from './components/Offers/PopUp'; // Adjust the path if needed
 
-// Wrapper to extract restaurantId from URL
-const AppWrapper = () => {
+// This wrapper extracts the restaurantId from the URL and conditionally renders the app.
+const MainWrapper = () => {
   const location = useLocation();
-  const { restaurantId } = useParams();
+  const searchParams = new URLSearchParams(location.search);
+  const restaurantId = searchParams.get('restaurantId');
 
-  // If restaurantId is not provided as a param, try extracting it from the pathname.
-  // Assuming your URL is structured as "/RESTAURANT_ID/..."
-  const extractedRestaurantId = restaurantId || location.pathname.split("/")[1] || null;
+  // If the restaurantId is missing, show an error message.
+  if (!restaurantId) {
+    return (
+      <div className="h-screen w-full flex items-center justify-center">
+        <p className="text-red-500 text-lg">
+          Restaurant ID is missing in the URL. Please scan a valid QR code.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <>
-      {extractedRestaurantId && <PopUp restaurantId={extractedRestaurantId} />}
-      <Routes>
-        <Route path="/:restaurantId" element={<HomePage />} />
-        <Route path="/:restaurantId/home" element={<HomePage />} />
-        <Route path="/:restaurantId/products" element={<ProductPage />} />
-        <Route path="/orders/:restaurantId" element={<OrderPage />} />
-      </Routes>
-      <CartButton />
+      {/* The pop-up component is mounted here. It will only fetch & display once per session. */}
+      <PopUp restaurantId={restaurantId} />
+
+      <div className="w-full h-screen overflow-auto">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/products" element={<ProductPage />} />
+          <Route path="/orders/:restaurantId" element={<OrderPage />} />
+        </Routes>
+        <CartButton />
+      </div>
     </>
   );
 };
@@ -34,9 +47,7 @@ const App = () => {
   return (
     <CartProvider>
       <Router>
-        <div className="w-full h-screen overflow-auto">
-          <AppWrapper />
-        </div>
+        <MainWrapper />
       </Router>
     </CartProvider>
   );
