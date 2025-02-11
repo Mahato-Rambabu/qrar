@@ -5,14 +5,16 @@ import ProductPage from "./components/Products/ProductPage";
 import OrderPage from "./components/Orders/OrderPage";
 import { CartProvider } from "@context/CartContext";
 import CartButton from "./components/CartButton";
-import PopUp from "./components/Offers/PopUp";
+import PopUp from "./components/Offers/PopUp"; // Automatically resolves to PopUp.jsx
 
+// Wrapper to extract restaurantId from URL
 const AppWrapper = () => {
   const location = useLocation();
   const { restaurantId } = useParams();
 
-  // Extract restaurantId from URL pathname (if not in params)
-  const extractedRestaurantId = restaurantId || location.pathname.split("/")[2] || null;
+  // If restaurantId is not provided as a param, try extracting it from the pathname.
+  // Assuming your URL is structured as "/RESTAURANT_ID/..."
+  const extractedRestaurantId = restaurantId || location.pathname.split("/")[1] || null;
 
   return (
     <>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axiosInstance from "../utils/axiosInstance"; // Import axiosInstance
+import axiosInstance from "../utils/axiosInstance"; // Make sure the path is correct
 
 const PopUp = ({ restaurantId }) => {
   const [popUp, setPopUp] = useState(null);
@@ -10,6 +10,7 @@ const PopUp = ({ restaurantId }) => {
 
     const fetchPopUp = async () => {
       try {
+        // Ensure your API endpoint is correct.
         const response = await axiosInstance.get(`/popups/active/${restaurantId}`);
         if (response.data && response.data.imageUrl) {
           setPopUp(response.data);
@@ -32,7 +33,7 @@ const PopUp = ({ restaurantId }) => {
           className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full"
           onClick={() => setIsVisible(false)}
         >
-          {"✕"}
+          {"\u00D7"}
         </button>
         <img
           src={popUp.imageUrl}
