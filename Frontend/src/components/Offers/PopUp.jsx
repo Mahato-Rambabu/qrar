@@ -45,4 +45,5 @@ const PopUp = ({ restaurantId }) => {
   );
 };
 
+
 export default PopUp;
