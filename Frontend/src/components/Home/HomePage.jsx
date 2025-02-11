@@ -89,9 +89,8 @@ const HomePage = () => {
         {loadSlider && <ImageSlider />}
       </main>
 
-      {/* Remove any unnecessary spacing wrappers */}
       <PopularItems />
-
+      
       <section className="w-full bg-gray-100" id="menu-category"> {/* Added bg-gray-100 here */}
         {loadCategory && <MenuCategory />}
       </section>
