@@ -76,7 +76,7 @@ const CategoryPage = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 bg-gray-100 min-h-screen">
       <nav className="text-sm text-gray-500 mb-4">
         <span className="cursor-pointer hover:underline" onClick={() => navigate("/")}>
           Dashboard

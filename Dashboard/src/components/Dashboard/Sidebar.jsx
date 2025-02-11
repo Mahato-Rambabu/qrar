@@ -38,7 +38,6 @@ const Sidebar = memo(({ isOpen: pcSidebarOpen }) => {
     { path: '/categories', label: 'Products', icon: Package },
     { path: '/orders', label: 'Orders', icon: ShoppingCart },
     { path: '/customers', label: 'Customers', icon: Users },
-    { path: '/qrcode', label: 'QR Page', icon: QrCode },
     {
       label: 'Loyalty',
       icon: Heart,
@@ -49,6 +48,7 @@ const Sidebar = memo(({ isOpen: pcSidebarOpen }) => {
         { path: '/loyalty/offers', label: 'Offer Page', icon: Sliders },
       ],
     },
+    { path: '/qrcode', label: 'QR Page', icon: QrCode },
   ];
 
   // Handle Logout
