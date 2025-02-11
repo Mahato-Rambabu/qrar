@@ -5,7 +5,7 @@ import ProductPage from "./components/Products/ProductPage";
 import OrderPage from "./components/Orders/OrderPage";
 import { CartProvider } from "@context/CartContext";
 import CartButton from "./components/CartButton";
-import PopUp from "./components/Offers/PopUp"; // Import PopUp component
+import PopUp from "./components/Offers/PopUp";
 
 const AppWrapper = () => {
   const location = useLocation();
