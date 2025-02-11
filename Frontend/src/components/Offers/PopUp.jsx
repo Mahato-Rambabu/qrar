@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axiosInstance from "../utils/axiosInstance"; // Make sure the path is correct
+import axiosInstance from "../../utils/axiosInstance";
 
 const PopUp = ({ restaurantId }) => {
   const [popUp, setPopUp] = useState(null);

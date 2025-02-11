@@ -5,7 +5,7 @@ import ProductPage from "./components/Products/ProductPage";
 import OrderPage from "./components/Orders/OrderPage";
 import { CartProvider } from "@context/CartContext";
 import CartButton from "./components/CartButton";
-import PopUp from "./components/Offers/PopUp"; // Automatically resolves to PopUp.jsx
+import PopUp from "./components/Offers/PopUp";
 
 // Wrapper to extract restaurantId from URL
 const AppWrapper = () => {
