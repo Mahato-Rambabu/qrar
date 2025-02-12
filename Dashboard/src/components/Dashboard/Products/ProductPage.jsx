@@ -65,10 +65,10 @@ const ProductPage = () => {
         setLoadingProducts(false);
       }
     };
-    if(categoryFilter) {
+    if (categoryFilter) {
 
       fetchProducts();
-    }else{
+    } else {
       fetchProducts();
     }
   }, [debouncedSearchQuery, categoryFilter, page]);
@@ -175,22 +175,20 @@ const ProductPage = () => {
 
       {/* Modal */}
       <Modal
-  isOpen={isModalOpen}
-  onRequestClose={closeModal}
-  contentLabel="Add Product Modal"
-  className="relative bg-white rounded-lg shadow-lg p-6 max-w-full w-11/12 md:w-3/4 lg:w-1/2 mx-auto max-h-[80vh] mt-20 overflow-y-auto z-10"
-  overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
->
-  <button
-    className="absolute top-2 right-2 text-gray-500 hover:text-black"
-    onClick={closeModal}
-  >
-    ✖
-  </button>
-  <AddProductPage onSuccess={handleProductAdded} />
-</Modal>
-
-
+        isOpen={isModalOpen}
+        onRequestClose={closeModal}
+        contentLabel="Add Product Modal"
+        className="relative bg-white rounded-lg shadow-lg p-6 max-w-full w-11/12 md:w-3/4 lg:w-1/2 mx-auto max-h-[80vh] mt-20 overflow-y-auto z-10"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
+      >
+        <button
+          className="absolute top-2 right-2 text-gray-500 hover:text-black"
+          onClick={closeModal}
+        >
+          ✖
+        </button>
+        <AddProductPage onSuccess={handleProductAdded} />
+      </Modal>
 
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-4 mb-6">
@@ -219,23 +217,22 @@ const ProductPage = () => {
         >
           {view === "grid" ? "Switch to Table View" : "Switch to Grid View"}
         </button>
-              {/* Delete Selected Button */}
-   
-              <button
-        className={`px-4 flex  py-2 rounded shadow items-center gap-2 justify-end  ${
-          selectedItems.length === 0
-            ? "bg-gray-300 cursor-not-allowed "
-            : "bg-red-600 hover:bg-red-700 text-white"
-        }`}
-        onClick={handleDeleteSelected}
-        disabled={selectedItems.length === 0}
-      >
-        Delete 
-        <Trash 
-        size={16}
-        />
-      </button>
-    
+        {/* Delete Selected Button */}
+
+        <button
+          className={`px-4 flex  py-2 rounded shadow items-center gap-2 justify-end  ${selectedItems.length === 0
+              ? "bg-gray-300 cursor-not-allowed "
+              : "bg-red-600 hover:bg-red-700 text-white"
+            }`}
+          onClick={handleDeleteSelected}
+          disabled={selectedItems.length === 0}
+        >
+          Delete
+          <Trash
+            size={16}
+          />
+        </button>
+
 
       </div>
 
@@ -257,11 +254,11 @@ const ProductPage = () => {
         <p className="text-gray-500">Loading products...</p>
       ) : products.length > 0 ? (
         view === "grid" ? (
-<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-  {products.map((product) => (
-    <ProductCard key={product._id} product={product} category={categories} onEdit={handleEditProduct}/>
-  ))}
-</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {products.map((product) => (
+              <ProductCard key={product._id} product={product} category={categories} onEdit={handleEditProduct} />
+            ))}
+          </div>
 
         ) : (
           <ProductTable
