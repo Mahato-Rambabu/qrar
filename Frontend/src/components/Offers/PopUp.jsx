@@ -1,52 +1,52 @@
-// src/components/PopUp.jsx
-import React, { useEffect, useState } from "react";
-import axiosInstance from "../../utils/axiosInstance";
+import React, { useEffect, useState } from 'react';
+import axiosInstance from '../../utils/axiosInstance'; // Adjust the path if needed
 
 const PopUp = ({ restaurantId }) => {
-  const [popUp, setPopUp] = useState(null);
+  const [imageUrl, setImageUrl] = useState(null);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    if (!restaurantId) return;
-
-    // If the pop-up has already been shown in this session, do nothing.
-    if (sessionStorage.getItem("popupShown")) {
-      return;
-    }
-
     const fetchPopUp = async () => {
+      // Prevent fetching if pop-up has already been shown in this session
+      if (sessionStorage.getItem("popupShown")) {
+        console.log("Pop-up already shown in this session.");
+        return;
+      }
+
       try {
+        console.log("Fetching pop-up for restaurantId:", restaurantId);
+        
         const response = await axiosInstance.get(`/popups/${restaurantId}/active`);
-        if (response.data && response.data.imageUrl) {
-          setPopUp(response.data);
+        
+        console.log("Pop-up response:", response.data);
+
+        if (response.data?.img) {
+          setImageUrl(response.data.img);
           setIsVisible(true);
+          sessionStorage.setItem("popupShown", "true"); // Set session flag
+        } else {
+          console.warn("No active pop-up found for this restaurant.");
         }
       } catch (error) {
-        console.error("No active pop-up found or error fetching pop-up", error);
+        console.error("Error fetching pop-up:", error.response?.data || error.message);
       }
     };
 
     fetchPopUp();
   }, [restaurantId]);
 
-  const handleClose = () => {
-    setIsVisible(false);
-    // Set the flag so that the pop-up is not shown again during this session.
-    sessionStorage.setItem("popupShown", "true");
-  };
-
-  if (!popUp || !isVisible) return null;
+  if (!isVisible || !imageUrl) return null; // Do not render if no image
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-5 rounded-lg shadow-lg max-w-sm relative">
-        <button
-          className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full"
-          onClick={handleClose}
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="relative bg-white p-4 rounded-lg shadow-lg">
+        <button 
+          className="absolute top-2 right-2 text-gray-600 hover:text-black" 
+          onClick={() => setIsVisible(false)}
         >
-          {"\u00D7"}
+          ✖
         </button>
-        <img src={popUp.imageUrl} alt="Pop-up" className="w-full h-auto rounded-lg" />
+        <img src={imageUrl} alt="Popup" className="max-w-full h-auto" />
       </div>
     </div>
   );
