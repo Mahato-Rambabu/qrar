@@ -1,22 +1,29 @@
-import React, { useState, useEffect } from "react";
-import axiosInstance from "../../utils/axiosInstance"; 
+import React, { useEffect, useState } from 'react';
+import axiosInstance from '../../utils/axiosInstance'; // Adjust the path if needed
 
 const PopUp = ({ restaurantId }) => {
   const [imageUrl, setImageUrl] = useState(null);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const popupShown = sessionStorage.getItem("popupShown");
-
-    if (popupShown) return; // Prevent fetching if popup was already shown in session
-
     const fetchPopUp = async () => {
+      // Prevent fetching if pop-up has already been shown in this session
+      if (sessionStorage.getItem("popupShown")) {
+        console.log("Pop-up already shown in this session.");
+        return;
+      }
+
       try {
+        console.log("Fetching pop-up for restaurantId:", restaurantId);
+        
         const response = await axiosInstance.get(`/popups/${restaurantId}/active`);
         
-        if (response.data?.imageUrl) {
-          setImageUrl(response.data.imageUrl);
+        console.log("Pop-up response:", response.data);
+
+        if (response.data?.img) {
+          setImageUrl(response.data.img);
           setIsVisible(true);
+          sessionStorage.setItem("popupShown", "true"); // Set session flag
         } else {
           console.warn("No active pop-up found for this restaurant.");
         }
@@ -28,23 +35,18 @@ const PopUp = ({ restaurantId }) => {
     fetchPopUp();
   }, [restaurantId]);
 
-  const handleClose = () => {
-    setIsVisible(false);
-    sessionStorage.setItem("popupShown", "true");
-  };
-
-  if (!isVisible || !imageUrl) return null;
+  if (!isVisible || !imageUrl) return null; // Do not render if no image
 
   return (
-    <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white p-4 rounded-lg shadow-lg max-w-md">
-        <button
-          className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-          onClick={handleClose}
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="relative bg-white p-4 rounded-lg shadow-lg">
+        <button 
+          className="absolute top-2 right-2 text-gray-600 hover:text-black" 
+          onClick={() => setIsVisible(false)}
         >
           ✖
         </button>
-        <img src={imageUrl} alt="Offer Pop-up" className="w-full rounded-lg" />
+        <img src={imageUrl} alt="Popup" className="max-w-full h-auto" />
       </div>
     </div>
   );
