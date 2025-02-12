@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import axiosInstance from "../../utils/axiosInstance"; 
 
 const PopUp = ({ restaurantId }) => {
   const [imageUrl, setImageUrl] = useState(null);
@@ -8,21 +8,20 @@ const PopUp = ({ restaurantId }) => {
   useEffect(() => {
     const popupShown = sessionStorage.getItem("popupShown");
 
-    // If the pop-up has been shown before in this session, do nothing
-    if (popupShown) return;
+    if (popupShown) return; // Prevent fetching if popup was already shown in session
 
-    // Fetch the pop-up image
     const fetchPopUp = async () => {
       try {
-        const response = await axios.get(
-          `https://qrar.onrender.com/api/popups/${restaurantId}/active`
-        );
+        const response = await axiosInstance.get(`/popups/${restaurantId}/active`);
+        
         if (response.data?.imageUrl) {
           setImageUrl(response.data.imageUrl);
           setIsVisible(true);
+        } else {
+          console.warn("No active pop-up found for this restaurant.");
         }
       } catch (error) {
-        console.error("Error fetching pop-up:", error);
+        console.error("Error fetching pop-up:", error.response?.data || error.message);
       }
     };
 
@@ -31,7 +30,7 @@ const PopUp = ({ restaurantId }) => {
 
   const handleClose = () => {
     setIsVisible(false);
-    sessionStorage.setItem("popupShown", "true"); // Prevent showing again in the same session
+    sessionStorage.setItem("popupShown", "true");
   };
 
   if (!isVisible || !imageUrl) return null;
