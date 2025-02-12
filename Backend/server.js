@@ -87,8 +87,6 @@ app.use('/orders', configureOrderRoutes(io));
 app.use('/users', userRoutes);
 app.use('/', QrCodeGen);
 
-
-
 // Server
 const PORT = process.env.PORT;
 server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
