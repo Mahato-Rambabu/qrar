@@ -1,28 +1,28 @@
-// src/components/PopUp.jsx
-import React, { useEffect, useState } from "react";
-import axiosInstance from "../../utils/axiosInstance";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 const PopUp = ({ restaurantId }) => {
-  const [popUp, setPopUp] = useState(null);
+  const [imageUrl, setImageUrl] = useState(null);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    if (!restaurantId) return;
+    const popupShown = sessionStorage.getItem("popupShown");
 
-    // If the pop-up has already been shown in this session, do nothing.
-    if (sessionStorage.getItem("popupShown")) {
-      return;
-    }
+    // If the pop-up has been shown before in this session, do nothing
+    if (popupShown) return;
 
+    // Fetch the pop-up image
     const fetchPopUp = async () => {
       try {
-        const response = await axiosInstance.get(`/popups/${restaurantId}/active`);
-        if (response.data && response.data.imageUrl) {
-          setPopUp(response.data);
+        const response = await axios.get(
+          `https://qrar.onrender.com/api/popups/${restaurantId}/active`
+        );
+        if (response.data?.imageUrl) {
+          setImageUrl(response.data.imageUrl);
           setIsVisible(true);
         }
       } catch (error) {
-        console.error("No active pop-up found or error fetching pop-up", error);
+        console.error("Error fetching pop-up:", error);
       }
     };
 
@@ -31,22 +31,21 @@ const PopUp = ({ restaurantId }) => {
 
   const handleClose = () => {
     setIsVisible(false);
-    // Set the flag so that the pop-up is not shown again during this session.
-    sessionStorage.setItem("popupShown", "true");
+    sessionStorage.setItem("popupShown", "true"); // Prevent showing again in the same session
   };
 
-  if (!popUp || !isVisible) return null;
+  if (!isVisible || !imageUrl) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-5 rounded-lg shadow-lg max-w-sm relative">
+    <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="relative bg-white p-4 rounded-lg shadow-lg max-w-md">
         <button
-          className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full"
+          className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
           onClick={handleClose}
         >
-          {"\u00D7"}
+          ✖
         </button>
-        <img src={popUp.imageUrl} alt="Pop-up" className="w-full h-auto rounded-lg" />
+        <img src={imageUrl} alt="Offer Pop-up" className="w-full rounded-lg" />
       </div>
     </div>
   );
