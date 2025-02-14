@@ -48,6 +48,33 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 });
 
+// ✅ Edit a pop-up image (update name and/or image)
+router.put('/:id', authMiddleware, upload.single('img'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name } = req.body;            // Name from the form
+    const restaurantId = req.user.restaurantId;
+    const imgPath = req.file ? req.file.path : null;  // If a new image is uploaded
+
+    // Find the pop-up image for this restaurant
+    const popUp = await PopUpImage.findOne({ _id: id, restaurantId });
+    if (!popUp) {
+      return res.status(404).json({ error: 'Pop-up image not found or unauthorized' });
+    }
+
+    // Update fields if provided
+    if (name) popUp.name = name;
+    if (imgPath) popUp.img = imgPath;
+
+    // Save changes
+    const updatedPopUp = await popUp.save();
+    res.status(200).json(updatedPopUp);
+  } catch (error) {
+    res.status(500).json({ error: 'Server error', details: error.message });
+  }
+});
+
+
 // ✅ Fetch the active pop-up image for a restaurant
 router.get('/active', authMiddleware, async (req, res) => {
   try {

@@ -13,6 +13,12 @@ const PopCardsPage = () => {
   const [error, setError] = useState(null);
   const [loadingStates, setLoadingStates] = useState({}); // Tracks loading state per card
 
+  // EDIT modal states
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editCardId, setEditCardId] = useState(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editImage, setEditImage] = useState(null);
+
   useEffect(() => {
     fetchPopCards();
   }, []);
@@ -37,12 +43,26 @@ const PopCardsPage = () => {
     setLoadingStates((prev) => ({ ...prev, [cardId]: true }));
     try {
       await axiosInstance.put(`/popups/toggle/${cardId}`);
-      // Update local state to avoid re-fetching everything
-      setPopCards((prevCards) =>
-        prevCards.map((card) =>
-          card._id === cardId ? { ...card, isActive: !isActive } : card
-        )
-      );
+
+      // If we are activating a card, un-toggle all others in local state
+      if (!isActive) {
+        setPopCards((prevCards) =>
+          prevCards.map((card) =>
+            card._id === cardId
+              ? { ...card, isActive: true }
+              : { ...card, isActive: false }
+          )
+        );
+      } else {
+        // If we are deactivating a card
+        setPopCards((prevCards) =>
+          prevCards.map((card) =>
+            card._id === cardId
+              ? { ...card, isActive: false }
+              : card
+          )
+        );
+      }
     } catch (err) {
       console.error('Error toggling active state:', err);
     } finally {
@@ -85,6 +105,49 @@ const PopCardsPage = () => {
     }
   };
 
+  // =====================
+  // EDIT LOGIC
+  // =====================
+  const openEditModal = (card) => {
+    setEditCardId(card._id);
+    setEditTitle(card.name);
+    setEditImage(null); // No default image
+    setEditModalOpen(true);
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    if (!editCardId) return;
+
+    setLoadingStates((prev) => ({ ...prev, [editCardId]: true }));
+
+    try {
+      const formData = new FormData();
+      formData.append('name', editTitle);
+      if (editImage) {
+        formData.append('img', editImage);
+      }
+      // PUT /popups/:id
+      await axiosInstance.put(`/popups/${editCardId}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      // Update local state
+      setPopCards((prevCards) =>
+        prevCards.map((c) =>
+          c._id === editCardId
+            ? { ...c, name: editTitle, img: editImage ? URL.createObjectURL(editImage) : c.img }
+            : c
+        )
+      );
+      setEditModalOpen(false);
+    } catch (err) {
+      console.error('Error editing pop card:', err);
+      setError('Failed to edit pop card.');
+    } finally {
+      setLoadingStates((prev) => ({ ...prev, [editCardId]: false }));
+    }
+  };
+
   return (
     <div className="p-4 bg-gray-100 min-h-screen">
       {/* Header */}
@@ -115,6 +178,7 @@ const PopCardsPage = () => {
               onToggle={handleToggleActive}
               onDelete={handleDelete}
               loadingState={loadingStates}
+              onEditOpen={openEditModal} // pass the function
             />
           ))}
         </div>
@@ -126,7 +190,7 @@ const PopCardsPage = () => {
           <div
             className="absolute inset-0 bg-black opacity-50"
             onClick={() => setModalOpen(false)}
-          ></div>
+          />
           <div className="relative bg-white p-6 rounded shadow-md z-10 w-11/12 max-w-sm">
             <h2 className="text-xl font-bold mb-4">Add New Pop Card</h2>
             <form onSubmit={handleAddCard}>
@@ -162,6 +226,54 @@ const PopCardsPage = () => {
                   className="px-4 py-2 bg-blue-500 text-white rounded text-sm"
                 >
                   Add Card
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal for Editing an Existing Pop Card */}
+      {editModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div
+            className="absolute inset-0 bg-black opacity-50"
+            onClick={() => setEditModalOpen(false)}
+          />
+          <div className="relative bg-white p-6 rounded shadow-md z-10 w-11/12 max-w-sm">
+            <h2 className="text-xl font-bold mb-4">Edit Pop Card</h2>
+            <form onSubmit={handleEditSubmit}>
+              <div className="mb-4">
+                <label className="block mb-1 text-sm">Title</label>
+                <input
+                  type="text"
+                  className="w-full border rounded px-3 py-2 text-sm"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block mb-1 text-sm">New Image (optional)</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setEditImage(e.target.files[0])}
+                />
+              </div>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setEditModalOpen(false)}
+                  className="mr-2 px-4 py-2 border rounded text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-500 text-white rounded text-sm"
+                >
+                  Save Changes
                 </button>
               </div>
             </form>
