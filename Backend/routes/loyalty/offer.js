@@ -2,6 +2,7 @@ import express from 'express';
 import Offer from '../../models/loyalty/offer.js';
 import authMiddleware from '../../middlewares/authMiddlewares.js';
 import { upload } from '../../config/multerConfig.js'; // if using file uploads for image
+import mongoose from 'mongoose';
 
 const router = express.Router();
 
