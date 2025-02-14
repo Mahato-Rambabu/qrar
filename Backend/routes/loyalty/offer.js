@@ -76,6 +76,29 @@ router.get('/all', authMiddleware, async (req, res) => {
   }
 });
 
+// Fetch all active offers for the frontend based on restaurantId
+router.get('/:restaurantId/active', async (req, res) => {
+  const { restaurantId } = req.params;
+
+  // Validate restaurantId
+  if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
+    return res.status(400).json({ error: 'Invalid restaurantId' });
+  }
+
+  try {
+    // Find all active offers for the given restaurantId
+    const activeOffers = await Offer.find({ restaurantId, isActive: true });
+
+    if (!activeOffers || activeOffers.length === 0) {
+      return res.status(404).json({ error: 'No active offers found' });
+    }
+
+    res.status(200).json(activeOffers);
+  } catch (error) {
+    res.status(500).json({ error: 'Server error', details: error.message });
+  }
+});
+
 /**
  * Get a single offer by its ID (only if it belongs to the restaurant).
  */
