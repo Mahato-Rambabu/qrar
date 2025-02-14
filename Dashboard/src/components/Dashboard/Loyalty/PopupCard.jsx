@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axiosInstance from '../../../utils/axiosInstance';
 import { Plus } from 'lucide-react';
-import PopCard from './PopupCardUI';
 import { CircularProgress } from '@mui/material';
+import PopCard from './PopupCardUI';
 
 const PopCardsPage = () => {
   const [popCards, setPopCards] = useState([]);
@@ -11,12 +11,13 @@ const PopCardsPage = () => {
   const [newTitle, setNewTitle] = useState('');
   const [newImage, setNewImage] = useState(null);
   const [error, setError] = useState(null);
-  const [loadingStates, setLoadingStates] = useState({}); // Loading state per card
+  const [loadingStates, setLoadingStates] = useState({}); // Tracks loading state per card
 
   useEffect(() => {
     fetchPopCards();
   }, []);
 
+  // Fetch all pop cards
   const fetchPopCards = async () => {
     try {
       setLoading(true);
@@ -31,10 +32,12 @@ const PopCardsPage = () => {
     }
   };
 
+  // Toggle card active state
   const handleToggleActive = async (cardId, isActive) => {
     setLoadingStates((prev) => ({ ...prev, [cardId]: true }));
     try {
       await axiosInstance.put(`/popups/toggle/${cardId}`);
+      // Update local state to avoid re-fetching everything
       setPopCards((prevCards) =>
         prevCards.map((card) =>
           card._id === cardId ? { ...card, isActive: !isActive } : card
@@ -47,10 +50,12 @@ const PopCardsPage = () => {
     }
   };
 
+  // Delete card
   const handleDelete = async (cardId) => {
     setLoadingStates((prev) => ({ ...prev, [cardId]: true }));
     try {
       await axiosInstance.delete(`/popups/${cardId}`);
+      // Remove card from local state
       setPopCards((prevCards) => prevCards.filter((card) => card._id !== cardId));
     } catch (err) {
       console.error('Error deleting pop card:', err);
@@ -59,6 +64,7 @@ const PopCardsPage = () => {
     }
   };
 
+  // Add a new pop card
   const handleAddCard = async (e) => {
     e.preventDefault();
     if (!newTitle || !newImage) return;
@@ -81,19 +87,18 @@ const PopCardsPage = () => {
 
   return (
     <div className="p-4 bg-gray-100 min-h-screen">
-      {/* Header Section */}
+      {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold">Pop Up Cards</h1>
+        <h1 className="text-2xl font-semibold">Deals You Can't Miss</h1>
         <button
           className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 flex items-center gap-2"
           onClick={() => setModalOpen(true)}
         >
           <Plus size={16} />
-          Add Pop up
+          Add Pop Up
         </button>
       </div>
 
-      {/* Pop Cards Section */}
       {loading ? (
         <div className="flex justify-center py-6">
           <CircularProgress />
@@ -101,7 +106,8 @@ const PopCardsPage = () => {
       ) : error ? (
         <p className="text-red-500 text-center">{error}</p>
       ) : (
-        <div className="flex gap-6 min-h-[100%] overflow-x-auto pb-4 scrollbar-hide px-2 snap-x snap-mandatory">
+        // Horizontal scrolling container
+        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory px-2">
           {popCards.map((card) => (
             <PopCard
               key={card._id}
@@ -117,7 +123,10 @@ const PopCardsPage = () => {
       {/* Modal for Adding a New Pop Card */}
       {modalOpen && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div className="absolute inset-0 bg-black opacity-50" onClick={() => setModalOpen(false)}></div>
+          <div
+            className="absolute inset-0 bg-black opacity-50"
+            onClick={() => setModalOpen(false)}
+          ></div>
           <div className="relative bg-white p-6 rounded shadow-md z-10 w-11/12 max-w-sm">
             <h2 className="text-xl font-bold mb-4">Add New Pop Card</h2>
             <form onSubmit={handleAddCard}>
