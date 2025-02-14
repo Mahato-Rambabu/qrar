@@ -22,7 +22,7 @@ const CartButton = () => {
   return (
     <button
       aria-label="Cart button"
-      className="fixed bottom-8 right-8 md:bottom-16 md:right-16 bg-gray-500 hover:bg-pink-600 rounded-full p-3 shadow-lg cursor-pointer"
+      className="fixed bottom-8 right-8 md:bottom-16 md:right-16 bg-yellow-500 hover:bg-pink-600 rounded-full p-3 shadow-lg cursor-pointer"
       onClick={() => {
         if (restaurantId) {
           navigate(`/orders/${restaurantId}`);
