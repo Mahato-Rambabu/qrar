@@ -5,6 +5,7 @@ import ImageSlider from './ImageSlider';
 import MenuCategory from './MenuCategory';
 import PopularItems from './PopularItems'; // Import the PopularItems component
 import axiosInstance from '../../utils/axiosInstance';
+import Offers from '../Offers/Offers';
 
 const HomePage = () => {
   const location = useLocation();
@@ -88,6 +89,7 @@ const HomePage = () => {
       <main className="w-full bg-white overflow-hidden" id="image-slider">
         {loadSlider && <ImageSlider />}
       </main>
+      <Offers />
 
       <PopularItems />
       
