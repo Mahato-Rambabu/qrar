@@ -13,7 +13,7 @@ const Offers = () => {
 
   return (
     <div
-      className="w-full p-2 pt-2 flex items-center justify-center cursor-pointer bg-gray-200"
+      className="w-full p-2 pt-2 flex items-center justify-center cursor-pointer bg-gray-100"
       onClick={handleClick}
     >
       <div className="relative w-full max-w-md bg-gradient-to-r from-gray-700 to-gray-500 text-white rounded-xl shadow-xl p-6 flex items-center justify-between hover:scale-105 transition-transform duration-300">

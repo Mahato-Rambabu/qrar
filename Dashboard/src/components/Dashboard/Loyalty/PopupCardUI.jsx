@@ -8,11 +8,9 @@ const PopCard = ({ card, onToggle, onDelete, loadingState }) => {
       className="sm:min-w-[40%] lg:min-w-[20%] sm:w-56 border bg-white rounded-lg shadow-lg  flex flex-col items-center  sm:shrink-0"
     >
       {/* Image container with fixed 9:16 aspect ratio */}
-<<<<<<< Updated upstream
-      <div className="w-full rounded-t-lg overflow-hidden mb-2">
-=======
+
       <div className="w-full aspect-[9/9] rounded-t-lg overflow-hidden mb-2">
->>>>>>> Stashed changes
+
         <img
           src={card.img}
           alt={card.name}
