@@ -6,7 +6,8 @@ import ProductPage from './components/Products/ProductPage';
 import OrderPage from './components/Orders/OrderPage';
 import { CartProvider } from '@context/CartContext';
 import CartButton from './components/CartButton';
-import PopUp from './components/Offers/PopUp'; // Adjust the path if needed
+import PopUp from './components/Offers/PopUp';
+import ActiveOffers from './components/Offers/ActiveOffers';
 
 // This wrapper extracts the restaurantId from the URL and conditionally renders the app.
 const MainWrapper = () => {
@@ -36,6 +37,7 @@ const MainWrapper = () => {
           <Route path="/home" element={<HomePage />} />
           <Route path="/products" element={<ProductPage />} />
           <Route path="/orders/:restaurantId" element={<OrderPage />} />
+          <Route path="/active-offers" element={<ActiveOffers />} /> 
         </Routes>
         <CartButton />
       </div>
