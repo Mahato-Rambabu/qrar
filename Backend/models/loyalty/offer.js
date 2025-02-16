@@ -1,66 +1,43 @@
+// models/loyalty/offer.js
 import mongoose from 'mongoose';
+const { Schema } = mongoose;
 
-const offerSchema = new mongoose.Schema({
+const OfferSchema = new Schema({
+  restaurantId: {
+    type: Schema.Types.ObjectId,
+    required: true,
+    ref: 'Restaurant',
+  },
   title: {
     type: String,
     required: true,
   },
-  description: {
+  targetType: {
     type: String,
-  },
-  img: {
-    type: String, // This can be a file path or URL to the image
+    enum: ['product', 'category', 'all'],
     required: true,
   },
-  restaurantId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Restaurant',
-    required: true,
-  },
-  // Array of days when the offer is active (e.g., ["Saturday", "Sunday"])
-  applicableDays: [{
-    type: String,
-  }],
-  // Time range in HH:MM (24-hour format) for when the offer is active
-  startTime: {
-    type: String,
-    required: true,
-  },
-  endTime: {
-    type: String,
-    required: true,
-  },
-  // Conditions for applying the discount: if the bill is more than minBillAmount then discountPercentage applies
-  discountCondition: {
-    minBillAmount: {
-      type: Number,
-      required: true,
+  targetId: {
+    type: Schema.Types.ObjectId,
+    required: function () {
+      return this.targetType !== 'all';
     },
-    discountPercentage: {
-      type: Number,
-      required: true,
-    }
   },
-  // Optionally link offer to specific products and/or categories
-  linkedProducts: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Product',
-  }],
-  linkedCategories: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Category',
-  }],
-  isActive: {
+  discountPercentage: {
+    type: Number,
+    required: true,
+  },
+  activationTime: {
+    type: Date,
+    required: true,
+  },
+  expirationTime: {
+    type: Date,
+  },
+  status: {
     type: Boolean,
     default: true,
   },
-  // Optional field to set the priority or order of the offer
-  priority: {
-    type: Number,
-    default: 0,
-  }
-}, { timestamps: true });
+});
 
-const Offer = mongoose.model('Offer', offerSchema);
-
-export default Offer;
+export default mongoose.model('Offer', OfferSchema);

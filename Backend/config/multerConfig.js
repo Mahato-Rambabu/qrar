@@ -15,7 +15,7 @@ const storage = new CloudinaryStorage({
     },
     overwrite: false,
     transformation: [
-      { width: 1200, height: 675, crop: 'fill' }, // 16:9 aspect ratio
+      { width: 1920, height: null, crop: 'scale' }, // 16:9 aspect ratio
       { quality: 'auto:best' },
       { fetch_format: 'auto' },
     ],

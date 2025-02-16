@@ -1,65 +1,64 @@
 import express from 'express';
-import Offer from '../../models/loyalty/offer.js';
-import authMiddleware from '../../middlewares/authMiddlewares.js';
-import { upload } from '../../config/multerConfig.js'; // if using file uploads for image
 import mongoose from 'mongoose';
+import Offer from '../../models/loyalty/offer.js'; // Updated Offer model
+import authMiddleware from '../../middlewares/authMiddlewares.js';
 
 const router = express.Router();
 
 /**
  * Create a new offer.
- * Uses authMiddleware to set restaurantId.
- * Uses multer to handle the image upload.
+ * Expects in req.body:
+ *   - title (required)
+ *   - targetType (required)
+ *   - targetId (required if targetType is not 'all')
+ *   - discountPercentage (required)
+ *   - activationTime (required)
+ *   - expirationTime (optional)
+ *   - status (optional, default is true)
+ * restaurantId is set from req.user.
  */
-router.post('/', authMiddleware, upload.single('img'), async (req, res) => {
+router.post('/', authMiddleware, async (req, res) => {
   try {
     const {
       title,
-      description,
-      applicableDays,
-      startTime,
-      endTime,
-      discountCondition, // expect an object: { minBillAmount, discountPercentage }
-      linkedProducts,
-      linkedCategories,
-      priority,
+      targetType,
+      targetId,
+      discountPercentage,
+      activationTime,
+      expirationTime,
+      status,
     } = req.body;
     const restaurantId = req.user.restaurantId;
-    const imgPath = req.file ? req.file.path : req.body.img; // allow image URL fallback
 
-    // Basic validations:
-    if (!title || !imgPath || !startTime || !endTime || !discountCondition) {
-      return res.status(400).json({ error: 'Required fields are missing' });
+    // Validate required fields including title
+    if (!title || !targetType || !discountPercentage || !activationTime) {
+      return res.status(400).json({
+        error:
+          'Missing required fields: title, targetType, discountPercentage, and activationTime are required.',
+      });
+    }
+    // For product or category offers, targetId must be provided.
+    if (targetType !== 'all' && !targetId) {
+      return res
+        .status(400)
+        .json({ error: 'targetId is required for product or category offers' });
     }
 
-    // Optionally parse discountCondition if sent as JSON string from Postman
-    let discountObj = discountCondition;
-    if (typeof discountCondition === 'string') {
-      discountObj = JSON.parse(discountCondition);
-    }
-    if (!discountObj.minBillAmount || !discountObj.discountPercentage) {
-      return res.status(400).json({ error: 'Discount condition details are missing' });
-    }
-
-    // Create new offer object
     const newOffer = new Offer({
       title,
-      description,
-      img: imgPath,
       restaurantId,
-      applicableDays: applicableDays ? (Array.isArray(applicableDays) ? applicableDays : [applicableDays]) : [],
-      startTime,
-      endTime,
-      discountCondition: discountObj,
-      linkedProducts: linkedProducts ? (Array.isArray(linkedProducts) ? linkedProducts : [linkedProducts]) : [],
-      linkedCategories: linkedCategories ? (Array.isArray(linkedCategories) ? linkedCategories : [linkedCategories]) : [],
-      priority: priority || 0,
-      isActive: true,
+      targetType,
+      targetId: targetType !== 'all' ? targetId : undefined,
+      discountPercentage,
+      activationTime,
+      expirationTime, // optional
+      status: typeof status !== 'undefined' ? status : true,
     });
 
     const savedOffer = await newOffer.save();
     res.status(201).json(savedOffer);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Server error', details: error.message });
   }
 });
@@ -77,18 +76,32 @@ router.get('/all', authMiddleware, async (req, res) => {
   }
 });
 
-// Fetch all active offers for the frontend based on restaurantId
+/**
+ * Fetch all active offers for a given restaurant.
+ * Active offers have:
+ *   - status === true,
+ *   - activationTime <= now,
+ *   - and either no expirationTime or expirationTime > now.
+ */
 router.get('/:restaurantId/active', async (req, res) => {
   const { restaurantId } = req.params;
 
-  // Validate restaurantId
   if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
     return res.status(400).json({ error: 'Invalid restaurantId' });
   }
 
   try {
-    // Find all active offers for the given restaurantId
-    const activeOffers = await Offer.find({ restaurantId, isActive: true });
+    const now = new Date();
+    const activeOffers = await Offer.find({
+      restaurantId,
+      status: true,
+      activationTime: { $lte: now },
+      $or: [
+        { expirationTime: { $exists: false } },
+        { expirationTime: null },
+        { expirationTime: { $gt: now } },
+      ],
+    });
 
     if (!activeOffers || activeOffers.length === 0) {
       return res.status(404).json({ error: 'No active offers found' });
@@ -101,7 +114,8 @@ router.get('/:restaurantId/active', async (req, res) => {
 });
 
 /**
- * Get a single offer by its ID (only if it belongs to the restaurant).
+ * Get a single offer by its ID.
+ * Only returns the offer if it belongs to the authenticated restaurant.
  */
 router.get('/:id', authMiddleware, async (req, res) => {
   try {
@@ -119,62 +133,35 @@ router.get('/:id', authMiddleware, async (req, res) => {
 
 /**
  * Update an offer.
- * You can update any field including image.
+ * Updatable fields: title, targetType, targetId, discountPercentage, activationTime, expirationTime, status.
  */
-router.put('/:id', authMiddleware, upload.single('img'), async (req, res) => {
+router.put('/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     const restaurantId = req.user.restaurantId;
     const {
       title,
-      description,
-      applicableDays,
-      startTime,
-      endTime,
-      discountCondition,
-      linkedProducts,
-      linkedCategories,
-      priority,
-      isActive,
+      targetType,
+      targetId,
+      discountPercentage,
+      activationTime,
+      expirationTime,
+      status,
     } = req.body;
-    
-    let updateData = {
-      title,
-      description,
-      startTime,
-      endTime,
-      priority: priority || 0,
-    };
 
-    if (applicableDays) {
-      updateData.applicableDays = Array.isArray(applicableDays) ? applicableDays : [applicableDays];
-    }
-    
-    // Handle discountCondition parsing if needed
-    if (discountCondition) {
-      updateData.discountCondition = typeof discountCondition === 'string'
-        ? JSON.parse(discountCondition)
-        : discountCondition;
-    }
-    
-    if (linkedProducts) {
-      updateData.linkedProducts = Array.isArray(linkedProducts) ? linkedProducts : [linkedProducts];
-    }
-    
-    if (linkedCategories) {
-      updateData.linkedCategories = Array.isArray(linkedCategories) ? linkedCategories : [linkedCategories];
-    }
-    
-    // Toggle active state if provided explicitly
-    if (typeof isActive !== 'undefined') {
-      updateData.isActive = isActive;
-    }
-    
-    // If image file is provided, update the image path
-    if (req.file) {
-      updateData.img = req.file.path;
-    } else if (req.body.img) {
-      updateData.img = req.body.img;
+    let updateData = {};
+    if (title) updateData.title = title;
+    if (targetType) updateData.targetType = targetType;
+    if (discountPercentage) updateData.discountPercentage = discountPercentage;
+    if (activationTime) updateData.activationTime = activationTime;
+    if (expirationTime) updateData.expirationTime = expirationTime;
+    if (typeof status !== 'undefined') updateData.status = status;
+
+    // Handle targetId update: only assign targetId if offer is not for 'all'
+    if ((targetType && targetType !== 'all') || req.body.targetId) {
+      updateData.targetId = targetId;
+    } else if (targetType === 'all') {
+      updateData.targetId = undefined;
     }
 
     const updatedOffer = await Offer.findOneAndUpdate(
@@ -194,7 +181,7 @@ router.put('/:id', authMiddleware, upload.single('img'), async (req, res) => {
 });
 
 /**
- * Toggle the active state of an offer.
+ * Toggle the active state (status) of an offer.
  */
 router.put('/toggle/:id', authMiddleware, async (req, res) => {
   try {
@@ -204,9 +191,12 @@ router.put('/toggle/:id', authMiddleware, async (req, res) => {
     if (!offer) {
       return res.status(404).json({ error: 'Offer not found' });
     }
-    offer.isActive = !offer.isActive;
+    offer.status = !offer.status;
     await offer.save();
-    res.status(200).json({ message: `Offer ${offer.isActive ? 'activated' : 'deactivated'}`, offer });
+    res.status(200).json({
+      message: `Offer ${offer.status ? 'activated' : 'deactivated'}`,
+      offer,
+    });
   } catch (error) {
     res.status(500).json({ error: 'Server error', details: error.message });
   }
