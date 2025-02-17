@@ -28,15 +28,15 @@ axios.interceptors.request.use(config => {
   return config;
 });
 
-axiosInstance.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response && error.response.status === 401 && !isAuthPage()) {
-      console.warn('Unauthorized! Redirecting to login...');
-      window.location.href = '/login'; // Redirect if NOT on login or register page
-    }
-    return Promise.reject(error);
-  }
-);
+// axiosInstance.interceptors.response.use(
+//   (response) => response,
+//   (error) => {
+//     if (error.response && error.response.status === 401 && !isAuthPage()) {
+//       console.warn('Unauthorized! Redirecting to login...');
+//       window.location.href = '/login'; // Redirect if NOT on login or register page
+//     }
+//     return Promise.reject(error);
+//   }
+// );
 
 export default axiosInstance;
