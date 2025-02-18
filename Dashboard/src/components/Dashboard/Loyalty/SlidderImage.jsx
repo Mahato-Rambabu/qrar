@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axiosInstance from '../../../utils/axiosInstance';
+import { Plus } from 'lucide-react';
 
 const SliderImagePage = () => {
   const [loyaltyEntries, setLoyaltyEntries] = useState([]);
@@ -88,6 +89,7 @@ const SliderImagePage = () => {
         onClick={() => setModalOpen(true)}
         className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 flex items-center gap-2"
       >
+        <Plus size={16} />
         Add New Slidder Image
       </button>
         </div>

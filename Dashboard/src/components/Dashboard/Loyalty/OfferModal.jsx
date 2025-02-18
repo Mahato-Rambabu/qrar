@@ -1,6 +1,6 @@
-// OfferModal.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { X } from 'lucide-react';
+import axiosInstance from '../../../utils/axiosInstance';
 
 const OfferModal = ({ isOpen, onClose, onSubmit, initialData }) => {
   const [title, setTitle] = useState(initialData?.title || '');
@@ -14,30 +14,40 @@ const OfferModal = ({ isOpen, onClose, onSubmit, initialData }) => {
     initialData?.expirationTime ? initialData.expirationTime.substring(0, 16) : ''
   );
   const [status, setStatus] = useState(initialData?.status ?? true);
+  const [options, setOptions] = useState([]); // Stores fetched products/categories
+  const [loading, setLoading] = useState(false);
+
+  // Fetch Products or Categories based on targetType
+  const fetchOptions = useCallback(async () => {
+    if (targetType === 'all') {
+      setOptions([]);
+      return;
+    }
+  
+    setLoading(true);
+    try {
+      const endpoint = targetType === 'product' ? '/products/all' : '/categories';
+      const response = await axiosInstance.get(endpoint);
+  
+      // Extract products array if the target type is 'product'
+      if (targetType === 'product' && response.data?.products) {
+        setOptions(response.data.products); // Extract products array
+      } else if (targetType === 'category' && Array.isArray(response.data)) {
+        setOptions(response.data);
+      } else {
+        setOptions([]);
+      }
+    } catch (error) {
+      console.error(`Failed to fetch ${targetType}:`, error);
+      setOptions([]);
+    }
+    setLoading(false);
+  }, [targetType]);
+  
 
   useEffect(() => {
-    if (initialData) {
-      setTitle(initialData.title || '');
-      setTargetType(initialData.targetType || 'all');
-      setTargetId(initialData.targetId || '');
-      setDiscountPercentage(initialData.discountPercentage || '');
-      setActivationTime(
-        initialData.activationTime ? initialData.activationTime.substring(0, 16) : ''
-      );
-      setExpirationTime(
-        initialData.expirationTime ? initialData.expirationTime.substring(0, 16) : ''
-      );
-      setStatus(initialData.status ?? true);
-    } else {
-      setTitle('');
-      setTargetType('all');
-      setTargetId('');
-      setDiscountPercentage('');
-      setActivationTime('');
-      setExpirationTime('');
-      setStatus(true);
-    }
-  }, [initialData, isOpen]);
+    fetchOptions();
+  }, [targetType, fetchOptions]);
 
   if (!isOpen) return null;
 
@@ -51,7 +61,6 @@ const OfferModal = ({ isOpen, onClose, onSubmit, initialData }) => {
       expirationTime: expirationTime || null,
       status,
     };
-    // Only include targetId if not an "all" offer.
     if (targetType !== 'all') {
       data.targetId = targetId;
     }
@@ -81,6 +90,7 @@ const OfferModal = ({ isOpen, onClose, onSubmit, initialData }) => {
               required
             />
           </div>
+
           {/* Target Type */}
           <div>
             <label className="block text-sm font-medium">Target Type</label>
@@ -94,19 +104,37 @@ const OfferModal = ({ isOpen, onClose, onSubmit, initialData }) => {
               <option value="category">Category</option>
             </select>
           </div>
-          {/* Target ID (only if product or category) */}
+
+          {/* Target Selection */}
           {targetType !== 'all' && (
             <div>
-              <label className="block text-sm font-medium">Target ID</label>
-              <input
-                type="text"
-                value={targetId}
-                onChange={(e) => setTargetId(e.target.value)}
-                className="mt-1 w-full border rounded px-3 py-2"
-                required
-              />
+              <label className="block text-sm font-medium">
+                Select {targetType === 'product' ? 'Product' : 'Category'}
+              </label>
+              {loading ? (
+                <p className="text-gray-500">Loading...</p>
+              ) : (
+                <select
+                  value={targetId}
+                  onChange={(e) => setTargetId(e.target.value)}
+                  className="mt-1 w-full border rounded px-3 py-2"
+                  required
+                >
+                  <option value="">Select an option</option>
+                  {options.length > 0 ? (
+                    options.map((item) => (
+                      <option key={item._id} value={item._id}>
+                         {targetType === 'category' ? item.catName : item.name}
+                      </option>
+                    ))
+                  ) : (
+                    <option disabled>No options available</option>
+                  )}
+                </select>
+              )}
             </div>
           )}
+
           {/* Discount Percentage */}
           <div>
             <label className="block text-sm font-medium">Discount Percentage</label>
@@ -118,6 +146,7 @@ const OfferModal = ({ isOpen, onClose, onSubmit, initialData }) => {
               required
             />
           </div>
+
           {/* Activation Time */}
           <div>
             <label className="block text-sm font-medium">Activation Time</label>
@@ -129,6 +158,7 @@ const OfferModal = ({ isOpen, onClose, onSubmit, initialData }) => {
               required
             />
           </div>
+
           {/* Expiration Time */}
           <div>
             <label className="block text-sm font-medium">Expiration Time</label>
@@ -139,20 +169,19 @@ const OfferModal = ({ isOpen, onClose, onSubmit, initialData }) => {
               className="mt-1 w-full border rounded px-3 py-2"
             />
           </div>
+
           {/* Status Toggle */}
           <div className="flex items-center">
             <label className="mr-2 text-sm font-medium">Status:</label>
-            <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-              <input
-                type="checkbox"
-                checked={status}
-                onChange={() => setStatus(!status)}
-                className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
-              />
-              <label className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
-            </div>
+            <input
+              type="checkbox"
+              checked={status}
+              onChange={() => setStatus(!status)}
+              className="mr-2"
+            />
             <span className="text-sm">{status ? 'Active' : 'Inactive'}</span>
           </div>
+
           {/* Buttons */}
           <div className="flex justify-end space-x-2">
             <button

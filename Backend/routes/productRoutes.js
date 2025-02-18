@@ -70,6 +70,24 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 });
 
+router.get('/all', authMiddleware, async (req, res) => {
+  try {
+
+    const products = await Product.find({restaurant: req.user.id});
+
+        // Include full image URLs in the response
+        if(!products || products.length === 0) {
+          return res.status(404).json({ error: 'No categories found' });
+        }
+
+    res.status(200).json({ products });
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+
 router.get('/count', authMiddleware, async (req, res) => {
   try {
     const restaurantId = req.user.id;
