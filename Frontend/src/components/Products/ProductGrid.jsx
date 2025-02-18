@@ -1,11 +1,13 @@
 import React, { useState, memo } from 'react';
 import { useCart } from '@context/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { BadgePercent } from 'lucide-react';
 
-const ProductGrid = memo(({ products = [] }) => {
+const ProductGrid = memo(({ products = [], highlightedProduct }) => {
   const { cartItems, addToCart, updateQuantity } = useCart();
   const [selectedProduct, setSelectedProduct] = useState(null);
 
+  // Helper to get current quantity in cart for a given product
   const getProductQuantity = (productId) => {
     const product = cartItems.find((item) => item._id === productId);
     return product ? product.quantity : 0;
@@ -23,26 +25,45 @@ const ProductGrid = memo(({ products = [] }) => {
     updateQuantity(productId, 'decrement');
   };
 
+  // Reorder products: if a highlighted product exists, move it to the front.
+  let orderedProducts = [...products];
+  if (highlightedProduct) {
+    const index = orderedProducts.findIndex(product => product._id === highlightedProduct);
+    if (index > -1) {
+      const [hp] = orderedProducts.splice(index, 1);
+      orderedProducts = [hp, ...orderedProducts];
+    }
+  }
+
   return (
     <>
-      {/* Product Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {products.map((product) => {
+        {orderedProducts.map((product) => {
           const quantity = getProductQuantity(product._id);
+          // If this product is highlighted, add extra background styling
+          const containerClasses = `flex flex-col rounded-2xl overflow-hidden cursor-pointer ${
+            product._id === highlightedProduct ? 'bg-white' : ''
+          }`;
+          
           return (
             <div
               key={product._id}
-              className="flex flex-col rounded-2xl overflow-hidden cursor-pointer"
+              className={containerClasses}
               onClick={() => setSelectedProduct(product)}
             >
               <div className="relative">
+                {/* Discount Badge in top-left if offer is applied */}
+                {product.appliedOffer && (
+                  <span className="absolute top-2 left-2 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded">
+                    {product.appliedOffer.discountPercentage}% off
+                  </span>
+                )}
                 <img
                   src={product.img || 'https://via.placeholder.com/150'}
                   alt={product.name}
                   className="w-full h-[9.2rem] object-cover rounded-xl"
                   loading="lazy"
                 />
-                {/* Quantity controls overlay on the product card */}
                 <div
                   className="absolute bottom-[-14px] left-1/2 transform -translate-x-1/2"
                   onClick={(e) => e.stopPropagation()}
@@ -75,18 +96,24 @@ const ProductGrid = memo(({ products = [] }) => {
                   )}
                 </div>
               </div>
-
               <div className="mt-5 px-2">
                 <p className="text-[12px] font-bold line-clamp-2">{product.name}</p>
                 <p className="text-[10px] text-gray-500 truncate">{product.description}</p>
-                <p className="font-bold text-[12px] py-2">₹{product.price}.00</p>
+                <p className="font-bold text-[12px] py-2">
+                  {product.discountedPrice ? (
+                    <>
+                      <span className="text-black line-through mr-2">₹{product.price}.00</span>
+                      <span className="text-green-600 text-[16px]">₹{product.discountedPrice}.00</span>
+                    </>
+                  ) : (
+                    `₹${product.price}.00`
+                  )}
+                </p>
               </div>
             </div>
           );
         })}
       </div>
-
-      {/* Product Detail Modal */}
       <AnimatePresence>
         {selectedProduct && (
           <motion.div
@@ -111,14 +138,12 @@ const ProductGrid = memo(({ products = [] }) => {
               }}
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Close Button */}
               <button
                 className="absolute top-3 right-3 text-white bg-gray-400 rounded-full w-6 h-6 flex items-center justify-center text-2xl z-10"
                 onClick={() => setSelectedProduct(null)}
               >
                 ×
               </button>
-
               <div className="w-full h-[50%]">
                 <img
                   src={selectedProduct.img || 'https://via.placeholder.com/150'}
@@ -126,18 +151,30 @@ const ProductGrid = memo(({ products = [] }) => {
                   className="w-full h-full object-cover rounded-t-3xl"
                 />
               </div>
-
               <div className="flex-1 overflow-auto px-3 mt-3 pb-24">
                 <h2 className="text-lg font-bold">{selectedProduct.name}</h2>
-                <p className=" text-lg mt-2 ">{selectedProduct.description}</p>
+                <p className="text-lg mt-2 mb-3">{selectedProduct.description}</p>
+                {selectedProduct.appliedOffer && (
+                  <div className="flex items-center max-w-md bg-gradient-to-r from-green-100 to-green-300 p-2 rounded-lg mt-2 w-full">
+                    <BadgePercent size={20} className="mr-1 text-black" />
+                    <span className="text-md text-sm text-black">
+                      {selectedProduct.appliedOffer.title}
+                    </span>
+                  </div>
+                )}
               </div>
-
-              {/* Bottom Section: Price & Quantity - Fixed at bottom */}
               <div className="absolute bottom-0 left-0 right-0 px-3 pb-10 flex justify-between items-center border-t bg-gray-100">
-                <p className="font-bold text-3xl relative top-4">₹{selectedProduct.price}.00</p>
+                {selectedProduct.discountedPrice ? (
+                  <p className="font-bold text-2xl relative top-4">
+                    <span className="text-black line-through mr-2">₹{selectedProduct.price}.00</span>
+                    <span className="text-green-600">₹{selectedProduct.discountedPrice}.00</span>
+                  </p>
+                ) : (
+                  <p className="font-bold text-2xl relative top-4">₹{selectedProduct.price}.00</p>
+                )}
                 {getProductQuantity(selectedProduct._id) === 0 ? (
                   <button
-                    className="relative bg-gray-500 px-8 py-3 top-4 rounded-xl shadow-sm text-white font-semibold"
+                    className="relative bg-red-600 px-8 py-3 top-4 rounded-xl shadow-sm text-white font-semibold"
                     onClick={() => handleOrderClick(selectedProduct)}
                   >
                     Add +
@@ -171,4 +208,3 @@ const ProductGrid = memo(({ products = [] }) => {
 });
 
 export default ProductGrid;
-

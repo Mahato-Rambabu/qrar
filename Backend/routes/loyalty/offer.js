@@ -83,8 +83,9 @@ router.get('/all', authMiddleware, async (req, res) => {
  *   - activationTime <= now,
  *   - and either no expirationTime or expirationTime > now.
  */
-router.get('/:restaurantId/active', async (req, res) => {
+router.get('/:restaurantId', async (req, res) => {
   const { restaurantId } = req.params;
+  const { targetType, targetId } = req.query; // Get query parameters for filtering
 
   if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
     return res.status(400).json({ error: 'Invalid restaurantId' });
@@ -92,7 +93,7 @@ router.get('/:restaurantId/active', async (req, res) => {
 
   try {
     const now = new Date();
-    const activeOffers = await Offer.find({
+    let query = {
       restaurantId,
       status: true,
       activationTime: { $lte: now },
@@ -101,17 +102,53 @@ router.get('/:restaurantId/active', async (req, res) => {
         { expirationTime: null },
         { expirationTime: { $gt: now } },
       ],
-    });
+    };
+
+    // Apply targetType filtering
+    if (targetType) {
+      query.targetType = targetType;
+
+      // If targetId is provided, filter further (for category/product)
+      if (targetId && targetType !== 'all') {
+        query.targetId = targetId;
+      }
+    }
+
+    const activeOffers = await Offer.find(query);
 
     if (!activeOffers || activeOffers.length === 0) {
       return res.status(404).json({ error: 'No active offers found' });
     }
 
-    res.status(200).json(activeOffers);
+    // Structure offers for frontend grouping
+    const offersByType = {
+      all: [],
+      categories: {},
+      products: {},
+    };
+
+    activeOffers.forEach((offer) => {
+      if (offer.targetType === 'all') {
+        offersByType.all.push(offer);
+      } else if (offer.targetType === 'category') {
+        if (!offersByType.categories[offer.targetId]) {
+          offersByType.categories[offer.targetId] = [];
+        }
+        offersByType.categories[offer.targetId].push(offer);
+      } else if (offer.targetType === 'product') {
+        if (!offersByType.products[offer.targetId]) {
+          offersByType.products[offer.targetId] = [];
+        }
+        offersByType.products[offer.targetId].push(offer);
+      }
+    });
+
+    res.status(200).json(offersByType);
   } catch (error) {
     res.status(500).json({ error: 'Server error', details: error.message });
   }
 });
+
 
 /**
  * Get a single offer by its ID.

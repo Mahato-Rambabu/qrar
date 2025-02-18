@@ -96,7 +96,7 @@ const PopularItems = () => {
         }
         return nextIndex >= slides.length ? 0 : nextIndex;
       });
-    }, 3000);
+    }, 5000);
   };
 
   // Transition handling for infinite looping

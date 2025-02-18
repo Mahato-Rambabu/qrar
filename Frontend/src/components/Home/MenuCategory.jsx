@@ -59,8 +59,8 @@ const MenuCategory = () => {
   }
 
   return (
-    <div className="w-full px-4 pb-2  bg-gray-100">
-      <h1 className="text-xl font-bold text-center pt-2 text-black">Menu</h1>
+    <div className="w-full px-4 pb-4  bg-gray-100">
+      <h1 className="text-xl font-bold text-center text-black">Menu</h1>
       <div className="w-full grid grid-cols-3 md:grid-cols-4 gap-3 mt-4">
         {categories.map((category) => (
           <Card
@@ -81,7 +81,7 @@ const MenuCategory = () => {
 const Card = ({ image, name, categoryId, restaurantId, navigate }) => (
   <div
     className="flex flex-col items-center cursor-pointer"
-    onClick={() => navigate(`/products?restaurantId=${restaurantId}&categoryId=${categoryId}`)}
+    onClick={() => navigate(`/products?categoryId=${categoryId}&restaurantId=${restaurantId}`)}
   >
     <img
       src={image || '/placeholder.png'}

@@ -4,80 +4,139 @@ import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import ProductGrid from './ProductGrid';
 import { fetchProducts } from '../../api/productApi';
+import { fetchCategories } from '../../api/categoryApi';
+import axiosInstance from '../../utils/axiosInstance';
+
+// Fetch offers for a given restaurantId
+const fetchOffers = async (restaurantId) => {
+  try {
+    const response = await axiosInstance.get(`/offer/${restaurantId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching offers:', error);
+    return { all: [], categories: {}, products: {} };
+  }
+};
+
+// Determine which offer applies to a product based on priority: product > category > all
+const getApplicableOffer = (product, offers) => {
+  const { all, categories, products } = offers;
+  if (products && products[product._id] && products[product._id].length > 0) {
+    return products[product._id][0];
+  } else if (
+    categories &&
+    product.category &&
+    categories[product.category] &&
+    categories[product.category].length > 0
+  ) {
+    return categories[product.category][0];
+  } else if (all && all.length > 0) {
+    return all[0];
+  }
+  return null;
+};
+
+// Apply applicable offer to each product
+const applyOffersToProducts = (products, offers) => {
+  return products.map((product) => {
+    const offer = getApplicableOffer(product, offers);
+    if (offer) {
+      return {
+        ...product,
+        discountedPrice: Math.round(product.price * (1 - offer.discountPercentage / 100)),
+        appliedOffer: offer,
+      };
+    }
+    return product;
+  });
+};
 
 const ProductPage = () => {
   const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [categories, setCategories] = useState([]); 
   const [highlightedProduct, setHighlightedProduct] = useState(null);
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [error, setError] = useState(null);
+  const [offers, setOffers] = useState({ all: [], categories: {}, products: {} });
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Helper: Get query parameter value from URL
   const getQueryParam = (param) => {
     const urlParams = new URLSearchParams(location.search);
     return urlParams.get(param);
   };
 
+  const restaurantId = getQueryParam('restaurantId');
+  const categoryFromUrl = getQueryParam('categoryId') || 'all';
+
+  // Fetch categories when restaurantId is available
   useEffect(() => {
-    const restaurantId = getQueryParam('restaurantId');
-    const categoryId = getQueryParam('categoryId') || 'all';
-    const productId = getQueryParam('highlightedProductId'); // Updated query param
-    setSelectedCategory(categoryId);
-    setHighlightedProduct(productId); // Save highlighted product ID
+    const fetchCat = async () => {
+      if (!restaurantId) return;
+      try {
+        const data = await fetchCategories(restaurantId);
+        setCategories(data);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+      }
+    };
+
+    fetchCat();
+  }, [restaurantId]);
+
+  // Update highlighted product when URL changes
+  useEffect(() => {
+    const productId = getQueryParam('highlightedProductId');
+    setHighlightedProduct(productId);
   }, [location.search]);
 
+  // Fetch products and offers when URL search params change
   useEffect(() => {
-    if (selectedCategory === null) return;
-
-    const fetchProductList = async () => {
+    const fetchData = async () => {
+      if (!restaurantId) return;
       setLoadingProducts(true);
       setError(null);
       try {
-        const restaurantId = getQueryParam('restaurantId');
-        const data = await fetchProducts(restaurantId, selectedCategory);
-        const reorderedProducts = reorderProducts(data, highlightedProduct);
-        setProducts(reorderedProducts);
+        // Fetch products by category (or all) using the URL query directly
+        const productData = await fetchProducts(restaurantId, categoryFromUrl);
+        // Fetch offers for the restaurant
+        const offersData = await fetchOffers(restaurantId);
+        setOffers(offersData);
+        // Apply offers to products based on priority: product > category > all
+        const discountedProducts = applyOffersToProducts(productData, offersData);
+        setProducts(discountedProducts);
       } catch (err) {
-        console.error('Error fetching products:', err.message);
+        console.error('Error fetching products or offers:', err);
         setError('Failed to load products. Please try again later.');
       } finally {
         setLoadingProducts(false);
       }
     };
 
-    fetchProductList();
-  }, [selectedCategory, highlightedProduct]);
+    fetchData();
+  }, [location.search, restaurantId, categoryFromUrl]);
 
-  const reorderProducts = (productList, highlightId) => {
-    if (!highlightId) return productList;
-
-    const highlightedIndex = productList.findIndex((product) => product._id === highlightId);
-    if (highlightedIndex === -1) return productList;
-
-    const [highlighted] = productList.splice(highlightedIndex, 1);
-    return [highlighted, ...productList];
-  };
-
+  // When a category is selected in the Sidebar, update the URL (which triggers data refresh)
   const handleCategorySelect = (categoryId) => {
-    setSelectedCategory(categoryId);
-    navigate(`?categoryId=${categoryId}&restaurantId=${getQueryParam('restaurantId')}`);
+    navigate(`/products?restaurantId=${restaurantId}&categoryId=${categoryId}`);
   };
+
+  // Compute the display name for the Navbar based on the selected category
+  const currentCategoryName =
+    categoryFromUrl === 'all'
+      ? 'All Categories'
+      : categories.find((cat) => cat._id === categoryFromUrl)?.catName || 'All Categories';
 
   return (
     <div className="h-screen flex flex-col bg-gray-200">
-      <Navbar
-        categoryName={
-          categories.find((cat) => cat._id === selectedCategory)?.catName || 'All Categories'
-        }
-      />
+      <Navbar categoryName={currentCategoryName} />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
           categories={categories}
-          selectedCategory={selectedCategory}
+          selectedCategory={categoryFromUrl}
           onSelectCategory={handleCategorySelect}
-          restaurantId={getQueryParam('restaurantId')}
+          restaurantId={restaurantId}
         />
         <div className="flex-1 overflow-auto p-4">
           {loadingProducts ? (
@@ -95,10 +154,7 @@ const ProductPage = () => {
               </button>
             </div>
           ) : (
-            <ProductGrid
-              products={products}
-              highlightedProduct={highlightedProduct}
-            />
+            <ProductGrid products={products} highlightedProduct={highlightedProduct} />
           )}
         </div>
       </div>
