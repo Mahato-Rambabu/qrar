@@ -8,13 +8,17 @@ import { CartProvider } from '@context/CartContext';
 import CartButton from './components/CartButton';
 import PopUp from './components/Offers/PopUp';
 
-// This wrapper extracts the restaurantId from the URL and conditionally renders the app.
 const MainWrapper = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
-  const restaurantId = searchParams.get('restaurantId');
+  let restaurantId = searchParams.get('restaurantId');
 
-  // If the restaurantId is missing, show an error message.
+  // If restaurantId isn't in the query, check if it's in the path (/orders/:restaurantId)
+  if (!restaurantId && location.pathname.startsWith('/orders/')) {
+    restaurantId = location.pathname.split('/orders/')[1];
+  }
+
+  // If the restaurantId is still missing, show an error message.
   if (!restaurantId) {
     return (
       <div className="h-screen w-full flex items-center justify-center">

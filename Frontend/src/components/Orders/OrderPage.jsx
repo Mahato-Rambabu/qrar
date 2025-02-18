@@ -17,8 +17,16 @@ const OrderPage = () => {
   const [showRecentOrders, setShowRecentOrders] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Use discountedPrice if available, otherwise use original price
   const totalPrice = useMemo(
-    () => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    () =>
+      cartItems.reduce(
+        (sum, item) =>
+          sum +
+          (item.discountedPrice ? item.discountedPrice : item.price) *
+            item.quantity,
+        0
+      ),
     [cartItems]
   );
 
@@ -64,10 +72,10 @@ const OrderPage = () => {
     } catch (error) {
       console.error("Error placing order:", error);
       toast.error(
-        error.response?.data?.error || 
-        "Failed to place order. Please try again."
+        error.response?.data?.error ||
+          "Failed to place order. Please try again."
       );
-      
+
       // Handle invalid customerIdentifier
       if (error.response?.status === 400) {
         localStorage.removeItem("customerIdentifier");
@@ -80,10 +88,9 @@ const OrderPage = () => {
 
   const fetchRecentOrders = async (customerIdentifier) => {
     try {
-      const response = await axiosInstance.get(
-        `/orders/${restaurantId}`,
-        { params: { customerIdentifier } }
-      );
+      const response = await axiosInstance.get(`/orders/${restaurantId}`, {
+        params: { customerIdentifier },
+      });
       setRecentOrders(response.data);
     } catch (error) {
       console.error("Error fetching recent orders:", error);
@@ -124,7 +131,11 @@ const OrderPage = () => {
 
         {/* Cart Items */}
         {cartItems.map((item) => (
-          <OrderItem key={item._id} item={item} updateQuantity={updateQuantity} />
+          <OrderItem
+            key={item._id}
+            item={item}
+            updateQuantity={updateQuantity}
+          />
         ))}
 
         {/* Footer */}
@@ -132,16 +143,18 @@ const OrderPage = () => {
           <button
             className="text-sm text-blue-500"
             onClick={() =>
-              navigate(`/products?restaurantId=${restaurantId}&categoryId=all`)
+              navigate(
+                `/products?restaurantId=${restaurantId}&categoryId=all`
+              )
             }
           >
             + Add More Items
           </button>
-          <h3 className="font-bold">Total: ₹{totalPrice.toFixed(2)}</h3>
+          <h3 className="font-bold text-lg text-gray-800">Total Payble: <span className="text-green-800 text-xl"> ₹{totalPrice.toFixed(2)}</span></h3>
         </div>
 
         {showUserForm && (
-          <UserForm 
+          <UserForm
             onFormSubmit={() => {
               setShowUserForm(false);
               const id = localStorage.getItem("customerIdentifier");
@@ -153,7 +166,7 @@ const OrderPage = () => {
 
       <footer className="w-full h-[10%] p-4 bg-white shadow-lg">
         <button
-          className="w-full bg-pink-500 text-white py-3 rounded-md font-semibold disabled:opacity-50"
+          className="w-full bg-gray-500 text-white py-3 rounded-md font-semibold disabled:opacity-50"
           onClick={handleOrderSubmission}
           disabled={loading || cartItems.length === 0}
         >
@@ -174,7 +187,10 @@ const OrderSummary = ({ order }) => (
     </div>
     <div className="flex flex-col gap-4">
       {order.items.map((item) => (
-        <div key={item.productId._id} className="flex items-center justify-between">
+        <div
+          key={item.productId._id}
+          className="flex items-center justify-between"
+        >
           <div className="flex items-center gap-4">
             <img
               src={item.productId.img}
@@ -191,7 +207,7 @@ const OrderSummary = ({ order }) => (
       ))}
     </div>
     <div className="flex justify-end mt-4">
-      <p className="font-bold text-gray-800 text-lg">
+      <p className="font-bold text-gray-800 text-xl">
         Total: ₹{order.total.toFixed(2)}
       </p>
     </div>

@@ -2,7 +2,6 @@ import express from "express";
 import mongoose from "mongoose";
 import Order from "../models/order.js";
 import authMiddleware from "../middlewares/authMiddlewares.js";
-import validateCustomer from "../middlewares/validateCustomer.js";
 import moment from "moment";
 
 const router = express.Router();
@@ -379,7 +378,7 @@ const configureOrderRoutes = (io) => {
     }
   });
 
-  // Weekly popular items
+ // Weekly popular items
 router.get("/top-products/:restaurantId", async (req, res) => {
   try {
     const { restaurantId } = req.params;
@@ -392,8 +391,8 @@ router.get("/top-products/:restaurantId", async (req, res) => {
     // Calculate start date for last 7 days
     const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-    // Aggregation pipeline to fetch weekly popular products
-    const aggregationPipeline = [
+    // Aggregation pipeline for last 7 days
+    const weeklyPipeline = [
       {
         $match: {
           restaurantId: new mongoose.Types.ObjectId(restaurantId),
@@ -424,15 +423,60 @@ router.get("/top-products/:restaurantId", async (req, res) => {
           productId: "$_id",
           productName: "$productDetails.name",
           productImage: "$productDetails.img",
-          categoryId: "$productDetails.category", 
+          categoryId: "$productDetails.category",
           totalQuantity: 1,
           _id: 0,
         }
       },
     ];
 
-    // Execute the aggregation
-    const weeklyPopularProducts = await Order.aggregate(aggregationPipeline);
+    // Fallback pipeline (e.g., all-time top 3, ignoring date)
+    const fallbackPipeline = [
+      {
+        $match: {
+          restaurantId: new mongoose.Types.ObjectId(restaurantId),
+          status: "Served",
+          // No date filter
+        }
+      },
+      { $unwind: "$items" },
+      {
+        $group: {
+          _id: "$items.productId",
+          totalQuantity: { $sum: "$items.quantity" },
+        }
+      },
+      { $sort: { totalQuantity: -1 } },
+      { $limit: 3 },
+      {
+        $lookup: {
+          from: "products",
+          localField: "_id",
+          foreignField: "_id",
+          as: "productDetails",
+        }
+      },
+      { $unwind: "$productDetails" },
+      {
+        $project: {
+          productId: "$_id",
+          productName: "$productDetails.name",
+          productImage: "$productDetails.img",
+          categoryId: "$productDetails.category",
+          totalQuantity: 1,
+          _id: 0,
+        }
+      },
+    ];
+
+    // Execute the weekly aggregator
+    let weeklyPopularProducts = await Order.aggregate(weeklyPipeline);
+
+    // If empty, use fallback aggregator
+    if (weeklyPopularProducts.length === 0) {
+      console.log("No served orders found in the last 7 days. Using fallback.");
+      weeklyPopularProducts = await Order.aggregate(fallbackPipeline);
+    }
 
     res.status(200).json(weeklyPopularProducts);
   } catch (error) {

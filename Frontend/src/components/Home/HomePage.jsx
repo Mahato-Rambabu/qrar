@@ -74,7 +74,7 @@ const HomePage = () => {
 
   return (
     <div className="h-screen w-full relative bg-gray-200">
-      <header className="w-full h-[10%] flex justify-around items-center bg-gray-500">
+      <header className="w-full h-[10%] flex justify-around items-center bg-gray-100">
         <SearchBar restaurantId={restaurantId} />
         <div className="flex items-center">
           <img

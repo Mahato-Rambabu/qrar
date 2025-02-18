@@ -7,7 +7,7 @@ import Restaurant from '../models/restaurant.js';
 import authMiddleware from '../middlewares/authMiddlewares.js';
 import {upload}  from '../config/multerConfig.js'; // Import multer configuration
 import { z } from 'zod';
-import cloudinaryConfig from '../config/cloudinaryConfig.js';
+
 
 const router = express.Router();
 

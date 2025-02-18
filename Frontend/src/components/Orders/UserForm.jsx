@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import axiosInstance from "../../utils/axiosInstance";
-import Cookies from "js-cookie";
 import { toast } from 'react-hot-toast';
 
 const UserForm = ({ onFormSubmit }) => {
@@ -33,13 +32,9 @@ const UserForm = ({ onFormSubmit }) => {
         userDetails
       );
 
-      if (response.status === 201) {
-        // Store in localStorage
-        localStorage.setItem(
-          "customerIdentifier", 
-          response.data.customerIdentifier
-        );
-
+      // Accept both 201 (new user) and 200 (existing user) as successful
+      if (response.status === 201 || response.status === 200) {
+        localStorage.setItem("customerIdentifier", response.data.customerIdentifier);
         onFormSubmit();
         toast.success("User details saved successfully! You can now place orders.");
       }
@@ -75,10 +70,7 @@ const UserForm = ({ onFormSubmit }) => {
         )}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
               Name
             </label>
             <input
@@ -92,10 +84,7 @@ const UserForm = ({ onFormSubmit }) => {
             />
           </div>
           <div>
-            <label
-              htmlFor="phone"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
               Phone
             </label>
             <input
@@ -105,16 +94,13 @@ const UserForm = ({ onFormSubmit }) => {
               value={userDetails.phone}
               onChange={handleChange}
               required
-              pattern="\d{10}"
+              pattern="^[0-9]{10}$"
               title="Enter a valid 10-digit phone number"
               className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
           <div>
-            <label
-              htmlFor="age"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="age" className="block text-sm font-medium text-gray-700">
               Age
             </label>
             <input

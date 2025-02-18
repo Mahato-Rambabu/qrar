@@ -74,24 +74,28 @@ router.post("/:restaurantId", async (req, res) => {
   try {
     const existingUser = await User.findOne({ phone, restaurantId });
     if (existingUser) {
-      return res.status(400).json({ error: "Phone number already registered for this restaurant" });
+      // Instead of throwing an error, return success with the existing user’s identifier
+      return res.status(200).json({
+        message: "User already registered. Proceed with existing details.",
+        user: existingUser,
+        customerIdentifier: existingUser._id.toString(),
+      });
     }
 
     const newUser = new User({ name, phone, age, restaurantId });
     await newUser.save();
 
-    // Return customerIdentifier in response instead of setting cookie
     res.status(201).json({ 
       message: "User registered successfully", 
       user: newUser,
-      customerIdentifier: newUser._id.toString()
+      customerIdentifier: newUser._id.toString(),
     });
-
   } catch (error) {
     console.error("Error saving user details:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
 
 // Get user details for a specific restaurant
 router.get("/", authMiddleware, async (req, res) => {
