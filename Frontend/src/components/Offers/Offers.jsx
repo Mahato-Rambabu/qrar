@@ -88,9 +88,6 @@ const Offers = () => {
                 initial="initial"
                 animate="animate"
                 exit="exit"
-                onClick={() =>
-                  navigate(`/offers?restaurantId=${restaurantId}&offerId=${offers[currentSlide]._id}`)
-                }
               >
                 {offers[currentSlide].discountPercentage && (
                   <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md">
@@ -116,9 +113,6 @@ const Offers = () => {
                 key={offer._id}
                 className={`relative min-w-[250px] max-w-[300px] h-32 rounded-xl shadow-xl p-6 flex flex-col justify-center cursor-pointer ${gradients[index % gradients.length]}`}
                 whileHover={{ scale: 1.05 }}
-                onClick={() =>
-                  navigate(`/offers?restaurantId=${restaurantId}&offerId=${offer._id}`)
-                }
               >
                 {offer.discountPercentage && (
                   <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
