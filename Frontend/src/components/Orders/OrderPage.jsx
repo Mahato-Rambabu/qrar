@@ -5,7 +5,10 @@ import { useCart } from "@context/CartContext.jsx";
 import axiosInstance from "../../utils/axiosInstance";
 import OrderItem from "./OrderItem";
 import UserForm from "./UserForm";
-import { toast } from 'react-hot-toast';
+import { toast } from "react-hot-toast";
+import io from "socket.io-client";
+
+const socketUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:5001";
 
 const OrderPage = () => {
   const { cartItems, setCartItems, updateQuantity } = useCart();
@@ -37,6 +40,30 @@ const OrderPage = () => {
     } else {
       fetchRecentOrders(customerIdentifier);
     }
+  }, []);
+
+  // Socket listener for order updates (accepted/rejected)
+  useEffect(() => {
+    const socket = io(socketUrl);
+    socket.on("order:updated", (updatedOrder) => {
+      const customerIdentifier = localStorage.getItem("customerIdentifier");
+      // Ensure the update belongs to this customer
+      if (updatedOrder.customerIdentifier === customerIdentifier) {
+        if (updatedOrder.status === "Pending") {
+          toast.success(
+            `Your order ${updatedOrder.orderNo} has been accepted!`
+          );
+          fetchRecentOrders(customerIdentifier);
+        } else if (updatedOrder.status === "Rejected") {
+          toast.error(`Your order ${updatedOrder.orderNo} has been rejected.`);
+          fetchRecentOrders(customerIdentifier);
+        }
+      }
+    });
+    return () => {
+      socket.off("order:updated");
+      socket.disconnect();
+    };
   }, []);
 
   const handleOrderSubmission = async () => {
@@ -150,7 +177,10 @@ const OrderPage = () => {
             + Add More Items
           </button>
           <h3 className="font-bold text-lg text-gray-800">
-            Total Payable: <span className="text-green-800 text-xl">₹{totalPrice.toFixed(2)}</span>
+            Total Payable:{" "}
+            <span className="text-green-800 text-xl">
+              ₹{totalPrice.toFixed(2)}
+            </span>
           </h3>
         </div>
 
@@ -188,7 +218,10 @@ const OrderSummary = ({ order }) => (
     </div>
     <div className="flex flex-col gap-4">
       {order.items.map((item) => (
-        <div key={item.productId._id} className="flex items-center justify-between">
+        <div
+          key={item.productId._id}
+          className="flex items-center justify-between"
+        >
           <div className="flex items-center gap-4">
             <img
               src={item.productId.img}
@@ -197,7 +230,9 @@ const OrderSummary = ({ order }) => (
               loading="lazy"
             />
             <div className="flex flex-col">
-              <h4 className="font-medium text-black">{item.productId.name}</h4>
+              <h4 className="font-medium text-black">
+                {item.productId.name}
+              </h4>
               <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
             </div>
           </div>
@@ -205,7 +240,9 @@ const OrderSummary = ({ order }) => (
       ))}
     </div>
     <div className="flex justify-end mt-4">
-      <p className="font-bold text-gray-800 text-xl">Total: ₹{order.total.toFixed(2)}</p>
+      <p className="font-bold text-gray-800 text-xl">
+        Total: ₹{order.total.toFixed(2)}
+      </p>
     </div>
   </div>
 );
