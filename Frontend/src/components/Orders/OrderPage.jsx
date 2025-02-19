@@ -20,7 +20,7 @@ const OrderPage = () => {
   const [showRecentOrders, setShowRecentOrders] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Use discountedPrice if available, otherwise use original price
+  // Calculate total price (using discountedPrice if available)
   const totalPrice = useMemo(
     () =>
       cartItems.reduce(
@@ -47,8 +47,13 @@ const OrderPage = () => {
     const socket = io(socketUrl);
     socket.on("order:updated", (updatedOrder) => {
       const customerIdentifier = localStorage.getItem("customerIdentifier");
-      // Ensure the update belongs to this customer
-      if (updatedOrder.customerIdentifier === customerIdentifier) {
+      // Log the event for debugging
+      console.log("Received order:updated event:", updatedOrder);
+      // Compare identifiers as strings to be safe
+      if (
+        String(updatedOrder.customerIdentifier) ===
+        String(customerIdentifier)
+      ) {
         if (updatedOrder.status === "Pending") {
           toast.success(
             `Your order ${updatedOrder.orderNo} has been accepted!`
@@ -82,14 +87,11 @@ const OrderPage = () => {
         quantity: item.quantity,
       }));
 
-      const response = await axiosInstance.post(
-        `/orders/${restaurantId}`,
-        {
-          items: orderItems,
-          total: totalPrice,
-          customerIdentifier,
-        }
-      );
+      const response = await axiosInstance.post(`/orders/${restaurantId}`, {
+        items: orderItems,
+        total: totalPrice,
+        customerIdentifier,
+      });
 
       if (response.status === 201) {
         toast.success("Order requested successfully!");
