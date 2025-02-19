@@ -12,13 +12,14 @@ const socket = io(socketUrl);
 
 const OrderDashboard = () => {
   const [orders, setOrders] = useState([]);
-  const [newOrder, setNewOrder] = useState(null); // New order pending confirmation
   const [searchQuery, setSearchQuery] = useState("");
   const [dateRange, setDateRange] = useState("24h"); // Default date range
+  const [modalOrder, setModalOrder] = useState(null); // New state for modal
   const navigate = useNavigate();
   const audioRef = useRef(null);
 
   useEffect(() => {
+    // Fetch orders on component mount or date range change
     const getOrders = async () => {
       try {
         const data = await fetchPendingOrders(dateRange);
@@ -30,17 +31,18 @@ const OrderDashboard = () => {
 
     getOrders();
 
-    // Socket event listener for new orders
-    socket.on("order:created", (incomingOrder) => {
+    // Socket event listeners for real-time updates
+    socket.on("order:created", (newOrder) => {
+      // Ensure the order has a customer name
       const updatedOrder = {
-        ...incomingOrder,
-        customerName: incomingOrder.customerName || "Guest",
+        ...newOrder,
+        customerName: newOrder.customerName || "Guest",
       };
 
-      toast.success(`New order requested by ${updatedOrder.customerName}!`);
-      setOrders((prevOrders) => [updatedOrder, ...prevOrders]);
+      // Instead of immediately adding to the orders list, show the modal
+      setModalOrder(updatedOrder);
 
-      // Play notification audio
+      // Play audio for the new order notification
       if (audioRef.current) {
         try {
           audioRef.current.play();
@@ -48,9 +50,6 @@ const OrderDashboard = () => {
           console.error("Audio playback failed:", error.message);
         }
       }
-
-      // Show confirmation modal for the new order
-      setNewOrder(updatedOrder);
     });
 
     return () => {
@@ -58,7 +57,14 @@ const OrderDashboard = () => {
     };
   }, [dateRange]);
 
-  // Search filter for orders
+  // Called when the operator acknowledges the new order from the modal
+  const handleModalAcknowledge = (order) => {
+    setOrders((prevOrders) => [order, ...prevOrders]);
+    setModalOrder(null);
+    toast.success(`New order ${order.orderNo} acknowledged!`);
+  };
+
+  // Search filter
   const filteredOrders = orders.filter((order) => {
     const orderNo = order?.orderNo?.toString() || "";
     const customerName = order?.customerName?.toLowerCase() || "";
@@ -68,67 +74,24 @@ const OrderDashboard = () => {
     );
   });
 
-  // Event handlers for search and date range
+  // Event handlers
   const handleSearch = (e) => setSearchQuery(e.target.value);
   const handleDateRangeChange = (e) => setDateRange(e.target.value);
 
-  // Handler for updating order status from within the dashboard table
   const handleUpdateStatus = async (orderId, status) => {
     try {
       await updateOrderStatus(orderId, status);
       toast.success(`Order status updated to ${status}!`);
-      // For status "Served" or "Rejected", remove the order from the list.
-      if (["served", "rejected"].includes(status.toLowerCase())) {
+
+      // Remove the order from the list if it is marked as served
+      if (status.toLowerCase() === "served") {
         setOrders((prevOrders) =>
           prevOrders.filter((order) => order._id !== orderId)
-        );
-      } else {
-        // Otherwise, update the status of the order in the list.
-        setOrders((prevOrders) =>
-          prevOrders.map((order) =>
-            order._id === orderId ? { ...order, status } : order
-          )
         );
       }
     } catch (err) {
       console.error("Failed to update order status:", err);
       toast.error("Failed to update status.");
-    }
-  };
-
-  // Handlers for modal confirmation (for new orders)
-  const handleConfirmOrder = async () => {
-    if (!newOrder) return;
-    try {
-      // Update the order status to "Pending" on confirmation
-      await updateOrderStatus(newOrder._id, "Pending");
-      toast.success("Order accepted and set to pending!");
-      // Update the order in the list rather than removing it.
-      setOrders((prev) =>
-        prev.map((order) =>
-          order._id === newOrder._id ? { ...order, status: "Pending" } : order
-        )
-      );
-      setNewOrder(null);
-    } catch (err) {
-      console.error("Error confirming order:", err);
-      toast.error("Failed to confirm order.");
-    }
-  };
-
-  const handleRejectOrder = async () => {
-    if (!newOrder) return;
-    try {
-      // Update the order status to "Rejected"
-      await updateOrderStatus(newOrder._id, "Rejected");
-      toast.success("Order rejected!");
-      setOrders((prev) =>
-        prev.filter((order) => order._id !== newOrder._id)
-      );
-      setNewOrder(null);
-    } catch (err) {
-      console.error("Error rejecting order:", err);
-      toast.error("Failed to reject order.");
     }
   };
 
@@ -194,33 +157,51 @@ const OrderDashboard = () => {
       {/* Order Table */}
       <OrderTable orders={filteredOrders} onUpdateStatus={handleUpdateStatus} />
 
-      {/* Order Request Confirmation Modal (displayed only for new orders) */}
-      {newOrder && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-[90%] max-w-md">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">
-              New Order Request
-            </h2>
-            <p className="text-gray-700 mb-6 text-center">
-              Order #{newOrder.orderNo} has been requested by {newOrder.customerName}. Confirm to accept the order.
-            </p>
-            <div className="flex justify-around">
-              <button
-                className="bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600 transition"
-                onClick={handleRejectOrder}
-              >
-                ✕ Reject
-              </button>
-              <button
-                className="bg-green-500 text-white px-4 py-2 rounded-full hover:bg-green-600 transition"
-                onClick={handleConfirmOrder}
-              >
-                ✓ Accept
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Order Request Confirmation Modal */}
+      {modalOrder && (
+        <OrderRequestConfirmationModal
+          order={modalOrder}
+          onAcknowledge={handleModalAcknowledge}
+        />
       )}
+    </div>
+  );
+};
+
+// Modal Component for confirming new orders
+const OrderRequestConfirmationModal = ({ order, onAcknowledge }) => {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+      <div className="bg-white p-6 rounded shadow-lg max-w-md w-full">
+        <h2 className="text-2xl font-bold mb-4">New Order Request</h2>
+        <p>
+          <strong>Order No:</strong> {order.orderNo}
+        </p>
+        <p>
+          <strong>Customer:</strong> {order.customerName || "Guest"}
+        </p>
+        <div className="mt-4">
+          <h3 className="font-semibold">Items:</h3>
+          <ul className="list-disc ml-5">
+            {order.items.map((item) => (
+              <li key={item.productId?._id || item.productId}>
+                {item.productId?.name || "Unknown"} x {item.quantity}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <p className="mt-4">
+          <strong>Total:</strong> ₹{order.total.toFixed(2)}
+        </p>
+        <div className="mt-6 flex justify-end gap-4">
+          <button
+            className="px-4 py-2 bg-gray-300 rounded"
+            onClick={() => onAcknowledge(order)}
+          >
+            Acknowledge Order
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
