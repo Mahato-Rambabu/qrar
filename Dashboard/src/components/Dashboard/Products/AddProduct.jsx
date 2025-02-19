@@ -335,7 +335,7 @@ const AddProductPage = ({onSuccess}) => {
                     <button
                       type="button"
                       onClick={handleCropComplete}
-                      className="bg-blue-400 text-white py-2 px-6 rounded-lg shadow-md hover:bg-blue-700 transition duration-200"
+                      className="bg-blue-500 text-white py-2 px-6 rounded-lg shadow-md hover:bg-blue-700 transition duration-200"
                     >
                       Crop and Save
                     </button>
@@ -365,7 +365,7 @@ const AddProductPage = ({onSuccess}) => {
 
         <button
           type="submit"
-          className="bg-blue-400 text-white px-4 py-2 rounded shadow hover:bg-blue-700 disabled:opacity-50"
+          className="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-700 disabled:opacity-50"
           disabled={isSubmitting}
         >
           {isSubmitting ? 'Submitting...' : 'Add Product'}

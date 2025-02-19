@@ -95,7 +95,7 @@ const SliderImagePage = ({ loadingState }) => {
         <div>
           <button
             onClick={() => setModalOpen(true)}
-            className="bg-blue-400 text-white px-4 py-2 rounded-full hover:bg-blue-700 flex flex-row items-center gap-2"
+            className="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-700 flex flex-row items-center gap-2"
           >
             <Plus size={16} />
             Add Image
@@ -199,7 +199,7 @@ const SliderImagePage = ({ loadingState }) => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-400 text-white rounded flex items-center gap-2"
+                  className="px-4 py-2 bg-blue-500 text-white rounded flex items-center gap-2"
                   disabled={submitting}
                 >
                   {submitting ? (
