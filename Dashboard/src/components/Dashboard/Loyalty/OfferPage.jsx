@@ -134,7 +134,7 @@ const OffersPage = () => {
         <h1 className="text-3xl font-semibold text-gray-800">Offers</h1>
         <button
           onClick={handleAddOffer}
-          className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 flex items-center gap-2"
+          className="bg-blue-400 text-white px-4 py-2 rounded-full hover:bg-blue-700 flex items-center gap-2"
         >
           <Plus size={18} />
           <span>Add Offer</span>

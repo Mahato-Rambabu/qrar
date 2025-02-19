@@ -181,7 +181,7 @@ const EditProductPage = () => {
               )}
               <label
                 htmlFor="imageInput"
-                className="absolute top-2 right-2 bg-transparent text-white p-2 rounded-full cursor-pointer hover:bg-blue-700 hover:text-white"
+                className="absolute top-2 right-2 bg-transparent text-white p-2 rounded-full cursor-pointer hover:bg-blue-400 hover:text-white"
               >
                 <FaPen />
               </label>
@@ -217,7 +217,7 @@ const EditProductPage = () => {
             </button>
             <button
               type="submit"
-              className="px-6 py-2 bg-blue-600  text-white rounded-lg shadow hover:bg-blue-700 focus:ring-2 focus:ring-blue-400"
+              className="px-6 py-2 bg-blue-400  text-white rounded-lg shadow hover:bg-blue-700 focus:ring-2 focus:ring-blue-400"
             >
               Save
             </button>

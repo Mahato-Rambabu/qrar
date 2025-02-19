@@ -214,7 +214,7 @@ const ProfilePage = () => {
           {editing ? (
             <button
               onClick={handleSave}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="bg-blue-400 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
             >
               Save
             </button>

@@ -49,7 +49,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
       <button
         onClick={() => handlePageChange(currentPage - 1)}
         className={`px-3 py-2 rounded ${
-          currentPage === 1 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-500 text-white'
+          currentPage === 1 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-400 text-white'
         }`}
         disabled={currentPage === 1}
         aria-label="Previous Page"
@@ -68,7 +68,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
             key={page}
             onClick={() => handlePageChange(page)}
             className={`px-3 py-2 rounded ${
-              currentPage === page ? 'bg-blue-500 text-white font-bold' : 'bg-gray-200 text-gray-800'
+              currentPage === page ? 'bg-blue-400 text-white font-bold' : 'bg-gray-200 text-gray-800'
             }`}
             aria-label={`Page ${page}`}
           >
@@ -81,7 +81,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
       <button
         onClick={() => handlePageChange(currentPage + 1)}
         className={`px-3 py-2 rounded ${
-          currentPage === totalPages ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-500 text-white'
+          currentPage === totalPages ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-400 text-white'
         }`}
         disabled={currentPage === totalPages}
         aria-label="Next Page"

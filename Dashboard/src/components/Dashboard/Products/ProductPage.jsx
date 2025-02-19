@@ -165,7 +165,7 @@ const ProductPage = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Products</h1>
         <button
-          className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 flex items-center gap-2"
+          className="bg-blue-400 text-white px-4 py-2 rounded-full hover:bg-blue-700 flex items-center gap-2"
           onClick={handleAddProductModal} // Open modal on click
         >
           <Plus size={16} />

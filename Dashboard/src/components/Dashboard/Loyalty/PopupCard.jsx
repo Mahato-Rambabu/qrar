@@ -136,7 +136,7 @@ const PopCardsPage = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold">Popup Cards </h1>
         <button
-          className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 flex items-center gap-2"
+          className="bg-blue-400 text-white px-4 py-2 rounded-full hover:bg-blue-700 flex items-center gap-2"
           onClick={() => setModalOpen(true)}
         >
           <Plus size={16} />
@@ -220,7 +220,7 @@ const PopCardsPage = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  className="px-4 py-2 bg-blue-400 text-white rounded-lg hover:bg-blue-700"
                 >
                   Add Card
                 </button>
@@ -301,7 +301,7 @@ const PopCardsPage = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  className="px-4 py-2 bg-blue-400 text-white rounded-lg hover:bg-blue-700"
                 >
                   Save Changes
                 </button>
