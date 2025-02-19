@@ -155,7 +155,7 @@ const PopCardsPage = () => {
         <h1 className="text-2xl font-semibold">Pop Up Cards</h1>
 >>>>>>> Stashed changes
         <button
-          className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 flex items-center gap-2"
+          className="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-700 flex items-center gap-2"
           onClick={() => setModalOpen(true)}
         >
           <Plus size={16} />
@@ -285,11 +285,15 @@ const PopCardsPage = () => {
                 </button>
                 <button
                   type="submit"
+<<<<<<< HEAD
 <<<<<<< Updated upstream
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
 =======
                   className="px-4 py-2 bg-blue-500 text-white rounded text-sm"
 >>>>>>> Stashed changes
+=======
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700"
+>>>>>>> 6c6fc42677cb1aa9f17d48d0c6f05cfb6ebbe85c
                 >
                   Add Card
                 </button>
@@ -371,7 +375,7 @@ const PopCardsPage = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700"
                 >
                   Save Changes
                 </button>

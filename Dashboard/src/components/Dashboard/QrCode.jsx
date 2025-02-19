@@ -42,7 +42,7 @@ const QRCodeGenerator = () => {
             <p className="mb-4">URL: <a href={qrCodeUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">{qrCodeUrl}</a></p>
             <button 
               onClick={handleDownload} 
-              className="bg-blue-500 text-white px-4 py-2 rounded">
+              className="bg-blue-500 text-white px-4 py-2 rounded-lg">
               Download QR Code
             </button>
           </div>

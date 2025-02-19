@@ -76,7 +76,7 @@ router.get('/:restaurantId', async (req, res) => {
 });
 
 // Fetch a Single Category by ID
-router.get('/:id', authMiddleware, async (req, res) => {
+router.get('/edit/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -88,7 +88,6 @@ router.get('/:id', authMiddleware, async (req, res) => {
 
     res.status(200).json({
       ...category.toObject(),
-      img: getFullImageUrl(req, category.img), // Return full image URL
     });
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
