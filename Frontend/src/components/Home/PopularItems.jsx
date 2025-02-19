@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosInstance';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 
 const PopularItems = () => {
   const location = useLocation();
@@ -9,13 +11,14 @@ const PopularItems = () => {
   const restaurantId = searchParams.get('restaurantId');
 
   const [popularItems, setPopularItems] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(1);
   const [containerWidth, setContainerWidth] = useState(600);
   const [cardWidth, setCardWidth] = useState(208);
   const sliderRef = useRef(null);
   const intervalRef = useRef(null);
   const isVisibleRef = useRef(true);
-  const touchStartX = useRef(null); // To track the starting X position for swipe
+  const touchStartX = useRef(null); // For swipe functionality
 
   const cardMargin = 16;
   const step = cardWidth + cardMargin;
@@ -32,6 +35,8 @@ const PopularItems = () => {
         setCurrentIndex(1);
       } catch (err) {
         console.error("Error fetching popular items:", err);
+      } finally {
+        setLoading(false);
       }
     };
     fetchPopularItems();
@@ -45,7 +50,7 @@ const PopularItems = () => {
       setContainerWidth(width);
       setCardWidth(cWidth);
     };
-    
+
     updateDimensions();
     const resizeHandler = () => {
       if (isVisibleRef.current) updateDimensions();
@@ -54,7 +59,7 @@ const PopularItems = () => {
     return () => window.removeEventListener("resize", resizeHandler);
   }, []);
 
-  // Slides setup with clones for infinite scrolling
+  // Setup slides with clones for infinite scrolling
   const slides =
     popularItems.length > 0
       ? [popularItems[popularItems.length - 1], ...popularItems, popularItems[0]]
@@ -180,6 +185,28 @@ const PopularItems = () => {
     }
   };
 
+  if (loading) {
+    // Render a skeleton slider with similar dimensions
+    return (
+      <section className="popular-items bg-gray-100">
+        <h1 className="text-xl font-bold text-center pt-4 text-black">
+          Popular <span className="text-yellow-500 italic">Weekly</span>
+        </h1>
+        <div
+          className="mx-auto overflow-hidden relative pt-9"
+          style={{ width: containerWidth, height: 375 }}
+        >
+          <Skeleton
+            height={375}
+            width={containerWidth}
+            containerClassName="mx-auto"
+            style={{ borderRadius: '1rem' }}
+          />
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="popular-items bg-gray-100">
       <h1 className="text-xl font-bold text-center pt-4 text-black">
@@ -221,7 +248,7 @@ const PopularItems = () => {
                   <img
                     src={item.productImage}
                     alt={item.productName}
-                    className="w-full h-64 object-cover rounded-2xl shadow-gray-500 shadow-md"
+                    className="w-full h-64 object-cover rounded-2xl shadow-gray-500 shadow-sm"
                     loading="lazy"
                   />
                 </div>

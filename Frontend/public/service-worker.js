@@ -1,5 +1,5 @@
-const CACHE_NAME = 'qrar-cache-v2';
-const API_CACHE_NAME = 'qrar-api-cache-v1';
+const CACHE_NAME = 'qrar-cache-v3'; // Updated version
+const API_CACHE_NAME = 'qrar-api-cache-v2'; // Updated version
 const ASSETS = [
   '/',
   '/index.html',
@@ -10,44 +10,48 @@ const ASSETS = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(ASSETS);
-    }).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(ASSETS))
+      .then(() => self.skipWaiting())
   );
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(keys => Promise.all(
-      keys.map(key => {
-        if (key !== CACHE_NAME && key !== API_CACHE_NAME) {
-          return caches.delete(key);
-        }
-      })
-    )).then(() => self.clients.claim())
+    caches.keys()
+      .then(keys => Promise.all(
+        keys.map(key => {
+          if (key !== CACHE_NAME && key !== API_CACHE_NAME) {
+            return caches.delete(key);
+          }
+        })
+      ))
+      .then(() => self.clients.claim())
   );
 });
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
-  
-  // Exclude sensitive paths from caching
+
+  // Exclude certain requests from caching
   if (url.pathname.includes('/manifest.json') || 
       url.pathname.includes('service-worker') ||
       url.searchParams.has('nocache')) {
     return event.respondWith(fetch(event.request));
   }
 
-  // Cache strategy: StaleWhileRevalidate for API calls
+  // Stale-while-revalidate strategy for API calls
   if (url.pathname.includes('/api/')) {
     event.respondWith(
       caches.open(API_CACHE_NAME).then(cache => {
-        return cache.match(event.request).then(cached => {
-          const fetched = fetch(event.request).then(network => {
-            cache.put(event.request, network.clone());
-            return network;
+        return cache.match(event.request).then(cachedResponse => {
+          const fetchPromise = fetch(event.request).then(networkResponse => {
+            // Update cache with the latest network response.
+            cache.put(event.request, networkResponse.clone());
+            return networkResponse;
           });
-          return cached || fetched;
+          // Return cached response immediately if available, otherwise wait for network.
+          return cachedResponse || fetchPromise;
         });
       })
     );
@@ -56,16 +60,18 @@ self.addEventListener('fetch', (event) => {
 
   // Cache-first strategy for static assets
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      return cached || fetch(event.request).then(network => {
-        return caches.open(CACHE_NAME).then(cache => {
-          if (event.request.method === 'GET') {
-            cache.put(event.request, network.clone());
-          }
-          return network;
-        });
+    caches.match(event.request).then(cachedResponse => {
+      return cachedResponse || fetch(event.request).then(networkResponse => {
+        // Only cache GET requests
+        if (event.request.method === 'GET') {
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, networkResponse.clone());
+          });
+        }
+        return networkResponse;
       });
     }).catch(() => {
+      // Fallback for navigation requests
       if (event.request.mode === 'navigate') {
         return caches.match('/index.html');
       }

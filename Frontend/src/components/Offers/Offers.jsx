@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import axiosInstance from '../../utils/axiosInstance';
 import { BadgePercent } from 'lucide-react';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 
 const Offers = () => {
   const navigate = useNavigate();
@@ -11,9 +13,11 @@ const Offers = () => {
   const restaurantId = searchParams.get('restaurantId');
 
   const [offers, setOffers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
 
+  // Responsive detection
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
@@ -23,8 +27,12 @@ const Offers = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Fetch offers
   useEffect(() => {
-    if (!restaurantId) return;
+    if (!restaurantId) {
+      setLoading(false);
+      return;
+    }
 
     const fetchOffersData = async () => {
       try {
@@ -45,12 +53,15 @@ const Offers = () => {
         setOffers(offersArray);
       } catch (error) {
         console.error('Error fetching offers:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchOffersData();
   }, [restaurantId]);
 
+  // Mobile auto-slide for offers
   useEffect(() => {
     if (isMobile && offers.length > 0) {
       const interval = setInterval(() => {
@@ -74,6 +85,38 @@ const Offers = () => {
     animate: { x: "0%", opacity: 1, transition: { ease: 'easeInOut', duration: 0.5 } },
     exit: { x: "-100%", opacity: 0, transition: { ease: 'easeInOut', duration: 0.5 } },
   };
+
+  // Skeleton placeholder for mobile (single card) and desktop (multiple cards)
+  if (loading) {
+    return (
+      <div className="w-full p-4 pt-4 bg-gray-100">
+        {isMobile ? (
+          <div className="relative h-32 rounded-xl shadow-xl p-6">
+            <Skeleton
+              height={32}
+              containerClassName="h-full"
+              style={{ borderRadius: '0.75rem' }}
+            />
+          </div>
+        ) : (
+          <div className="flex space-x-4 overflow-x-auto">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div
+                key={index}
+                className="relative min-w-[250px] max-w-[300px] h-32 rounded-xl shadow-xl p-6"
+              >
+                <Skeleton
+                  height={32}
+                  containerClassName="h-full"
+                  style={{ borderRadius: '0.75rem' }}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="w-full p-4 pt-4 bg-gray-100">

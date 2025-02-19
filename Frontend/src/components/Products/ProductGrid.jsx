@@ -2,8 +2,10 @@ import React, { useState, memo } from 'react';
 import { useCart } from '@context/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BadgePercent } from 'lucide-react';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 
-const ProductGrid = memo(({ products = [], highlightedProduct }) => {
+const ProductGrid = memo(({ products = [], highlightedProduct, isLoading = false }) => {
   const { cartItems, addToCart, updateQuantity } = useCart();
   const [selectedProduct, setSelectedProduct] = useState(null);
 
@@ -28,13 +30,41 @@ const ProductGrid = memo(({ products = [], highlightedProduct }) => {
   // Reorder products: if a highlighted product exists, move it to the front.
   let orderedProducts = [...products];
   if (highlightedProduct) {
-    const index = orderedProducts.findIndex(product => product._id === highlightedProduct);
+    const index = orderedProducts.findIndex((product) => product._id === highlightedProduct);
     if (index > -1) {
       const [hp] = orderedProducts.splice(index, 1);
       orderedProducts = [hp, ...orderedProducts];
     }
   }
 
+  // -----------------------------
+  //  SKELETON SCREEN RENDERING
+  // -----------------------------
+  if (isLoading) {
+    // Show a grid of skeleton items
+    return (
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="flex flex-col rounded-2xl overflow-hidden">
+            {/* Skeleton for the product image */}
+            <Skeleton height={150} />
+            <div className="mt-2 px-2">
+              {/* Skeleton for product name */}
+              <Skeleton width="80%" height={16} />
+              {/* Skeleton for product description */}
+              <Skeleton width="60%" height={14} className="mt-2" />
+              {/* Skeleton for price */}
+              <Skeleton width="40%" height={18} className="mt-3" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // -----------------------------
+  //    ACTUAL PRODUCT RENDER
+  // -----------------------------
   return (
     <>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -44,7 +74,7 @@ const ProductGrid = memo(({ products = [], highlightedProduct }) => {
           const containerClasses = `flex flex-col rounded-2xl overflow-hidden cursor-pointer ${
             product._id === highlightedProduct ? 'bg-white' : ''
           }`;
-          
+
           return (
             <div
               key={product._id}
@@ -114,6 +144,8 @@ const ProductGrid = memo(({ products = [], highlightedProduct }) => {
           );
         })}
       </div>
+
+      {/* Modal to show product details */}
       <AnimatePresence>
         {selectedProduct && (
           <motion.div

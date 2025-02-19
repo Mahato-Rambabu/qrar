@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom'; // For accessing query parameters
+import { useLocation } from 'react-router-dom';
 import { RiArrowLeftWideFill, RiArrowRightWideFill } from 'react-icons/ri';
-import { fetchSliderImages } from '../../api/fetchSliderImages'; // Adjust the import path as needed
+import { fetchSliderImages } from '../../api/fetchSliderImages';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 
 // Helper function to extract query parameters
 const useQuery = () => {
@@ -15,8 +17,8 @@ const ImageSlider = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const touchStartX = useRef(null); // To store the starting touch position
-  const swipeThreshold = 50; // Minimum distance (in pixels) to be considered a swipe
+  const touchStartX = useRef(null);
+  const swipeThreshold = 50; // Minimum distance to be considered a swipe
 
   useEffect(() => {
     if (!restaurantId) {
@@ -28,12 +30,9 @@ const ImageSlider = () => {
     const loadImages = async () => {
       try {
         const fetchedImages = await fetchSliderImages(restaurantId);
-
-        // Use the Cloudinary URL directly, or a placeholder if no image is available
         const formattedImages = fetchedImages.map((image) =>
           image.img ? image.img : '/placeholder.png'
         );
-
         setImages(formattedImages);
       } catch (err) {
         console.error('Error fetching slider images:', err.message);
@@ -58,8 +57,8 @@ const ImageSlider = () => {
     if (images.length > 0) {
       const interval = setInterval(() => {
         handleNext();
-      }, 5000); // Auto slide every 5 seconds
-      return () => clearInterval(interval); // Clean up on component unmount
+      }, 5000);
+      return () => clearInterval(interval);
     }
   }, [images]);
 
@@ -72,24 +71,38 @@ const ImageSlider = () => {
     const touchEndX = e.changedTouches[0].clientX;
     const deltaX = touchEndX - touchStartX.current;
     if (deltaX > swipeThreshold) {
-      // User swiped right: show previous image
       handlePrev();
     } else if (deltaX < -swipeThreshold) {
-      // User swiped left: show next image
       handleNext();
     }
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    // Render a skeleton placeholder that matches the slider's dimensions
+    return (
+      <div
+        className="relative w-full overflow-hidden rounded-b-[8%] bg-gray-100"
+        style={{
+          aspectRatio: '16/9',
+          maxHeight: '45vh',
+        }}
+      >
+        <Skeleton 
+          height="100%" 
+          width="100%" 
+          containerClassName="h-full w-full" 
+          style={{ borderRadius: '0 0 8% 8%' }} 
+        />
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="text-red-500">Error: {error}</div>;
+    return <div className="text-red-500 p-4">Error: {error}</div>;
   }
 
   if (images.length === 0) {
-    return <div>No images available for the slider.</div>;
+    return <div className="p-4">No images available for the slider.</div>;
   }
 
   return (

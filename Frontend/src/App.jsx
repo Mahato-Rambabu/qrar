@@ -8,6 +8,7 @@ import CartButton from "./components/CartButton";
 import PopUp from "./components/Offers/PopUp";
 import { Toaster } from "react-hot-toast";
 import GlobalOrderToastListener from "./components/Orders/GlobalOrderToastListener";
+import OfflineNotice from "./components/OfflineNotice"; // Import your offline notice
 
 const MainWrapper = () => {
   const location = useLocation();
@@ -52,6 +53,8 @@ const App = () => {
   return (
     <CartProvider>
       <Router>
+        {/* Global Offline Notice */}
+        <OfflineNotice />
         {/* Global Toast Provider */}
         <Toaster position="top-right" />
         {/* Global Socket Listener for Order Updates */}

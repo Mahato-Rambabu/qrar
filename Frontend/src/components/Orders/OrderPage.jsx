@@ -97,6 +97,49 @@ const OrderPage = () => {
     }
   };
 
+  // New reorder handler: re-place the selected order.
+  const handleReorder = async (order) => {
+    try {
+      setLoading(true);
+      const customerIdentifier = localStorage.getItem("customerIdentifier");
+
+      if (!customerIdentifier) {
+        toast.error("Please complete user registration first");
+        setShowUserForm(true);
+        return;
+      }
+
+      // Prepare the items from the past order
+      const orderItems = order.items.map((item) => ({
+        productId: item.productId._id,
+        quantity: item.quantity,
+      }));
+
+      const response = await axiosInstance.post(
+        `/orders/${restaurantId}`,
+        {
+          items: orderItems,
+          total: order.total,
+          customerIdentifier,
+        }
+      );
+
+      if (response.status === 201) {
+        toast.success("Order re-placed successfully!");
+        // Optionally update the recent orders list
+        fetchRecentOrders(customerIdentifier);
+      }
+    } catch (error) {
+      console.error("Error reordering:", error);
+      toast.error(
+        error.response?.data?.error ||
+          "Failed to place reorder. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
@@ -120,7 +163,11 @@ const OrderPage = () => {
           <div className="mb-4 p-4 bg-gray-100 rounded-md shadow-sm">
             {recentOrders.length > 0 ? (
               recentOrders.map((order) => (
-                <OrderSummary key={order._id} order={order} />
+                <OrderSummary
+                  key={order._id}
+                  order={order}
+                  onReorder={handleReorder}
+                />
               ))
             ) : (
               <p className="text-gray-500">No recent orders available.</p>
@@ -177,43 +224,70 @@ const OrderPage = () => {
   );
 };
 
-const OrderSummary = ({ order }) => (
-  <div className="mb-6 border-b pb-4 flex flex-col gap-4">
-    <div className="flex justify-between items-center">
-      <h3 className="font-semibold text-black">Order No: {order.orderNo}</h3>
-      <span className="text-pink-500 font-medium text-sm">
-        Thanks For Ordering 😊
-      </span>
-    </div>
-    <div className="flex flex-col gap-4">
-      {order.items.map((item) => (
-        <div
-          key={item.productId._id}
-          className="flex items-center justify-between"
-        >
-          <div className="flex items-center gap-4">
-            <img
-              src={item.productId.img}
-              alt={item.productId.name}
-              className="w-20 h-20 object-cover rounded-md"
-              loading="lazy"
-            />
-            <div className="flex flex-col">
-              <h4 className="font-medium text-black">
-                {item.productId.name}
-              </h4>
-              <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+const OrderSummary = ({ order, onReorder }) => {
+  // Format the createdAt timestamp to a readable date & time string.
+  const orderDate = new Date(order.createdAt).toLocaleString();
+
+  // Determine the color based on order status.
+  const statusColor =
+    order.status === "Pending"
+      ? "text-yellow-500"
+      : order.status === "Served"
+      ? "text-green-500"
+      : "text-red-500";
+
+  return (
+    <div className="mb-6 border-b pb-4 flex flex-col gap-4">
+      <div className="flex justify-between items-center">
+        {/* Left section: Order number and date/time */}
+        <div className="flex flex-col">
+          <h3 className="font-semibold text-black">Order No: {order.orderNo}</h3>
+          <p className="text-gray-500 text-sm">{orderDate}</p>
+        </div>
+        {/* Right section: Order status */}
+        <span className={`font-medium text-sm ${statusColor}`}>
+          {order.status}
+        </span>
+      </div>
+      {/* Order items */}
+      <div className="flex flex-col gap-4">
+        {order.items.map((item) => (
+          <div
+            key={item.productId._id}
+            className="flex items-center justify-between"
+          >
+            <div className="flex items-center gap-4">
+              <img
+                src={item.productId.img}
+                alt={item.productId.name}
+                className="w-20 h-20 object-cover rounded-md"
+                loading="lazy"
+              />
+              <div className="flex flex-col">
+                <h4 className="font-medium text-black">
+                  {item.productId.name}
+                </h4>
+                <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
+      {/* Footer with total payable and Reorder button */}
+      <div className="flex justify-between items-center mt-4">
+      <button
+          onClick={() => onReorder(order)}
+          className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md text-sm"
+        >
+          Reorder
+        </button>
+        <p className="font-bold text-gray-800 text-xl">
+          Total: ₹{order.total.toFixed(2)}
+        </p>
+        
+      </div>
     </div>
-    <div className="flex justify-end mt-4">
-      <p className="font-bold text-gray-800 text-xl">
-        Total: ₹{order.total.toFixed(2)}
-      </p>
-    </div>
-  </div>
-);
+  );
+};
 
 export default OrderPage;

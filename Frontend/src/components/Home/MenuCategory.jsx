@@ -3,6 +3,8 @@ import { fetchCategories } from '../../api/categoryApi';
 import { FaCircleChevronRight } from 'react-icons/fa6';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 
 const SERVER_BASE_URL = 'https://qrar.onrender.com';
 
@@ -37,9 +39,26 @@ const MenuCategory = () => {
   }, [restaurantId]);
 
   if (loading) {
+    // Render skeletons for the menu category grid
     return (
-      <div className="flex justify-center items-center h-32">
-        <AiOutlineLoading3Quarters className="animate-spin text-gray-500 text-3xl" />
+      <div className="w-full px-4 pb-4 bg-gray-100">
+        <h1 className="text-xl font-bold text-center text-black">Menu</h1>
+        <div className="w-full grid grid-cols-3 md:grid-cols-4 gap-3 mt-4">
+          {Array.from({ length: 8 }).map((_, index) => (
+            <div key={index} className="flex flex-col items-center">
+              <Skeleton 
+                height={96} // ~w-24 h-24 for mobile (adjust as needed)
+                width={96} 
+                className="rounded-xl shadow-sm"
+              />
+              <Skeleton 
+                height={20} 
+                width={80} 
+                className="mt-2" 
+              />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -59,7 +78,7 @@ const MenuCategory = () => {
   }
 
   return (
-    <div className="w-full px-4 pb-4  bg-gray-100">
+    <div className="w-full px-4 pb-4 bg-gray-100">
       <h1 className="text-xl font-bold text-center text-black">Menu</h1>
       <div className="w-full grid grid-cols-3 md:grid-cols-4 gap-3 mt-4">
         {categories.map((category) => (
@@ -98,7 +117,7 @@ const SeeAllCard = ({ restaurantId, navigate }) => (
     onClick={() => navigate(`/products?restaurantId=${restaurantId}`)}
     className="flex flex-col items-center justify-center cursor-pointer"
   >
-    <div className="w-24 h-24 md:w-28 md:h-28 bg-gray-500  shadow-gray-500 shadow-sm rounded-xl flex items-center justify-center">
+    <div className="w-24 h-24 md:w-28 md:h-28 bg-gray-500 shadow-gray-500 shadow-sm rounded-xl flex items-center justify-center">
       <FaCircleChevronRight size={28} className="text-white" />
     </div>
     <h3 className="text-sm font-semibold text-center mt-2 text-black">See All</h3>

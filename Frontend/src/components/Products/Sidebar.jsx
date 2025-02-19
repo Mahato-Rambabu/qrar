@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { fetchCategories } from '../../api/categoryApi';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 
 const Sidebar = ({ selectedCategory, onSelectCategory, restaurantId }) => {
   const [categories, setCategories] = useState([]);
@@ -31,16 +33,26 @@ const Sidebar = ({ selectedCategory, onSelectCategory, restaurantId }) => {
   }, [restaurantId]); // Re-fetch categories when restaurantId changes
 
   if (loading) {
+    // Render skeletons for the "All Categories" button and a few category items
     return (
-      <div className="text-center py-4">
-        <p className="text-gray-500">Loading categories...</p>
+      <div className="w-[20%] bg-gray-100 border-r overflow-y-auto pb-4 p-4">
+        <div className="flex items-center space-x-4 mb-4">
+          <Skeleton circle={true} height={48} width={48} />
+          <Skeleton height={20} width={80} />
+        </div>
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="flex items-center space-x-4 mb-4">
+            <Skeleton circle={true} height={48} width={48} />
+            <Skeleton height={20} width={100} />
+          </div>
+        ))}
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center text-red-500">
+      <div className="text-center text-red-500 p-4">
         <p>{error}</p>
         <button
           className="mt-4 px-4 py-2 bg-pink-500 text-white rounded"

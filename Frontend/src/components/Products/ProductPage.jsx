@@ -43,7 +43,9 @@ const applyOffersToProducts = (products, offers) => {
     if (offer) {
       return {
         ...product,
-        discountedPrice: Math.round(product.price * (1 - offer.discountPercentage / 100)),
+        discountedPrice: Math.round(
+          product.price * (1 - offer.discountPercentage / 100)
+        ),
         appliedOffer: offer,
       };
     }
@@ -53,7 +55,7 @@ const applyOffersToProducts = (products, offers) => {
 
 const ProductPage = () => {
   const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]); 
+  const [categories, setCategories] = useState([]);
   const [highlightedProduct, setHighlightedProduct] = useState(null);
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [error, setError] = useState(null);
@@ -97,12 +99,15 @@ const ProductPage = () => {
       if (!restaurantId) return;
       setLoadingProducts(true);
       setError(null);
+
       try {
         // Fetch products by category (or all) using the URL query directly
         const productData = await fetchProducts(restaurantId, categoryFromUrl);
+
         // Fetch offers for the restaurant
         const offersData = await fetchOffers(restaurantId);
         setOffers(offersData);
+
         // Apply offers to products based on priority: product > category > all
         const discountedProducts = applyOffersToProducts(productData, offersData);
         setProducts(discountedProducts);
@@ -139,11 +144,7 @@ const ProductPage = () => {
           restaurantId={restaurantId}
         />
         <div className="flex-1 overflow-auto p-4">
-          {loadingProducts ? (
-            <div className="flex justify-center items-center h-full">
-              <p className="text-gray-500 animate-pulse">Loading products...</p>
-            </div>
-          ) : error ? (
+          {error && (
             <div className="text-center text-red-500">
               <p>{error}</p>
               <button
@@ -153,9 +154,15 @@ const ProductPage = () => {
                 Refresh
               </button>
             </div>
-          ) : (
-            <ProductGrid products={products} highlightedProduct={highlightedProduct} />
           )}
+
+          {/* Always render ProductGrid, passing isLoading. 
+              If there's an error, we show it above and can optionally hide the grid. */}
+          <ProductGrid
+            products={products}
+            highlightedProduct={highlightedProduct}
+            isLoading={loadingProducts}
+          />
         </div>
       </div>
     </div>
