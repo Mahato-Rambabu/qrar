@@ -77,8 +77,18 @@ const OrderDashboard = () => {
     try {
       await updateOrderStatus(orderId, status);
       toast.success(`Order status updated to ${status}!`);
-      if (status.toLowerCase() === "served") {
-        setOrders((prevOrders) => prevOrders.filter((order) => order._id !== orderId));
+      // For status "Served" or "Rejected", remove the order from the list.
+      if (["served", "rejected"].includes(status.toLowerCase())) {
+        setOrders((prevOrders) =>
+          prevOrders.filter((order) => order._id !== orderId)
+        );
+      } else {
+        // Otherwise, update the status of the order in the list.
+        setOrders((prevOrders) =>
+          prevOrders.map((order) =>
+            order._id === orderId ? { ...order, status } : order
+          )
+        );
       }
     } catch (err) {
       console.error("Failed to update order status:", err);
@@ -93,8 +103,12 @@ const OrderDashboard = () => {
       // Update the order status to "Pending" on confirmation
       await updateOrderStatus(newOrder._id, "Pending");
       toast.success("Order accepted and set to pending!");
-      // Remove the confirmed order from the list
-      setOrders((prev) => prev.filter((order) => order._id !== newOrder._id));
+      // Update the order in the list rather than removing it.
+      setOrders((prev) =>
+        prev.map((order) =>
+          order._id === newOrder._id ? { ...order, status: "Pending" } : order
+        )
+      );
       setNewOrder(null);
     } catch (err) {
       console.error("Error confirming order:", err);
@@ -108,7 +122,9 @@ const OrderDashboard = () => {
       // Update the order status to "Rejected"
       await updateOrderStatus(newOrder._id, "Rejected");
       toast.success("Order rejected!");
-      setOrders((prev) => prev.filter((order) => order._id !== newOrder._id));
+      setOrders((prev) =>
+        prev.filter((order) => order._id !== newOrder._id)
+      );
       setNewOrder(null);
     } catch (err) {
       console.error("Error rejecting order:", err);
