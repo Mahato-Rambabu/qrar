@@ -43,6 +43,7 @@ const OrderTable = ({ orders, onUpdateStatus, isHistory = false }) => {
                     >
                       <option value="Pending">Pending</option>
                       <option value="Served">Served</option>
+                      <option value="Rejected">Rejected</option>
                     </select>
                   )}
                 </td>
