@@ -13,11 +13,12 @@ const GlobalOrderToastListener = () => {
     socket.on("order:updated", (updatedOrder) => {
       const customerIdentifier = localStorage.getItem("customerIdentifier");
       console.log("Received order:updated event:", updatedOrder);
+
       // Compare identifiers as strings
       if (
         String(updatedOrder.customerIdentifier) === String(customerIdentifier)
       ) {
-        if (updatedOrder.status === "Pending") {
+        if (updatedOrder.status === "Accepted") {
           toast.success(
             `Your order ${updatedOrder.orderNo} has been accepted!`
           );
