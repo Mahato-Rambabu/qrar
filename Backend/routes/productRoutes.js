@@ -98,6 +98,26 @@ router.get('/count', authMiddleware, async (req, res) => {
   }
 });
 
+router.get('/:productId', authMiddleware, async (req, res) => {
+  try {
+    const product = await Product.findOne({
+      _id: req.params.productId,
+      restaurant: req.user.id, // ensure the product belongs to the authenticated restaurant
+    }).populate('category');
+
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    // Include full image URL in the response
+    res.status(200).json({
+      ...product.toObject(),
+    });
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
 // Frontend Get All Products for a Restaurant (or by Category)
 router.get('/:restaurantId', async (req, res) => {
@@ -122,23 +142,8 @@ router.get('/:restaurantId', async (req, res) => {
   }
 });
 
-// Get a Single Product by ID
-router.get('/:productId', authMiddleware, async (req, res) => {
-  try {
-    const product = await Product.findById(req.params.productId).populate('category');
-    if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
-    }
 
-    // Include full image URL in the response
-    res.status(200).json({
-      ...product.toObject(),
-      img: getFullImageUrl(req, product.img),
-    });
-  } catch (error) {
-    res.status(500).json({ error: 'Server error' });
-  }
-});
+
 
 // Update a Product
 router.put('/:productId', authMiddleware, upload.single('img'), async (req, res) => {
@@ -172,7 +177,6 @@ router.put('/:productId', authMiddleware, upload.single('img'), async (req, res)
     // Include full image URL in the response
     res.status(200).json({
       ...updatedProduct.toObject(),
-      img: getFullImageUrl(req, updatedProduct.img),
     });
   } catch (error) {
     console.error('Error while updating product:', error);

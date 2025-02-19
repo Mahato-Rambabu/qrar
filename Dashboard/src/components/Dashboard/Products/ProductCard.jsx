@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Edit3, Trash2, MoreVertical } from "lucide-react";
 import { FaRupeeSign } from "react-icons/fa";
 
-const ProductCard = ({ product, category }) => {
+const ProductCard = ({ product, category, onEdit }) => {
   const [menuVisible, setMenuVisible] = useState(false);
 
   // Find the matching category name

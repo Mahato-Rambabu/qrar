@@ -7,12 +7,14 @@ import {
   ChartLine,
   QrCode,
   LogOut,
-  Menu,         // Hamburger icon for mobile
-  X,            // Close icon for mobile overlay
+  Menu,         // Hamburger icon (for mobile and collapsed toggle in mobile)
+  X,            // Close icon (for mobile overlay)
   Heart,        // Icon for Loyalty (for dropdown header)
   Image,        // Icon for Pop Ups
-  Sliders,      // Icon for Slider Images
-  BarChart2,    // Icon for Loyalty Analytics
+  ChevronDown,  // Drop arrow (for expanded sidebar when Loyalty is closed)
+  ChevronUp,    // Drop arrow (for expanded sidebar when Loyalty is open)
+  Tag,          // New icon for Offer Page
+  Percent       // New icon for Coupon Code
 } from 'lucide-react';
 import PropTypes from 'prop-types';
 import axiosInstance from '../../utils/axiosInstance';
@@ -32,7 +34,7 @@ const Sidebar = memo(({ isOpen: pcSidebarOpen }) => {
     [location]
   );
 
-  // Define menu items; Loyalty now has subItems for dropdown
+  // Define menu items; Loyalty now has subItems with updated icons
   const menuItems = [
     { path: '/', label: 'Dashboard', icon: ChartLine },
     { path: '/categories', label: 'Products', icon: Package },
@@ -43,9 +45,9 @@ const Sidebar = memo(({ isOpen: pcSidebarOpen }) => {
       icon: Heart,
       subItems: [
         { path: '/loyalty/popups', label: 'Pop Ups', icon: Image },
-        { path: '/loyalty/combo-deals', label: 'Combo-deals', icon: Image },
-        { path: '/loyalty/coupon-code', label: 'Coupon Code', icon: Image },
-        { path: '/loyalty/offers', label: 'Offer Page', icon: Sliders },
+        { path: '/loyalty/offers', label: 'Offer Page', icon: Tag },
+        { path: '/loyalty/combo-deals', label: 'Combo-deals', icon: Package },
+        { path: '/loyalty/coupon-code', label: 'Coupon Code', icon: Percent },
       ],
     },
     { path: '/qrcode', label: 'QR Page', icon: QrCode },
@@ -77,7 +79,7 @@ const Sidebar = memo(({ isOpen: pcSidebarOpen }) => {
           if (item.subItems) {
             const loyaltyActive = item.subItems.some((sub) => isActive(sub.path));
             return (
-              <div key={item.label}>
+              <div key={item.label} className="relative">
                 <div
                   onClick={() => setIsLoyaltyOpen((prev) => !prev)}
                   className={`flex items-center gap-4 px-4 py-3 mx-2 rounded-lg cursor-pointer transition-all duration-300 ${
@@ -97,13 +99,26 @@ const Sidebar = memo(({ isOpen: pcSidebarOpen }) => {
                   {pcSidebarOpen && (
                     <>
                       {isLoyaltyOpen ? (
-                        <X className="w-4 h-4 ml-auto" onClick={(e) => { e.stopPropagation(); setIsLoyaltyOpen(false); }}/>
+                        <ChevronUp
+                          className="w-4 h-4 ml-auto"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsLoyaltyOpen(false);
+                          }}
+                        />
                       ) : (
-                        <Menu className="w-4 h-4 ml-auto" onClick={(e) => { e.stopPropagation(); setIsLoyaltyOpen(true); }}/>
+                        <ChevronDown
+                          className="w-4 h-4 ml-auto"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsLoyaltyOpen(true);
+                          }}
+                        />
                       )}
                     </>
                   )}
                 </div>
+                {/* Render sub-items when sidebar is expanded */}
                 {isLoyaltyOpen && pcSidebarOpen && (
                   <ul className="pl-12">
                     {item.subItems.map((sub) => (
@@ -111,7 +126,7 @@ const Sidebar = memo(({ isOpen: pcSidebarOpen }) => {
                         <li
                           className={`flex items-center gap-4 px-4 py-2 mx-2 rounded-lg transition-all duration-300 ${
                             isActive(sub.path)
-                              ? 'bg-blue-300 text-white'
+                              ? 'bg-blue-400 text-white'
                               : 'hover:bg-gray-100 text-black'
                           }`}
                         >
@@ -120,9 +135,30 @@ const Sidebar = memo(({ isOpen: pcSidebarOpen }) => {
                               isActive(sub.path) ? 'text-white' : 'text-blue-400'
                             }`}
                           />
-                          <span className="text-sm font-medium">
-                            {sub.label}
-                          </span>
+                          <span className="text-sm font-medium">{sub.label}</span>
+                        </li>
+                      </Link>
+                    ))}
+                  </ul>
+                )}
+                {/* Render dropdown for collapsed sidebar */}
+                {isLoyaltyOpen && !pcSidebarOpen && (
+                  <ul className="absolute left-full top-0 mt-1 bg-white shadow-lg rounded-lg z-10">
+                    {item.subItems.map((sub) => (
+                      <Link to={sub.path} key={sub.label}>
+                        <li
+                          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 ${
+                            isActive(sub.path)
+                              ? 'bg-blue-400 text-white'
+                              : 'hover:bg-gray-100 text-black'
+                          }`}
+                        >
+                          <sub.icon
+                            className={`w-4 h-4 ${
+                              isActive(sub.path) ? 'text-white' : 'text-blue-400'
+                            }`}
+                          />
+                          <span className="text-sm">{sub.label}</span>
                         </li>
                       </Link>
                     ))}
@@ -204,7 +240,6 @@ const Sidebar = memo(({ isOpen: pcSidebarOpen }) => {
             {/* Menu Items */}
             <ul className="flex flex-col gap-2 py-4">
               {menuItems.map((item) => {
-                // Render Loyalty as dropdown on mobile too
                 if (item.subItems) {
                   const loyaltyActive = item.subItems.some((sub) => isActive(sub.path));
                   return (
@@ -224,9 +259,21 @@ const Sidebar = memo(({ isOpen: pcSidebarOpen }) => {
                         />
                         <span className="text-sm font-medium">{item.label}</span>
                         {isLoyaltyOpen ? (
-                          <X className="w-4 h-4 ml-auto" onClick={(e) => { e.stopPropagation(); setIsLoyaltyOpen(false); }}/>
+                          <X
+                            className="w-4 h-4 ml-auto"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setIsLoyaltyOpen(false);
+                            }}
+                          />
                         ) : (
-                          <Menu className="w-4 h-4 ml-auto" onClick={(e) => { e.stopPropagation(); setIsLoyaltyOpen(true); }}/>
+                          <Menu
+                            className="w-4 h-4 ml-auto"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setIsLoyaltyOpen(true);
+                            }}
+                          />
                         )}
                       </div>
                       {isLoyaltyOpen && (
@@ -240,7 +287,7 @@ const Sidebar = memo(({ isOpen: pcSidebarOpen }) => {
                               <li
                                 className={`flex items-center gap-4 px-4 py-2 mx-2 rounded-lg transition-all duration-300 ${
                                   isActive(sub.path)
-                                    ? 'bg-blue-300 text-white'
+                                    ? 'bg-blue-400 text-white'
                                     : 'hover:bg-gray-100 text-black'
                                 }`}
                               >

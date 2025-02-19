@@ -35,16 +35,14 @@ router.get('/all', authMiddleware, async (req, res) => {
     const restaurantId = req.user.restaurantId;
     const loyaltyEntries = await LoyaltyProgram.find({ restaurantId });
 
-    if (loyaltyEntries.length === 0) {
-      return res.status(404).json({ error: 'No loyalty programs found for this restaurant' });
-    }
-
+    // Return the loyalty entries (will be an empty array if none are found)
     res.status(200).json(loyaltyEntries);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Server error', details: error.message });
   }
 });
+
 
 // ✅ Delete a loyalty program entry
 router.delete('/:id', authMiddleware, async (req, res) => {

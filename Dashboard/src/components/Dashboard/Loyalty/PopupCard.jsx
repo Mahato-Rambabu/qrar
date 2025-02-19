@@ -134,7 +134,7 @@ const PopCardsPage = () => {
   return (
     <div className="p-4 bg-gray-100 min-h-screen">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold">Deals You Can't Miss</h1>
+        <h1 className="text-2xl font-semibold">Popup Cards </h1>
         <button
           className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 flex items-center gap-2"
           onClick={() => setModalOpen(true)}
@@ -214,7 +214,7 @@ const PopCardsPage = () => {
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:text-gray-800"
                 >
                   Cancel
                 </button>
@@ -295,7 +295,7 @@ const PopCardsPage = () => {
                 <button
                   type="button"
                   onClick={() => setEditModalOpen(false)}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:text-gray-800"
                 >
                   Cancel
                 </button>
@@ -311,7 +311,7 @@ const PopCardsPage = () => {
         </div>
       )}
       <div>
-        <SliderImagePage />
+        <SliderImagePage loadingState={loadingStates}/>
       </div>
     </div>
   );

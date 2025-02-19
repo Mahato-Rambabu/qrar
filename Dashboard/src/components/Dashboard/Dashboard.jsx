@@ -26,7 +26,7 @@ const QRCodeGenerator = lazy(() => import('./QrCode'));
 const UserTable = lazy(() => import('./UserCustomer'));
 
 const Dashboard = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   const toggleSidebar = useCallback(() => {

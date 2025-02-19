@@ -1,19 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import axiosInstance from '../../../utils/axiosInstance';
-import { Plus } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
+import { CircularProgress } from '@mui/material';
 
-const SliderImagePage = () => {
+const SliderImagePage = ({ loadingState }) => {
   const [loyaltyEntries, setLoyaltyEntries] = useState([]);
   const [offers, setOffers] = useState([]); // State to hold available offers
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // For fetching entries
   const [error, setError] = useState(null);
+  const [submitting, setSubmitting] = useState(false); // For submission loading
 
   // Modal state and form fields
   const [modalOpen, setModalOpen] = useState(false);
-  const [offer, setOffer] = useState('');         // Selected Offer ObjectId
+  const [offer, setOffer] = useState(''); // Selected Offer ObjectId (optional)
   const [imageFile, setImageFile] = useState(null);
 
-  // Fetch loyalty program entries and offers on component mount
   useEffect(() => {
     fetchLoyaltyEntries();
     fetchOffers();
@@ -45,12 +46,16 @@ const SliderImagePage = () => {
 
   const handleAddEntry = async (e) => {
     e.preventDefault();
-    if (!imageFile || !offer) return; // Ensure required fields are present
+    if (!imageFile) return; // Only image is required now
     const formData = new FormData();
     formData.append('img', imageFile);
-    formData.append('offer', offer);
+    // Append the offer only if provided
+    if (offer) {
+      formData.append('offer', offer);
+    }
 
     try {
+      setSubmitting(true);
       await axiosInstance.post('/updatedImageSlider', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
@@ -61,6 +66,8 @@ const SliderImagePage = () => {
     } catch (err) {
       console.error('Error adding loyalty entry:', err);
       setError('Failed to add loyalty entry.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -76,56 +83,71 @@ const SliderImagePage = () => {
 
   return (
     <div className="p-4">
-      <div className='flex flex-row  justify-between items-center'>
+      {/* Header */}
+      <div className="flex flex-row justify-between items-center">
         <div>
-        <h1 className="text-2xl font-semibold">Loyalty Program</h1>
-      <p className="mb-4 text-gray-600">
-        Manage your loyalty program entries. Each entry attaches an offer.
-      </p>
-      {error && <p className="text-red-500 mb-4">{error}</p>}
+          <h1 className="text-2xl font-semibold">Slider Images</h1>
+          <p className="mb-4 text-gray-600">
+            Manage your Slider Image. Each entry attaches an offer.
+          </p>
+          {error && <p className="text-red-500 mb-4">{error}</p>}
         </div>
         <div>
-        <button
-        onClick={() => setModalOpen(true)}
-        className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 flex items-center gap-2"
-      >
-        <Plus size={16} />
-        Add New Slidder Image
-      </button>
+          <button
+            onClick={() => setModalOpen(true)}
+            className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 flex items-center gap-2"
+          >
+            <Plus size={16} />
+            Add New Slider Image
+          </button>
         </div>
       </div>
-   
 
-
+      {/* Loading and Entries */}
       {loading ? (
-        <p>Loading entries...</p>
+        <div className="flex justify-center py-6">
+          <CircularProgress />
+        </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4">
-          {loyaltyEntries.map((entry) => (
-            <div
-              key={entry._id}
-              className="border rounded p-4 shadow-sm flex flex-col items-center"
-            >
-              <img
-                src={entry.img}
-                alt="Loyalty Program"
-                className="w-full object-cover rounded mb-2"
-                style={{ aspectRatio: '16/9' }}  // Adjust aspect ratio as needed
-              />
-              <p className="mb-2">
-                <strong>Offer:</strong> {entry.offer}
-              </p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleDeleteEntry(entry._id)}
-                  className="px-3 py-1 bg-red-500 text-white rounded"
+        <div className="overflow-x-auto">
+          <div className="grid grid-flow-col auto-cols-max gap-4 px-2 pb-4">
+            {loyaltyEntries.map((entry) => {
+              // Look up the offer title using the offer ID attached in the entry
+              const attachedOffer = offers.find((o) => o._id === entry.offer);
+              const offerTitle = attachedOffer ? attachedOffer.title : "No offer attached";
+
+              return (
+                <div
+                  key={entry._id}
+                  className="shrink-0 border bg-white rounded-lg shadow-lg flex flex-col items-center snap-start max-w-[300px] w-full"
                 >
-                  Delete
-                </button>
-                {/* Optionally, add an edit button here */}
-              </div>
-            </div>
-          ))}
+                  <div className="rounded-t-lg overflow-hidden mb-2 w-full">
+                    <img
+                      src={entry.img}
+                      alt="Loyalty Program"
+                      className="w-full h-48 object-contain bg-gray-100"
+                    />
+                  </div>
+                  <div className="w-full px-3 py-2 text-center flex justify-between">
+                    <p className="text-sm font-medium truncate">
+                      <strong>Offer:</strong> {offerTitle}
+                    </p>
+                    <button
+                      onClick={() => handleDeleteEntry(entry._id)}
+                      className="text-red-500 hover:text-red-700 p-1"
+                      disabled={loadingState[entry._id]}
+                    >
+                      {loadingState[entry._id] ? (
+                        <CircularProgress size={20} color="inherit" />
+                      ) : (
+                        <Trash2 className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 
@@ -138,18 +160,19 @@ const SliderImagePage = () => {
             onClick={() => setModalOpen(false)}
           ></div>
           {/* Modal Content */}
-          <div className="relative bg-white p-6 rounded shadow-md z-10 w-11/12 max-w-md">
+          <div className="relative bg-white p-6 rounded shadow-lg z-10 w-11/12 max-w-md">
             <h2 className="text-xl font-bold mb-4">Add New Loyalty Entry</h2>
             <form onSubmit={handleAddEntry}>
               <div className="mb-4">
-                <label className="block mb-1">Offer</label>
+                <label className="block mb-2 text-sm font-medium">
+                  Offer (Optional)
+                </label>
                 <select
                   value={offer}
                   onChange={(e) => setOffer(e.target.value)}
                   className="w-full border rounded px-3 py-2"
-                  required
                 >
-                  <option value="">Select an Offer</option>
+                  <option value="">No offer attached</option>
                   {offers.map((o) => (
                     <option key={o._id} value={o._id}>
                       {o.title} ({o.startTime} - {o.endTime})
@@ -158,7 +181,7 @@ const SliderImagePage = () => {
                 </select>
               </div>
               <div className="mb-4">
-                <label className="block mb-1">Image</label>
+                <label className="block mb-2 text-sm font-medium">Image</label>
                 <input
                   type="file"
                   accept="image/*"
@@ -176,9 +199,14 @@ const SliderImagePage = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-500 text-white rounded"
+                  className="px-4 py-2 bg-blue-500 text-white rounded flex items-center gap-2"
+                  disabled={submitting}
                 >
-                  Add Entry
+                  {submitting ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : (
+                    "Add Entry"
+                  )}
                 </button>
               </div>
             </form>

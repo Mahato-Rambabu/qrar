@@ -4,7 +4,7 @@ import axiosInstance from '../../../utils/axiosInstance';
 import Pagination from "./Pagination";
 import ProductCard from "./ProductCard";
 import ProductTable from "./ProductTable";
-import { Trash } from "lucide-react";
+import { Grid, Plus, Table, Trash } from "lucide-react";
 import useDebouncedValue from "../../../Hooks/useDebounce";
 import AddProductPage from "./AddProduct";
 import Modal from "react-modal";
@@ -165,9 +165,10 @@ const ProductPage = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Products</h1>
         <button
-          className="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700"
+          className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 flex items-center gap-2"
           onClick={handleAddProductModal} // Open modal on click
         >
+          <Plus size={16} />
           Add New Product
         </button>
       </div>
@@ -197,12 +198,12 @@ const ProductPage = () => {
           placeholder="Search products..."
           value={searchQuery}
           onChange={handleSearchChange}
-          className="flex-1 p-2 border border-gray-300 rounded"
+          className="flex-1 p-2 border border-gray-300 rounded-lg"
         />
         <select
           value={categoryFilter}
           onChange={(e) => handleCategoryChange(e.target.value)}
-          className="p-2 border border-gray-300 rounded"
+          className="p-2 border border-gray-300 rounded-lg"
         >
           <option value="">All Categories</option>
           {categories.map((category) => (
@@ -211,18 +212,20 @@ const ProductPage = () => {
             </option>
           ))}
         </select>
+
         <button
           onClick={() => setView(view === "grid" ? "table" : "grid")}
-          className="bg-gray-200 px-4 py-2 rounded"
+          className="bg-white px-4 py-2 rounded-lg flex items-center gap-2 border border-gray-300"
         >
-          {view === "grid" ? "Switch to Table View" : "Switch to Grid View"}
+          {view === "grid" ? <Table className="font-extralight" /> : <Grid className="font-extralight" />}
+          {view === "grid" ? "Table View" : "Grid View"}
         </button>
         {/* Delete Selected Button */}
 
         <button
-          className={`px-4 flex  py-2 rounded shadow items-center gap-2 justify-end  ${selectedItems.length === 0
-              ? "bg-gray-300 cursor-not-allowed "
-              : "bg-red-600 hover:bg-red-700 text-white"
+          className={`px-4 flex  py-2 rounded-lg shadow items-center gap-2 justify-end  ${selectedItems.length === 0
+            ? "bg-gray-300 cursor-not-allowed "
+            : "bg-red-600 hover:bg-red-700 text-white"
             }`}
           onClick={handleDeleteSelected}
           disabled={selectedItems.length === 0}

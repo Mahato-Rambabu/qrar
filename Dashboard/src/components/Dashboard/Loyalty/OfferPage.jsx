@@ -1,4 +1,3 @@
-// Offers.jsx
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../../utils/axiosInstance';
 import OfferModal from './OfferModal';
@@ -8,8 +7,10 @@ const OffersPage = () => {
   const [offers, setOffers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingOffer, setEditingOffer] = useState(null);
+  const [products, setProducts] = useState({});     // Mapping: productId -> product name
+  const [categories, setCategories] = useState({});   // Mapping: categoryId -> category name
 
-  // Fetch offers from backend and auto-disable expired ones
+  // Fetch offers and update expired ones automatically.
   const fetchOffers = async () => {
     try {
       const response = await axiosInstance.get('/offer/all');
@@ -26,8 +27,40 @@ const OffersPage = () => {
     }
   };
 
+  // Fetch all products and categories for the current restaurant.
+  const fetchProductsAndCategories = async () => {
+    try {
+      // Fetch products and categories concurrently
+      const [productRes, categoryRes] = await Promise.all([
+        axiosInstance.get('/products/all'),
+        axiosInstance.get('/categories')
+      ]);
+
+      // Build product mapping from response.data.products array
+      const productMap = {};
+      if (productRes.data && Array.isArray(productRes.data.products)) {
+        productRes.data.products.forEach((product) => {
+          productMap[product._id] = product.name;
+        });
+      }
+      setProducts(productMap);
+
+      // Build category mapping assuming category response is an array.
+      const categoryMap = {};
+      if (categoryRes.data && Array.isArray(categoryRes.data)) {
+        categoryRes.data.forEach((category) => {
+          categoryMap[category._id] = category.catName;
+        });
+      }
+      setCategories(categoryMap);
+    } catch (error) {
+      console.error('Error fetching products/categories:', error);
+    }
+  };
+
   useEffect(() => {
     fetchOffers();
+    fetchProductsAndCategories();
   }, []);
 
   const handleAddOffer = () => {
@@ -101,7 +134,7 @@ const OffersPage = () => {
         <h1 className="text-3xl font-semibold text-gray-800">Offers</h1>
         <button
           onClick={handleAddOffer}
-          className="flex items-center space-x-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded transition duration-200"
+          className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 flex items-center gap-2"
         >
           <Plus size={18} />
           <span>Add Offer</span>
@@ -112,7 +145,7 @@ const OffersPage = () => {
           <thead className="bg-gray-100">
             <tr>
               <th className="py-3 px-6 text-left text-gray-700">Title</th>
-              <th className="py-3 px-6 text-left text-gray-700">Target Type</th>
+              <th className="py-3 px-6 text-left text-gray-700">Applied To</th>
               <th className="py-3 px-6 text-left text-gray-700">Discount %</th>
               <th className="py-3 px-6 text-left text-gray-700">Activation</th>
               <th className="py-3 px-6 text-left text-gray-700">Expiration</th>
@@ -124,10 +157,20 @@ const OffersPage = () => {
             {offers.map((offer) => {
               const isExpired = offer.expirationTime && new Date(offer.expirationTime) < new Date();
 
+              // Determine the display name based on targetType and targetId
+              let appliedTo = '';
+              if (offer.targetType === 'all') {
+                appliedTo = 'All';
+              } else if (offer.targetType === 'product') {
+                appliedTo = products[offer.targetId] || 'Unknown Product';
+              } else if (offer.targetType === 'category') {
+                appliedTo = categories[offer.targetId] || 'Unknown Category';
+              }
+
               return (
                 <tr key={offer._id} className="hover:bg-gray-50">
                   <td className="py-4 px-6 text-gray-800">{offer.title}</td>
-                  <td className="py-4 px-6 text-gray-800">{offer.targetType}</td>
+                  <td className="py-4 px-6 text-gray-800">{appliedTo}</td>
                   <td className="py-4 px-6 text-gray-800">{offer.discountPercentage}%</td>
                   <td className="py-4 px-6 text-gray-800">
                     {new Date(offer.activationTime).toLocaleString()}
