@@ -1,14 +1,12 @@
-import React, { useState, useEffect, Suspense, lazy, useMemo, useCallback } from 'react';
-import { Route, Routes, useLocation } from 'react-router-dom';
-import Navbar from './Navbar';
-import Sidebar from './Sidebar';
-import ErrorBoundary from './ErrorBoundary';
-import PopCardsPage from './Loyalty/PopupCard';
-import OffersPage from './Loyalty/OfferPage';
-import CouponCodesPage from './Loyalty/CouponCodePage';
-import ComboDealsPage from './Loyalty/ComboDealsPage';
-// import OrderDashboard from '../orders/OrderDashboard';
-
+import React, { useState, useEffect, Suspense, lazy, useCallback } from "react";
+import { Route, Routes, useLocation } from "react-router-dom";
+import Navbar from "./Navbar";
+import Sidebar from "./Sidebar";
+import ErrorBoundary from "./ErrorBoundary";
+import PopCardsPage from "./Loyalty/PopupCard";
+import OffersPage from "./Loyalty/OfferPage";
+import CouponCodesPage from "./Loyalty/CouponCodePage";
+import ComboDealsPage from "./Loyalty/ComboDealsPage";
 // Lazy load components for optimization
 const OrderDashboard = lazy(() => import('../orders/OrderDashboard'));
 const RestoDashboard = lazy(() => import('./Analytics/RestoDashboard'));
@@ -25,6 +23,9 @@ const OrderHistory = lazy(() => import('../orders/OrderHistory'));
 const QRCodeGenerator = lazy(() => import('./QrCode'));
 const UserTable = lazy(() => import('./UserCustomer'));
 
+// Import the global order manager component for operators
+import GlobalOrderManage from "../orders/GlobalOrderManage";
+
 const Dashboard = () => {
   const [isOpen, setIsOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -34,7 +35,6 @@ const Dashboard = () => {
   }, []);
 
   const location = useLocation();
-
 
   useEffect(() => {
     const handleResize = () => {
@@ -57,8 +57,9 @@ const Dashboard = () => {
 
           {/* Main Content */}
           <main
-            className={`flex-1 overflow-auto transition-all duration-300 mt-[8vh] ${isOpen ? 'sm:ml-0 md:ml-[20%]' : 'sm:ml-0 lg:ml-[5%]'
-              } `}
+            className={`flex-1 overflow-auto transition-all duration-300 mt-[8vh] ${
+              isOpen ? "sm:ml-0 md:ml-[20%]" : "sm:ml-0 lg:ml-[5%]"
+            }`}
           >
             <Suspense fallback={<div className="flex items-center justify-center h-full">Loading...</div>}>
               <Routes>
@@ -188,6 +189,8 @@ const Dashboard = () => {
             </Suspense>
           </main>
         </div>
+        {/* Render GlobalOrderManage so it’s always active in the dashboard */}
+        <GlobalOrderManage />
       </div>
     </ErrorBoundary>
   );
