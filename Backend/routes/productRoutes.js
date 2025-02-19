@@ -98,7 +98,7 @@ router.get('/count', authMiddleware, async (req, res) => {
   }
 });
 
-router.get('/:productId', authMiddleware, async (req, res) => {
+router.get('/edit/:productId', authMiddleware, async (req, res) => {
   try {
     const product = await Product.findOne({
       _id: req.params.productId,

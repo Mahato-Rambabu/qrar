@@ -24,7 +24,7 @@ const EditProductPage = () => {
     const fetchData = async () => {
       try {      
         const [productResponse, categoriesResponse] = await Promise.all([
-          axiosInstance.get(`/products/${productId}`),
+          axiosInstance.get(`/edit/products/${productId}`),
           axiosInstance.get('/categories'),
         ]);
     
