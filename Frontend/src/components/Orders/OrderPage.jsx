@@ -6,9 +6,6 @@ import axiosInstance from "../../utils/axiosInstance";
 import OrderItem from "./OrderItem";
 import UserForm from "./UserForm";
 import { toast } from "react-hot-toast";
-import io from "socket.io-client";
-
-const socketUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:5001";
 
 const OrderPage = () => {
   const { cartItems, setCartItems, updateQuantity } = useCart();
@@ -42,35 +39,6 @@ const OrderPage = () => {
     }
   }, []);
 
-  // Socket listener for order updates (accepted/rejected)
-  useEffect(() => {
-    const socket = io(socketUrl);
-    socket.on("order:updated", (updatedOrder) => {
-      const customerIdentifier = localStorage.getItem("customerIdentifier");
-      // Log the event for debugging
-      console.log("Received order:updated event:", updatedOrder);
-      // Compare identifiers as strings to be safe
-      if (
-        String(updatedOrder.customerIdentifier) ===
-        String(customerIdentifier)
-      ) {
-        if (updatedOrder.status === "Pending") {
-          toast.success(
-            `Your order ${updatedOrder.orderNo} has been accepted!`
-          );
-          fetchRecentOrders(customerIdentifier);
-        } else if (updatedOrder.status === "Rejected") {
-          toast.error(`Your order ${updatedOrder.orderNo} has been rejected.`);
-          fetchRecentOrders(customerIdentifier);
-        }
-      }
-    });
-    return () => {
-      socket.off("order:updated");
-      socket.disconnect();
-    };
-  }, []);
-
   const handleOrderSubmission = async () => {
     try {
       setLoading(true);
@@ -87,11 +55,14 @@ const OrderPage = () => {
         quantity: item.quantity,
       }));
 
-      const response = await axiosInstance.post(`/orders/${restaurantId}`, {
-        items: orderItems,
-        total: totalPrice,
-        customerIdentifier,
-      });
+      const response = await axiosInstance.post(
+        `/orders/${restaurantId}`,
+        {
+          items: orderItems,
+          total: totalPrice,
+          customerIdentifier,
+        }
+      );
 
       if (response.status === 201) {
         toast.success("Order requested successfully!");
@@ -159,11 +130,7 @@ const OrderPage = () => {
 
         {/* Cart Items */}
         {cartItems.map((item) => (
-          <OrderItem
-            key={item._id}
-            item={item}
-            updateQuantity={updateQuantity}
-          />
+          <OrderItem key={item._id} item={item} updateQuantity={updateQuantity} />
         ))}
 
         {/* Footer */}
