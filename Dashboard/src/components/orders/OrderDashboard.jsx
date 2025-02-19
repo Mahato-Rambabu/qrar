@@ -7,8 +7,7 @@ import io from "socket.io-client";
 import { toast } from "react-hot-toast";
 
 // Dynamically set the socket URL based on the environment
-const socketUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:5001"; // Default to localhost for development
-
+const socketUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:5001";
 const socket = io(socketUrl);
 
 const OrderDashboard = () => {
@@ -19,21 +18,19 @@ const OrderDashboard = () => {
   const audioRef = useRef(null);
 
   useEffect(() => {
-    // Fetch orders on component mount or date range change
+    // Fetch orders on component mount or when dateRange changes
     const getOrders = async () => {
       try {
         const data = await fetchPendingOrders(dateRange);
-        if (!Array.isArray(data)) {
-        }
         setOrders(Array.isArray(data) ? data : []); // Ensure it's always an array
       } catch (err) {
-        setOrders([]); // Set an empty array to prevent .filter error
+        setOrders([]); // Set an empty array on error
       }
     };
 
     getOrders();
 
-    // Socket event listeners for real-time updates
+    // Listen for new order events
     socket.on("order:created", (newOrder) => {
       const updatedOrder = {
         ...newOrder,
@@ -52,8 +49,19 @@ const OrderDashboard = () => {
       }
     });
 
+    // Listen for order updates (e.g., when an order is rejected or served)
+    socket.on("order:updated", (updatedOrder) => {
+      // Remove the order if its status is no longer "Pending"
+      if (updatedOrder.status.toLowerCase() !== "pending") {
+        setOrders((prevOrders) =>
+          prevOrders.filter((order) => order._id !== updatedOrder._id)
+        );
+      }
+    });
+
     return () => {
       socket.off("order:created");
+      socket.off("order:updated");
     };
   }, [dateRange]);
 
@@ -76,9 +84,11 @@ const OrderDashboard = () => {
       await updateOrderStatus(orderId, status);
       toast.success(`Order status updated to ${status}!`);
 
-      // Remove the order from the list if it is marked as served
-      if (status.toLowerCase() === "served") {
-        setOrders((prevOrders) => prevOrders.filter((order) => order._id !== orderId));
+      // Remove the order from the list if its status is not "Pending"
+      if (status.toLowerCase() !== "pending") {
+        setOrders((prevOrders) =>
+          prevOrders.filter((order) => order._id !== orderId)
+        );
       }
     } catch (err) {
       console.error("Failed to update order status:", err);
@@ -88,7 +98,6 @@ const OrderDashboard = () => {
 
   return (
     <div className="p-6 bg-white min-h-screen">
-
       {/* Breadcrumb Navigation */}
       <div className="mb-4">
         <nav className="text-sm text-gray-500">
@@ -145,6 +154,9 @@ const OrderDashboard = () => {
 
       {/* Order Table */}
       <OrderTable orders={filteredOrders} onUpdateStatus={handleUpdateStatus} />
+
+      {/* Audio element for notifications */}
+      <audio ref={audioRef} src="/new_order.mp3" preload="auto" />
     </div>
   );
 };
