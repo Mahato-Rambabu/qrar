@@ -14,11 +14,16 @@ const GlobalOrderToastListener = () => {
       const customerIdentifier = localStorage.getItem("customerIdentifier");
       console.log("Received order:updated event:", updatedOrder);
 
-      // Compare identifiers as strings
+      // Ensure the event is for the current customer
       if (
         String(updatedOrder.customerIdentifier) === String(customerIdentifier)
       ) {
-        if (updatedOrder.status === "Preparing") {
+        // Check if the order was updated (accepted) rather than just created.
+        // When created, createdAt and updatedAt are identical.
+        const createdAt = new Date(updatedOrder.createdAt).getTime();
+        const updatedAt = new Date(updatedOrder.updatedAt).getTime();
+
+        if (updatedOrder.status === "Pending" && updatedAt > createdAt) {
           toast.success(
             `Your order ${updatedOrder.orderNo} has been accepted!`
           );
