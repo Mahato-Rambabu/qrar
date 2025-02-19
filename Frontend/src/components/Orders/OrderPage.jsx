@@ -65,7 +65,7 @@ const OrderPage = () => {
       );
 
       if (response.status === 201) {
-        toast.success("Order placed successfully!");
+        toast.success("Order requested successfully!");
         setCartItems([]);
         fetchRecentOrders(customerIdentifier);
       }
@@ -73,10 +73,9 @@ const OrderPage = () => {
       console.error("Error placing order:", error);
       toast.error(
         error.response?.data?.error ||
-          "Failed to place order. Please try again."
+          "Failed to request order. Please try again."
       );
 
-      // Handle invalid customerIdentifier
       if (error.response?.status === 400) {
         localStorage.removeItem("customerIdentifier");
         setShowUserForm(true);
@@ -150,7 +149,9 @@ const OrderPage = () => {
           >
             + Add More Items
           </button>
-          <h3 className="font-bold text-lg text-gray-800">Total Payble: <span className="text-green-800 text-xl"> ₹{totalPrice.toFixed(2)}</span></h3>
+          <h3 className="font-bold text-lg text-gray-800">
+            Total Payable: <span className="text-green-800 text-xl">₹{totalPrice.toFixed(2)}</span>
+          </h3>
         </div>
 
         {showUserForm && (
@@ -170,7 +171,7 @@ const OrderPage = () => {
           onClick={handleOrderSubmission}
           disabled={loading || cartItems.length === 0}
         >
-          {loading ? "Placing Order..." : "Place Order"}
+          {loading ? "Requesting Order..." : "Request Order"}
         </button>
       </footer>
     </div>
@@ -187,10 +188,7 @@ const OrderSummary = ({ order }) => (
     </div>
     <div className="flex flex-col gap-4">
       {order.items.map((item) => (
-        <div
-          key={item.productId._id}
-          className="flex items-center justify-between"
-        >
+        <div key={item.productId._id} className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <img
               src={item.productId.img}
@@ -207,9 +205,7 @@ const OrderSummary = ({ order }) => (
       ))}
     </div>
     <div className="flex justify-end mt-4">
-      <p className="font-bold text-gray-800 text-xl">
-        Total: ₹{order.total.toFixed(2)}
-      </p>
+      <p className="font-bold text-gray-800 text-xl">Total: ₹{order.total.toFixed(2)}</p>
     </div>
   </div>
 );
