@@ -90,9 +90,9 @@ const OrderDashboard = () => {
   const handleConfirmOrder = async () => {
     if (!newOrder) return;
     try {
-      // For example, update the order status to "Served" upon confirmation
-      await updateOrderStatus(newOrder._id, "Served");
-      toast.success("Order accepted and marked as served!");
+      // Update the order status to "Pending" on confirmation
+      await updateOrderStatus(newOrder._id, "Pending");
+      toast.success("Order accepted and set to pending!");
       // Remove the confirmed order from the list
       setOrders((prev) => prev.filter((order) => order._id !== newOrder._id));
       setNewOrder(null);
@@ -105,7 +105,7 @@ const OrderDashboard = () => {
   const handleRejectOrder = async () => {
     if (!newOrder) return;
     try {
-      // For example, update the order status to "Rejected" (or simply remove it)
+      // Update the order status to "Rejected"
       await updateOrderStatus(newOrder._id, "Rejected");
       toast.success("Order rejected!");
       setOrders((prev) => prev.filter((order) => order._id !== newOrder._id));
@@ -142,7 +142,9 @@ const OrderDashboard = () => {
 
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold text-gray-800">Order Management</h1>
+        <h1 className="text-2xl font-semibold text-gray-800">
+          Order Management
+        </h1>
         <button
           className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-green-500 text-white px-6 py-3 rounded-lg shadow-md hover:from-green-500 hover:to-blue-500 transition-all duration-300"
           onClick={() => navigate("/history")}
