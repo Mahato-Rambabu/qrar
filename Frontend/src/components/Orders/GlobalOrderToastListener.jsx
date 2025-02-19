@@ -18,9 +18,7 @@ const GlobalOrderToastListener = () => {
       if (
         String(updatedOrder.customerIdentifier) === String(customerIdentifier)
       ) {
-        // Check if this update is for order acceptance.
-        // If "Pending" is used for order acceptance (and is not the same as initial creation)
-        if (updatedOrder.status === "Pending") {
+        if (updatedOrder.status === "Preparing") {
           toast.success(
             `Your order ${updatedOrder.orderNo} has been accepted!`
           );
