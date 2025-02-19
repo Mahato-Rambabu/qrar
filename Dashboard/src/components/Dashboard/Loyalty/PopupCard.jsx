@@ -2,9 +2,14 @@
 import React, { useEffect, useState } from 'react';
 import axiosInstance from '../../../utils/axiosInstance';
 import { Plus } from 'lucide-react';
+<<<<<<< Updated upstream
 import { CircularProgress } from '@mui/material';
 import PopCard from './PopupCardUI';
 import SliderImagePage from './SlidderImage';
+=======
+import PopCard from './PopupCardUI';
+import { CircularProgress } from '@mui/material';
+>>>>>>> Stashed changes
 
 const PopCardsPage = () => {
   const [popCards, setPopCards] = useState([]);
@@ -13,6 +18,7 @@ const PopCardsPage = () => {
   const [newTitle, setNewTitle] = useState('');
   const [newImage, setNewImage] = useState(null);
   const [error, setError] = useState(null);
+<<<<<<< Updated upstream
   const [loadingStates, setLoadingStates] = useState({});
 
   // Edit modal states
@@ -20,6 +26,9 @@ const PopCardsPage = () => {
   const [editCardId, setEditCardId] = useState(null);
   const [editTitle, setEditTitle] = useState('');
   const [editImage, setEditImage] = useState(null);
+=======
+  const [loadingStates, setLoadingStates] = useState({}); // Loading state per card
+>>>>>>> Stashed changes
 
   useEffect(() => {
     fetchPopCards();
@@ -45,9 +54,13 @@ const PopCardsPage = () => {
       await axiosInstance.put(`/popups/toggle/${cardId}`);
       setPopCards((prevCards) =>
         prevCards.map((card) =>
+<<<<<<< Updated upstream
           card._id === cardId
             ? { ...card, isActive: !card.isActive }
             : isActive ? card : { ...card, isActive: false }
+=======
+          card._id === cardId ? { ...card, isActive: !isActive } : card
+>>>>>>> Stashed changes
         )
       );
     } catch (err) {
@@ -133,17 +146,31 @@ const PopCardsPage = () => {
 
   return (
     <div className="p-4 bg-gray-100 min-h-screen">
+<<<<<<< Updated upstream
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold">Popup Cards </h1>
+=======
+      {/* Header Section */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-semibold">Pop Up Cards</h1>
+>>>>>>> Stashed changes
         <button
           className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 flex items-center gap-2"
           onClick={() => setModalOpen(true)}
         >
           <Plus size={16} />
+<<<<<<< Updated upstream
           Add Pop Up
         </button>
       </div>
 
+=======
+          Add Pop up
+        </button>
+      </div>
+
+      {/* Pop Cards Section */}
+>>>>>>> Stashed changes
       {loading ? (
         <div className="flex justify-center py-6">
           <CircularProgress />
@@ -151,7 +178,11 @@ const PopCardsPage = () => {
       ) : error ? (
         <p className="text-red-500 text-center">{error}</p>
       ) : (
+<<<<<<< Updated upstream
         <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory px-2">
+=======
+        <div className="flex gap-6 min-h-[100%] overflow-x-auto pb-4 scrollbar-hide px-2 snap-x snap-mandatory">
+>>>>>>> Stashed changes
           {popCards.map((card) => (
             <PopCard
               key={card._id}
@@ -159,12 +190,16 @@ const PopCardsPage = () => {
               onToggle={handleToggleActive}
               onDelete={handleDelete}
               loadingState={loadingStates}
+<<<<<<< Updated upstream
               onEditOpen={openEditModal}
+=======
+>>>>>>> Stashed changes
             />
           ))}
         </div>
       )}
 
+<<<<<<< Updated upstream
       {/* Add Modal */}
       {modalOpen && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
@@ -177,6 +212,20 @@ const PopCardsPage = () => {
                 <input
                   type="text"
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+=======
+      {/* Modal for Adding a New Pop Card */}
+      {modalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="absolute inset-0 bg-black opacity-50" onClick={() => setModalOpen(false)}></div>
+          <div className="relative bg-white p-6 rounded shadow-md z-10 w-11/12 max-w-sm">
+            <h2 className="text-xl font-bold mb-4">Add New Pop Card</h2>
+            <form onSubmit={handleAddCard}>
+              <div className="mb-4">
+                <label className="block mb-1 text-sm">Title</label>
+                <input
+                  type="text"
+                  className="w-full border rounded px-3 py-2 text-sm"
+>>>>>>> Stashed changes
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   required
@@ -184,6 +233,7 @@ const PopCardsPage = () => {
               </div>
               
               <div className="mb-4">
+<<<<<<< Updated upstream
                 <label className="block mb-2 text-sm font-medium">Image</label>
                 <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-4">
                   <input
@@ -215,12 +265,31 @@ const PopCardsPage = () => {
                   type="button"
                   onClick={() => setModalOpen(false)}
                   className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:text-gray-800"
+=======
+                <label className="block mb-1 text-sm">Image</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setNewImage(e.target.files[0])}
+                  required
+                />
+              </div>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setModalOpen(false)}
+                  className="mr-2 px-4 py-2 border rounded text-sm"
+>>>>>>> Stashed changes
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
+<<<<<<< Updated upstream
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+=======
+                  className="px-4 py-2 bg-blue-500 text-white rounded text-sm"
+>>>>>>> Stashed changes
                 >
                   Add Card
                 </button>
@@ -229,6 +298,7 @@ const PopCardsPage = () => {
           </div>
         </div>
       )}
+<<<<<<< Updated upstream
 
       {/* Edit Modal */}
       {editModalOpen && (
@@ -313,6 +383,8 @@ const PopCardsPage = () => {
       <div>
         <SliderImagePage loadingState={loadingStates}/>
       </div>
+=======
+>>>>>>> Stashed changes
     </div>
   );
 };

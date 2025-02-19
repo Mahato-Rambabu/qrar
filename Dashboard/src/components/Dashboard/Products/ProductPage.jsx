@@ -223,9 +223,15 @@ const ProductPage = () => {
         {/* Delete Selected Button */}
 
         <button
+<<<<<<< Updated upstream
           className={`px-4 flex  py-2 rounded-lg shadow items-center gap-2 justify-end  ${selectedItems.length === 0
             ? "bg-gray-300 cursor-not-allowed "
             : "bg-red-600 hover:bg-red-700 text-white"
+=======
+          className={`px-4 flex  py-2 rounded shadow items-center gap-2 justify-end  ${selectedItems.length === 0
+              ? "bg-gray-300 cursor-not-allowed "
+              : "bg-red-600 hover:bg-red-700 text-white"
+>>>>>>> Stashed changes
             }`}
           onClick={handleDeleteSelected}
           disabled={selectedItems.length === 0}
