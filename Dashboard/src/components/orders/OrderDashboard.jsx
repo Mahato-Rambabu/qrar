@@ -7,19 +7,19 @@ import io from "socket.io-client";
 import { toast } from "react-hot-toast";
 
 // Dynamically set the socket URL based on the environment
-const socketUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:5001"; // Default to localhost for development
+const socketUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:5001";
 const socket = io(socketUrl);
 
 const OrderDashboard = () => {
   const [orders, setOrders] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [dateRange, setDateRange] = useState("24h"); // Default date range
-  const [modalOrder, setModalOrder] = useState(null); // New state for modal
+  const [modalOrder, setModalOrder] = useState(null); // For showing the modal
   const navigate = useNavigate();
   const audioRef = useRef(null);
 
   useEffect(() => {
-    // Fetch orders on component mount or date range change
+    // Fetch orders on mount or date range change
     const getOrders = async () => {
       try {
         const data = await fetchPendingOrders(dateRange);
@@ -31,18 +31,16 @@ const OrderDashboard = () => {
 
     getOrders();
 
-    // Socket event listeners for real-time updates
+    // Listen for real-time new order events
     socket.on("order:created", (newOrder) => {
-      // Ensure the order has a customer name
       const updatedOrder = {
         ...newOrder,
         customerName: newOrder.customerName || "Guest",
       };
 
-      // Instead of immediately adding to the orders list, show the modal
+      // Show modal to let operator accept or reject
       setModalOrder(updatedOrder);
 
-      // Play audio for the new order notification
       if (audioRef.current) {
         try {
           audioRef.current.play();
@@ -57,14 +55,28 @@ const OrderDashboard = () => {
     };
   }, [dateRange]);
 
-  // Called when the operator acknowledges the new order from the modal
-  const handleModalAcknowledge = (order) => {
+  // Called when the operator clicks "Accept Order" in the modal
+  const handleModalAccept = (order) => {
+    // Add order to pending list (if not already there)
     setOrders((prevOrders) => [order, ...prevOrders]);
     setModalOrder(null);
-    toast.success(`New order ${order.orderNo} acknowledged!`);
+    toast.success(`New order ${order.orderNo} accepted!`);
   };
 
-  // Search filter
+  // Called when the operator clicks "Reject Order" in the modal
+  const handleModalReject = async (order) => {
+    try {
+      await updateOrderStatus(order._id, "Rejected");
+      toast.success(`Order ${order.orderNo} rejected!`);
+    } catch (error) {
+      console.error("Error rejecting order:", error);
+      toast.error("Failed to reject order.");
+    } finally {
+      setModalOrder(null);
+    }
+  };
+
+  // Filter orders based on search query
   const filteredOrders = orders.filter((order) => {
     const orderNo = order?.orderNo?.toString() || "";
     const customerName = order?.customerName?.toLowerCase() || "";
@@ -74,7 +86,6 @@ const OrderDashboard = () => {
     );
   });
 
-  // Event handlers
   const handleSearch = (e) => setSearchQuery(e.target.value);
   const handleDateRangeChange = (e) => setDateRange(e.target.value);
 
@@ -83,8 +94,8 @@ const OrderDashboard = () => {
       await updateOrderStatus(orderId, status);
       toast.success(`Order status updated to ${status}!`);
 
-      // Remove the order from the list if it is marked as served
-      if (status.toLowerCase() === "served") {
+      // If the order is served or rejected, remove it from the list
+      if (["Served", "Rejected"].includes(status)) {
         setOrders((prevOrders) =>
           prevOrders.filter((order) => order._id !== orderId)
         );
@@ -97,23 +108,17 @@ const OrderDashboard = () => {
 
   return (
     <div className="p-6 bg-white min-h-screen">
-      {/* Audio Element */}
+      {/* Audio element for new order notification */}
       <audio ref={audioRef} src="/new_order.mp3" preload="auto"></audio>
 
       {/* Breadcrumb Navigation */}
       <div className="mb-4">
         <nav className="text-sm text-gray-500">
-          <span
-            className="cursor-pointer hover:underline"
-            onClick={() => navigate("/")}
-          >
+          <span className="cursor-pointer hover:underline" onClick={() => navigate("/")}>
             Dashboard
           </span>
           <span className="mx-2">/</span>
-          <span
-            className="cursor-pointer hover:underline"
-            onClick={() => navigate("/orders")}
-          >
+          <span className="cursor-pointer hover:underline" onClick={() => navigate("/orders")}>
             Orders
           </span>
         </nav>
@@ -121,9 +126,7 @@ const OrderDashboard = () => {
 
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold text-gray-800">
-          Order Management
-        </h1>
+        <h1 className="text-2xl font-semibold text-gray-800">Order Management</h1>
         <button
           className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-green-500 text-white px-6 py-3 rounded-lg shadow-md hover:from-green-500 hover:to-blue-500 transition-all duration-300"
           onClick={() => navigate("/history")}
@@ -161,15 +164,16 @@ const OrderDashboard = () => {
       {modalOrder && (
         <OrderRequestConfirmationModal
           order={modalOrder}
-          onAcknowledge={handleModalAcknowledge}
+          onAccept={handleModalAccept}
+          onReject={handleModalReject}
         />
       )}
     </div>
   );
 };
 
-// Modal Component for confirming new orders
-const OrderRequestConfirmationModal = ({ order, onAcknowledge }) => {
+// Modal component with two actions: Accept & Reject
+const OrderRequestConfirmationModal = ({ order, onAccept, onReject }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
       <div className="bg-white p-6 rounded shadow-lg max-w-md w-full">
@@ -195,10 +199,16 @@ const OrderRequestConfirmationModal = ({ order, onAcknowledge }) => {
         </p>
         <div className="mt-6 flex justify-end gap-4">
           <button
-            className="px-4 py-2 bg-gray-300 rounded"
-            onClick={() => onAcknowledge(order)}
+            className="px-4 py-2 bg-green-300 rounded"
+            onClick={() => onAccept(order)}
           >
-            Acknowledge Order
+            Accept Order
+          </button>
+          <button
+            className="px-4 py-2 bg-red-300 rounded"
+            onClick={() => onReject(order)}
+          >
+            Reject Order
           </button>
         </div>
       </div>
