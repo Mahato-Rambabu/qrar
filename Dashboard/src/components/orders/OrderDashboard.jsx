@@ -56,12 +56,22 @@ const OrderDashboard = () => {
   }, [dateRange]);
 
   // Called when the operator clicks "Accept Order" in the modal
-  const handleModalAccept = (order) => {
-    // Add order to pending list (if not already there)
-    setOrders((prevOrders) => [order, ...prevOrders]);
+const handleModalAccept = async (order) => {
+  try {
+    // Force an update to the order by calling the update API with status "Pending"
+    // (This will update the updatedAt timestamp on the order)
+    const updatedOrder = await updateOrderStatus(order._id, "Pending");
+    // Optionally update the local orders list with the updated order data.
+    setOrders((prevOrders) => [updatedOrder, ...prevOrders]);
     setModalOrder(null);
+    // Show toast on the operator side (optional)
     toast.success(`New order ${order.orderNo} accepted!`);
-  };
+  } catch (error) {
+    console.error("Error accepting order:", error);
+    toast.error("Failed to accept order.");
+  }
+};
+
 
   // Called when the operator clicks "Reject Order" in the modal
   const handleModalReject = async (order) => {
