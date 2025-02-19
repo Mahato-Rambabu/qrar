@@ -88,17 +88,17 @@ const SliderImagePage = ({ loadingState }) => {
         <div>
           <h1 className="text-2xl font-semibold">Slider Images</h1>
           <p className="mb-4 text-gray-600">
-            Manage your Slider Image. Each entry attaches an offer.
+            Manage your Slider Image
           </p>
           {error && <p className="text-red-500 mb-4">{error}</p>}
         </div>
         <div>
           <button
             onClick={() => setModalOpen(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 flex items-center gap-2"
+            className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 flex flex-row items-center gap-2"
           >
             <Plus size={16} />
-            Add New Slider Image
+            Add Image
           </button>
         </div>
       </div>
@@ -161,7 +161,7 @@ const SliderImagePage = ({ loadingState }) => {
           ></div>
           {/* Modal Content */}
           <div className="relative bg-white p-6 rounded shadow-lg z-10 w-11/12 max-w-md">
-            <h2 className="text-xl font-bold mb-4">Add New Loyalty Entry</h2>
+            <h2 className="text-xl font-bold mb-4">Add New Slidder Image</h2>
             <form onSubmit={handleAddEntry}>
               <div className="mb-4">
                 <label className="block mb-2 text-sm font-medium">
