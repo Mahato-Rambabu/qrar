@@ -24,12 +24,11 @@ const EditProductPage = () => {
     const fetchData = async () => {
       try {      
         const [productResponse, categoriesResponse] = await Promise.all([
-          axiosInstance.get(`/edit/products/${productId}`),
+          axiosInstance.get(`/products/edit/${productId}`),
           axiosInstance.get('/categories'),
         ]);
     
         const product = productResponse.data;
-        console.log(product);
     
         setProductData({
           ...product,
@@ -75,8 +74,6 @@ const EditProductPage = () => {
       if (imageFile) {
         formData.append('img', imageFile);
       }
-  
-      console.log('FormData before submission:', Array.from(formData.entries()));
   
       await axiosInstance.put(`/products/${productId}`, formData, {
         headers: {
@@ -170,12 +167,12 @@ const EditProductPage = () => {
   
           <div>
             <label className="block text-sm font-medium text-gray-600">Image</label>
-            <div className="relative w-64 h-64">
+            <div className="relative w-96 h-96">
               {imagePreview ? (
                 <img
                   src={imagePreview}
                   alt="Product Preview"
-                  className="w-full h-full object-cover rounded-md border border-gray-300"
+                  className="w-full h-full object-cover my-4 rounded-md border border-gray-300"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded-md border border-gray-300">
@@ -184,7 +181,7 @@ const EditProductPage = () => {
               )}
               <label
                 htmlFor="imageInput"
-                className="absolute top-2 right-2 bg-transparent text-black p-2 rounded-full cursor-pointer hover:bg-blue-700 hover:text-white"
+                className="absolute top-2 right-2 bg-transparent text-white p-2 rounded-full cursor-pointer hover:bg-blue-700 hover:text-white"
               >
                 <FaPen />
               </label>

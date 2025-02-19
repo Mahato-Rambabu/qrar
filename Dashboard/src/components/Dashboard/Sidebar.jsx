@@ -14,10 +14,13 @@ import {
   ChevronDown,  // Drop arrow (for expanded sidebar when Loyalty is closed)
   ChevronUp,    // Drop arrow (for expanded sidebar when Loyalty is open)
   Tag,          // New icon for Offer Page
-  Percent       // New icon for Coupon Code
+  Percent,      // New icon for Coupon Code
+  Lock          // Lock icon for visually locked items
 } from 'lucide-react';
 import PropTypes from 'prop-types';
 import axiosInstance from '../../utils/axiosInstance';
+// Import your toast library (example uses react-hot-toast)
+import toast from 'react-hot-toast';
 
 const Sidebar = memo(({ isOpen: pcSidebarOpen }) => {
   const location = useLocation();
@@ -33,6 +36,20 @@ const Sidebar = memo(({ isOpen: pcSidebarOpen }) => {
     (path) => location.pathname === path,
     [location]
   );
+
+  // Define locked paths for features that are not yet available
+  const lockedPaths = ['/loyalty/combo-deals', '/loyalty/coupon-code'];
+
+  // Handle click for locked features
+  const handleLockedFeatureClick = (e) => {
+    // e.preventDefault();
+    toast.success('Coming soon!',{
+      iconTheme: {
+        primary: '#2563EB',
+        secondary: 'white',
+      },
+    });
+  };
 
   // Define menu items; Loyalty now has subItems with updated icons
   const menuItems = [
@@ -78,10 +95,26 @@ const Sidebar = memo(({ isOpen: pcSidebarOpen }) => {
           // Render Loyalty as dropdown if subItems exist
           if (item.subItems) {
             const loyaltyActive = item.subItems.some((sub) => isActive(sub.path));
+
             return (
-              <div key={item.label} className="relative">
+              <div
+                key={item.label}
+                className="relative"
+                // For collapsed sidebar, open Loyalty on hover
+                onMouseEnter={() => {
+                  if (!pcSidebarOpen) setIsLoyaltyOpen(true);
+                }}
+                onMouseLeave={() => {
+                  if (!pcSidebarOpen) setIsLoyaltyOpen(false);
+                }}
+              >
                 <div
-                  onClick={() => setIsLoyaltyOpen((prev) => !prev)}
+                  onClick={() => {
+                    // When sidebar is expanded, toggle on click
+                    if (pcSidebarOpen) {
+                      setIsLoyaltyOpen((prev) => !prev);
+                    }
+                  }}
                   className={`flex items-center gap-4 px-4 py-3 mx-2 rounded-lg cursor-pointer transition-all duration-300 ${
                     loyaltyActive
                       ? 'bg-blue-400 text-white shadow'
@@ -118,55 +151,118 @@ const Sidebar = memo(({ isOpen: pcSidebarOpen }) => {
                     </>
                   )}
                 </div>
-                {/* Render sub-items when sidebar is expanded */}
+                {/* Expanded Loyalty Sub-Menu */}
                 {isLoyaltyOpen && pcSidebarOpen && (
                   <ul className="pl-12">
-                    {item.subItems.map((sub) => (
-                      <Link to={sub.path} key={sub.label}>
-                        <li
-                          className={`flex items-center gap-4 px-4 py-2 mx-2 rounded-lg transition-all duration-300 ${
-                            isActive(sub.path)
-                              ? 'bg-blue-400 text-white'
-                              : 'hover:bg-gray-100 text-black'
-                          }`}
-                        >
-                          <sub.icon
-                            className={`w-4 h-4 ${
-                              isActive(sub.path) ? 'text-white' : 'text-blue-400'
+                    {item.subItems.map((sub) => {
+                      const isLocked = lockedPaths.includes(sub.path);
+                      if (isLocked) {
+                        return (
+                          <div
+                            key={sub.label}
+                            onClick={handleLockedFeatureClick}
+                            className={`cursor-pointer flex items-center gap-4 px-4 py-2 mx-2 rounded-lg transition-all duration-300 ${
+                              isActive(sub.path)
+                                ? 'bg-blue-200 text-white'
+                                : 'hover:bg-gray-100 text-gray-400'
                             }`}
-                          />
-                          <span className="text-sm font-medium">{sub.label}</span>
-                        </li>
-                      </Link>
-                    ))}
+                          >
+                            <sub.icon
+                              className={`w-4 h-4 ${
+                                isActive(sub.path)
+                                  ? 'text-white'
+                                  : 'text-blue-400'
+                              }`}
+                            />
+                            <span className="text-sm font-medium">
+                              {sub.label}
+                            </span>
+                            <Lock className="w-4 h-4 text-black ml-auto" 
+                                  size={16}
+                            />
+                          </div>
+                        );
+                      }
+                      return (
+                        <Link to={sub.path} key={sub.label}>
+                          <li
+                            className={`flex items-center gap-4 px-4 py-2 mx-2 rounded-lg transition-all duration-300 ${
+                              isActive(sub.path)
+                                ? 'bg-blue-400 text-white'
+                                : 'hover:bg-gray-100 text-black'
+                            }`}
+                          >
+                            <sub.icon
+                              className={`w-4 h-4 ${
+                                isActive(sub.path)
+                                  ? 'text-white'
+                                  : 'text-blue-400'
+                              }`}
+                            />
+                            <span className="text-sm font-medium">
+                              {sub.label}
+                            </span>
+                          </li>
+                        </Link>
+                      );
+                    })}
                   </ul>
                 )}
-                {/* Render dropdown for collapsed sidebar */}
+                {/* Collapsed Loyalty Sub-Menu (icons only) */}
                 {isLoyaltyOpen && !pcSidebarOpen && (
                   <ul className="absolute left-full top-0 mt-1 bg-white shadow-lg rounded-lg z-10">
-                    {item.subItems.map((sub) => (
-                      <Link to={sub.path} key={sub.label}>
-                        <li
-                          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 ${
-                            isActive(sub.path)
-                              ? 'bg-blue-400 text-white'
-                              : 'hover:bg-gray-100 text-black'
-                          }`}
-                        >
-                          <sub.icon
-                            className={`w-4 h-4 ${
-                              isActive(sub.path) ? 'text-white' : 'text-blue-400'
+                    {item.subItems.map((sub) => {
+                      const isLocked = lockedPaths.includes(sub.path);
+                      if (isLocked) {
+                        return (
+                          <div
+                            key={sub.label}
+                            onClick={handleLockedFeatureClick}
+                            title={sub.label}
+                            className={`relative cursor-pointer flex items-center justify-center w-12 h-12 p-2 rounded-lg transition-all duration-300 ${
+                              isActive(sub.path)
+                                ? 'bg-blue-400 text-white'
+                                : 'hover:bg-gray-100 text-black'
                             }`}
-                          />
-                          <span className="text-sm">{sub.label}</span>
-                        </li>
-                      </Link>
-                    ))}
+                          >
+                            <sub.icon
+                              className={`w-4 h-4 ${
+                                isActive(sub.path)
+                                  ? 'text-white'
+                                  : 'text-blue-200'
+                              }`}
+                            />
+                            <Lock className="absolute  w-4 h-4  text-black" />
+                          </div>
+                        );
+                      }
+                      return (
+                        <Link to={sub.path} key={sub.label}>
+                          <li
+                            title={sub.label}
+                            className={`flex items-center h-12 w-12 justify-center p-2 rounded-lg transition-all duration-300 ${
+                              isActive(sub.path)
+                                ? 'bg-blue-400 text-white'
+                                : 'hover:bg-gray-100 text-black'
+                            }`}
+                          >
+                            <sub.icon
+                              className={`w-4 h-4 ${
+                                isActive(sub.path)
+                                  ? 'text-white'
+                                  : 'text-blue-400'
+                              }`}
+                            />
+                          </li>
+                        </Link>
+                      );
+                    })}
                   </ul>
                 )}
               </div>
             );
           } else {
+            // For non-Loyalty items, render as usual
             return (
               <Link to={item.path} key={item.label}>
                 <li
@@ -241,11 +337,15 @@ const Sidebar = memo(({ isOpen: pcSidebarOpen }) => {
             <ul className="flex flex-col gap-2 py-4">
               {menuItems.map((item) => {
                 if (item.subItems) {
-                  const loyaltyActive = item.subItems.some((sub) => isActive(sub.path));
+                  const loyaltyActive = item.subItems.some((sub) =>
+                    isActive(sub.path)
+                  );
                   return (
                     <div key={item.label}>
                       <div
-                        onClick={() => setIsLoyaltyOpen((prev) => !prev)}
+                        onClick={() =>
+                          setIsLoyaltyOpen((prev) => !prev)
+                        }
                         className={`flex items-center gap-4 px-4 py-3 mx-2 rounded-lg cursor-pointer transition-all duration-300 ${
                           loyaltyActive
                             ? 'bg-blue-400 text-white shadow'
@@ -257,9 +357,11 @@ const Sidebar = memo(({ isOpen: pcSidebarOpen }) => {
                             loyaltyActive ? 'text-white' : 'text-blue-400'
                           }`}
                         />
-                        <span className="text-sm font-medium">{item.label}</span>
+                        <span className="text-sm font-medium">
+                          {item.label}
+                        </span>
                         {isLoyaltyOpen ? (
-                          <X
+                          <ChevronUp
                             className="w-4 h-4 ml-auto"
                             onClick={(e) => {
                               e.stopPropagation();
@@ -267,7 +369,7 @@ const Sidebar = memo(({ isOpen: pcSidebarOpen }) => {
                             }}
                           />
                         ) : (
-                          <Menu
+                          <ChevronDown
                             className="w-4 h-4 ml-auto"
                             onClick={(e) => {
                               e.stopPropagation();
@@ -278,30 +380,63 @@ const Sidebar = memo(({ isOpen: pcSidebarOpen }) => {
                       </div>
                       {isLoyaltyOpen && (
                         <ul className="pl-12">
-                          {item.subItems.map((sub) => (
-                            <Link
-                              to={sub.path}
-                              key={sub.label}
-                              onClick={() => setMobileSidebarOpen(false)}
-                            >
-                              <li
-                                className={`flex items-center gap-4 px-4 py-2 mx-2 rounded-lg transition-all duration-300 ${
-                                  isActive(sub.path)
-                                    ? 'bg-blue-400 text-white'
-                                    : 'hover:bg-gray-100 text-black'
-                                }`}
-                              >
-                                <sub.icon
-                                  className={`w-4 h-4 ${
-                                    isActive(sub.path) ? 'text-white' : 'text-blue-400'
+                          {item.subItems.map((sub) => {
+                            const isLocked = lockedPaths.includes(sub.path);
+                            if (isLocked) {
+                              return (
+                                <div
+                                  key={sub.label}
+                                  onClick={() => {
+                                    handleLockedFeatureClick();
+                                    setMobileSidebarOpen(false);
+                                  }}
+                                  className={`relative cursor-pointer flex items-center gap-4 px-4 py-2 mx-2 rounded-lg transition-all duration-300 ${
+                                    isActive(sub.path)
+                                      ? 'bg-blue-400 text-white'
+                                      : 'hover:bg-gray-100 text-black'
                                   }`}
-                                />
-                                <span className="text-sm font-medium">
-                                  {sub.label}
-                                </span>
-                              </li>
-                            </Link>
-                          ))}
+                                >
+                                  <sub.icon
+                                    className={`w-4 h-4 ${
+                                      isActive(sub.path)
+                                        ? 'text-white'
+                                        : 'text-blue-300'
+                                    }`}
+                                  />
+                                  <span className="text-sm text-gray-400 font-medium">
+                                    {sub.label}
+                                  </span>
+                                  <Lock className="w-3 h-3 text-black ml-auto" />
+                                </div>
+                              );
+                            }
+                            return (
+                              <Link
+                                to={sub.path}
+                                key={sub.label}
+                                onClick={() => setMobileSidebarOpen(false)}
+                              >
+                                <li
+                                  className={`flex items-center gap-4 px-4 py-2 mx-2 rounded-lg transition-all duration-300 ${
+                                    isActive(sub.path)
+                                      ? 'bg-blue-400 text-white'
+                                      : 'hover:bg-gray-100 text-black'
+                                  }`}
+                                >
+                                  <sub.icon
+                                    className={`w-4 h-4 ${
+                                      isActive(sub.path)
+                                        ? 'text-white'
+                                        : 'text-blue-400'
+                                    }`}
+                                  />
+                                  <span className="text-sm font-medium">
+                                    {sub.label}
+                                  </span>
+                                </li>
+                              </Link>
+                            );
+                          })}
                         </ul>
                       )}
                     </div>
@@ -322,10 +457,14 @@ const Sidebar = memo(({ isOpen: pcSidebarOpen }) => {
                       >
                         <item.icon
                           className={`w-5 h-5 ${
-                            isActive(item.path) ? 'text-white' : 'text-blue-400'
+                            isActive(item.path)
+                              ? 'text-white'
+                              : 'text-blue-400'
                           }`}
                         />
-                        <span className="text-sm font-medium">{item.label}</span>
+                        <span className="text-sm font-medium">
+                          {item.label}
+                        </span>
                       </li>
                     </Link>
                   );

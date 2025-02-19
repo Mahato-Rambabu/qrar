@@ -15,7 +15,7 @@ const ProductPage = () => {
 
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [view, setView] = useState("table");
+  const [view, setView] = useState("grid");
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [loadingCategories, setLoadingCategories] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");

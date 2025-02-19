@@ -21,10 +21,8 @@ const EditCategoryPage = () => {
   useEffect(() => {
     const fetchCategory = async () => {
       try {
-
-
         const response = await axiosInstance.get(
-          `/categories/${categoryId}`
+          `/categories/edit/${categoryId}`
         );
 
         setCategoryData({
@@ -138,7 +136,7 @@ const EditCategoryPage = () => {
                 <img
                   src={imagePreview}
                   alt="Category"
-                  className="w-full h-40 object-cover rounded"
+                  className="w-full object-cover rounded my-4"
                 />
               ) : (
                 <div className="w-full h-40 flex items-center justify-center bg-gray-200 border border-gray-300 rounded">
@@ -154,7 +152,7 @@ const EditCategoryPage = () => {
               />
               <label
                 htmlFor="imageInput"
-                 className="absolute top-2 right-2 bg-transparent text-black p-2 rounded-full cursor-pointer hover:bg-blue-700 hover:text-white"
+                 className="absolute top-2 right-2 bg-transparent text-white p-2 rounded-full cursor-pointer hover:bg-blue-700 hover:text-white"
               >
                 <FaPen />
               </label>
