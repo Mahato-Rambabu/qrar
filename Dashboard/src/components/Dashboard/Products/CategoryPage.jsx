@@ -103,12 +103,8 @@ const CategoryPage = () => {
         onClick={() => handleViewProducts("all")}
         >
           {/* Category Image */}
-          <div className="w-full h-48 bg-gray-100 overflow-hidden rounded-t-lg">
-            <img
-              src="https://via.placeholder.com/150"
-              alt="All Products"
-              className="w-full h-full object-cover"
-            />
+          <div className="w-full h-48 overflow-hidden rounded-t-lg bg-blue-600">
+
           </div>
 
           {/* Card Content */}
