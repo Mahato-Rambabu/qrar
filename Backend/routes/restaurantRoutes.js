@@ -8,7 +8,6 @@ import authMiddleware from '../middlewares/authMiddlewares.js';
 import {upload}  from '../config/multerConfig.js'; // Import multer configuration
 import { z } from 'zod';
 
-
 const router = express.Router();
 
 const restaurantValidationSchema = z.object({

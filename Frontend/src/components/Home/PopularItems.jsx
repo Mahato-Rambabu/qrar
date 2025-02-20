@@ -20,17 +20,31 @@ const PopularItems = () => {
   const isVisibleRef = useRef(true);
   const touchStartX = useRef(null); // For swipe functionality
 
+  // Cache popular items per restaurantId
+  const popularItemsCacheRef = useRef({});
+
   const cardMargin = 16;
   const step = cardWidth + cardMargin;
   const offset = (containerWidth - cardWidth) / 2;
   const translateX = -currentIndex * step + offset;
 
-  // Fetch popular items
+  // Fetch popular items with caching
   useEffect(() => {
     if (!restaurantId) return;
+    setLoading(true);
+    // Check if we already have cached data for this restaurantId
+    if (popularItemsCacheRef.current[restaurantId]) {
+      setPopularItems(popularItemsCacheRef.current[restaurantId]);
+      setCurrentIndex(1);
+      setLoading(false);
+      return;
+    }
+
     const fetchPopularItems = async () => {
       try {
         const response = await axiosInstance.get(`/orders/top-products/${restaurantId}`);
+        // Cache the fetched popular items
+        popularItemsCacheRef.current[restaurantId] = response.data;
         setPopularItems(response.data);
         setCurrentIndex(1);
       } catch (err) {
@@ -92,11 +106,15 @@ const PopularItems = () => {
         const nextIndex = prev + 1;
         if (nextIndex >= slides.length - 1) {
           setTimeout(() => {
-            sliderRef.current.style.transition = 'none';
-            setCurrentIndex(1);
-            setTimeout(() => {
-              sliderRef.current.style.transition = 'transform 0.5s ease-in-out';
-            }, 50);
+            if (sliderRef.current) {
+              sliderRef.current.style.transition = 'none';
+              setCurrentIndex(1);
+              setTimeout(() => {
+                if (sliderRef.current) {
+                  sliderRef.current.style.transition = 'transform 0.5s ease-in-out';
+                }
+              }, 50);
+            }
           }, 500);
         }
         return nextIndex >= slides.length ? 0 : nextIndex;

@@ -55,6 +55,7 @@ const applyOffersToProducts = (products, offers) => {
 
 const ProductPage = () => {
   const [products, setProducts] = useState([]);
+  const [productsCache, setProductsCache] = useState({});
   const [categories, setCategories] = useState([]);
   const [highlightedProduct, setHighlightedProduct] = useState(null);
   const [loadingProducts, setLoadingProducts] = useState(false);
@@ -100,6 +101,13 @@ const ProductPage = () => {
       setLoadingProducts(true);
       setError(null);
 
+      // Use cached data if available for this category
+      if (productsCache[categoryFromUrl]) {
+        setProducts(productsCache[categoryFromUrl]);
+        setLoadingProducts(false);
+        return;
+      }
+
       try {
         // Fetch products by category (or all) using the URL query directly
         const productData = await fetchProducts(restaurantId, categoryFromUrl);
@@ -110,6 +118,12 @@ const ProductPage = () => {
 
         // Apply offers to products based on priority: product > category > all
         const discountedProducts = applyOffersToProducts(productData, offersData);
+
+        // Cache the fetched products for this category
+        setProductsCache((prevCache) => ({
+          ...prevCache,
+          [categoryFromUrl]: discountedProducts,
+        }));
         setProducts(discountedProducts);
       } catch (err) {
         console.error('Error fetching products or offers:', err);
@@ -120,7 +134,7 @@ const ProductPage = () => {
     };
 
     fetchData();
-  }, [location.search, restaurantId, categoryFromUrl]);
+  }, [location.search, restaurantId, categoryFromUrl, productsCache]);
 
   // When a category is selected in the Sidebar, update the URL (which triggers data refresh)
   const handleCategorySelect = (categoryId) => {
@@ -156,7 +170,7 @@ const ProductPage = () => {
             </div>
           )}
 
-          {/* Always render ProductGrid, passing isLoading. 
+          {/* Always render ProductGrid, passing isLoading.
               If there's an error, we show it above and can optionally hide the grid. */}
           <ProductGrid
             products={products}

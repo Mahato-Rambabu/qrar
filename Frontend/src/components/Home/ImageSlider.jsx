@@ -6,19 +6,20 @@ import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 
 // Helper function to extract query parameters
-const useQuery = () => {
-  return new URLSearchParams(useLocation().search);
-};
+const useQuery = () => new URLSearchParams(useLocation().search);
 
 const ImageSlider = () => {
   const query = useQuery();
-  const restaurantId = query.get('restaurantId'); // Extract restaurantId from query parameters
+  const restaurantId = query.get('restaurantId'); // Extract restaurantId from URL query
   const [images, setImages] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const touchStartX = useRef(null);
-  const swipeThreshold = 50; // Minimum distance to be considered a swipe
+  const swipeThreshold = 50; // Minimum distance (in px) to be considered a swipe
+
+  // Cache slider images for each restaurant using a ref (persists across renders)
+  const sliderCacheRef = useRef({});
 
   useEffect(() => {
     if (!restaurantId) {
@@ -28,11 +29,20 @@ const ImageSlider = () => {
     }
 
     const loadImages = async () => {
+      // Check if we already have images cached for this restaurant
+      if (sliderCacheRef.current[restaurantId]) {
+        setImages(sliderCacheRef.current[restaurantId]);
+        setLoading(false);
+        return;
+      }
+
       try {
         const fetchedImages = await fetchSliderImages(restaurantId);
         const formattedImages = fetchedImages.map((image) =>
           image.img ? image.img : '/placeholder.png'
         );
+        // Cache the images for this restaurantId
+        sliderCacheRef.current[restaurantId] = formattedImages;
         setImages(formattedImages);
       } catch (err) {
         console.error('Error fetching slider images:', err.message);
@@ -50,7 +60,9 @@ const ImageSlider = () => {
   };
 
   const handlePrev = () => {
-    setCurrentIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
+    setCurrentIndex((prevIndex) =>
+      (prevIndex - 1 + images.length) % images.length
+    );
   };
 
   useEffect(() => {
@@ -78,7 +90,6 @@ const ImageSlider = () => {
   };
 
   if (loading) {
-    // Render a skeleton placeholder that matches the slider's dimensions
     return (
       <div
         className="relative w-full overflow-hidden rounded-b-[8%] bg-gray-100"
@@ -87,11 +98,11 @@ const ImageSlider = () => {
           maxHeight: '45vh',
         }}
       >
-        <Skeleton 
-          height="100%" 
-          width="100%" 
-          containerClassName="h-full w-full" 
-          style={{ borderRadius: '0 0 8% 8%' }} 
+        <Skeleton
+          height="100%"
+          width="100%"
+          containerClassName="h-full w-full"
+          style={{ borderRadius: '0 0 8% 8%' }}
         />
       </div>
     );

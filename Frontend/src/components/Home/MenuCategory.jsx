@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { fetchCategories } from '../../api/categoryApi';
 import { FaCircleChevronRight } from 'react-icons/fa6';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
@@ -12,10 +12,12 @@ const MenuCategory = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   const [searchParams] = useSearchParams();
   const restaurantId = searchParams.get('restaurantId');
   const navigate = useNavigate();
+
+  // Cache for menu categories keyed by restaurantId
+  const menuCategoriesCacheRef = useRef({});
 
   useEffect(() => {
     const getCategories = async () => {
@@ -25,9 +27,18 @@ const MenuCategory = () => {
         return;
       }
 
+      // Use cached categories if available
+      if (menuCategoriesCacheRef.current[restaurantId]) {
+        setCategories(menuCategoriesCacheRef.current[restaurantId]);
+        setLoading(false);
+        return;
+      }
+
       try {
         const data = await fetchCategories(restaurantId);
         setCategories(data);
+        // Cache the fetched categories for this restaurantId
+        menuCategoriesCacheRef.current[restaurantId] = data;
       } catch (err) {
         setError('Unable to fetch menu categories. Please try again later.');
       } finally {
