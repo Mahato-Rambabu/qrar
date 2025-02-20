@@ -75,14 +75,10 @@ const Sidebar = ({ selectedCategory, onSelectCategory, restaurantId }) => {
         }`}
         onClick={() => onSelectCategory('all')}
       >
-        <div className="w-12 h-12 bg-gray-200 rounded-full overflow-hidden lg:mr-4 mb-2 lg:mb-0">
-          <img
-            src="/imgAll.jpg" // Replace with your "All" category image
-            alt="All Categories"
-            className="w-full h-full object-cover"
-          />
+        <div className="w-12 h-12 bg-gray-400 rounded-full text-white overflow-hidden lg:mr-4 mb-2 lg:mb-0 flex items-center justify-center">
+          All
         </div>
-        <span className="text-sm break-words">All</span>
+        {/* <span className="text-sm break-words">All</span> */}
       </button>
 
       {/* Dynamically Rendered Category Buttons */}
