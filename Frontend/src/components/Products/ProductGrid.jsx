@@ -132,7 +132,7 @@ const ProductGrid = memo(({ products = [], highlightedProduct, isLoading = false
                 <p className="font-bold text-[12px] py-2">
                   {product.discountedPrice ? (
                     <>
-                      <span className="text-black line-through mr-2">₹{product.price}.00</span>
+                      <span className="text-gray-500 line-through mr-2">₹{product.price}.00</span>
                       <span className="text-green-600 text-[16px]">₹{product.discountedPrice}.00</span>
                     </>
                   ) : (
@@ -198,11 +198,11 @@ const ProductGrid = memo(({ products = [], highlightedProduct, isLoading = false
               <div className="absolute bottom-0 left-0 right-0 px-3 pb-10 flex justify-between items-center border-t bg-gray-100">
                 {selectedProduct.discountedPrice ? (
                   <p className="font-bold text-2xl relative top-4">
-                    <span className="text-black line-through mr-2">₹{selectedProduct.price}.00</span>
+                    <span className="text-gray-500 line-through mr-2">₹{selectedProduct.price}.00</span>
                     <span className="text-green-600">₹{selectedProduct.discountedPrice}.00</span>
                   </p>
                 ) : (
-                  <p className="font-bold text-2xl relative top-4">₹{selectedProduct.price}.00</p>
+                  <p className="font-bold text-xl relative top-4">₹{selectedProduct.price}.00</p>
                 )}
                 {getProductQuantity(selectedProduct._id) === 0 ? (
                   <button

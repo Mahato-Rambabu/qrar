@@ -61,7 +61,7 @@ const Offers = () => {
     fetchOffersData();
   }, [restaurantId]);
 
-  // Mobile auto-slide for offers
+  // Mobile auto-slide for offers (every 5 seconds)
   useEffect(() => {
     if (isMobile && offers.length > 0) {
       const interval = setInterval(() => {
@@ -86,7 +86,7 @@ const Offers = () => {
     exit: { x: "-100%", opacity: 0, transition: { ease: 'easeInOut', duration: 0.5 } },
   };
 
-  // Skeleton placeholder for mobile (single card) and desktop (multiple cards)
+  // Skeleton placeholder for loading state
   if (loading) {
     return (
       <div className="w-full p-4 pt-4 bg-gray-100">
@@ -99,11 +99,11 @@ const Offers = () => {
             />
           </div>
         ) : (
-          <div className="flex space-x-4 overflow-x-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {Array.from({ length: 3 }).map((_, index) => (
               <div
                 key={index}
-                className="relative min-w-[250px] max-w-[300px] h-32 rounded-xl shadow-xl p-6"
+                className="relative h-32 rounded-xl shadow-xl p-6"
               >
                 <Skeleton
                   height={32}
@@ -122,7 +122,7 @@ const Offers = () => {
     <div className="w-full p-4 pt-4 bg-gray-100">
       {offers.length > 0 ? (
         isMobile ? (
-          <div className="relative h-32">
+          <div className="relative h-32 overflow-hidden">
             <AnimatePresence mode="wait">
               <motion.div
                 key={offers[currentSlide]._id}
@@ -131,6 +131,16 @@ const Offers = () => {
                 initial="initial"
                 animate="animate"
                 exit="exit"
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                onDragEnd={(e, info) => {
+                  const swipe = info.offset.x;
+                  if (swipe < -50) {
+                    setCurrentSlide((prev) => (prev + 1) % offers.length);
+                  } else if (swipe > 50) {
+                    setCurrentSlide((prev) => (prev - 1 + offers.length) % offers.length);
+                  }
+                }}
               >
                 {offers[currentSlide].discountPercentage && (
                   <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md">
@@ -146,15 +156,11 @@ const Offers = () => {
             </AnimatePresence>
           </div>
         ) : (
-          <motion.div
-            className="flex space-x-4 overflow-x-auto scrollbar-hide"
-            drag="x"
-            dragConstraints={{ left: -200, right: 0 }}
-          >
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {offers.map((offer, index) => (
               <motion.div
                 key={offer._id}
-                className={`relative min-w-[250px] max-w-[300px] h-32 rounded-xl shadow-xl p-6 flex flex-col justify-center cursor-pointer ${gradients[index % gradients.length]}`}
+                className={`relative h-32 rounded-xl shadow-xl p-6 flex flex-col justify-center cursor-pointer ${gradients[index % gradients.length]}`}
                 whileHover={{ scale: 1.05 }}
               >
                 {offer.discountPercentage && (
@@ -169,11 +175,9 @@ const Offers = () => {
                 <p className="text-sm text-white">Check out the hottest offers for you!</p>
               </motion.div>
             ))}
-          </motion.div>
+          </div>
         )
-      ) : (
-        <></>
-      )}
+      ) : null}
     </div>
   );
 };
