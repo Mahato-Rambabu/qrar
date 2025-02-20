@@ -16,6 +16,7 @@ const Offers = () => {
   const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [direction, setDirection] = useState(1); // 1 for forward, -1 for backward
 
   // Responsive detection
   useEffect(() => {
@@ -61,29 +62,29 @@ const Offers = () => {
     fetchOffersData();
   }, [restaurantId]);
 
-  // Mobile auto-slide for offers (every 5 seconds)
+  // Mobile auto-slide for offers (every 5 seconds) with forward direction
   useEffect(() => {
     if (isMobile && offers.length > 0) {
       const interval = setInterval(() => {
+        setDirection(1);
         setCurrentSlide(prev => (prev + 1) % offers.length);
       }, 5000);
       return () => clearInterval(interval);
     }
   }, [isMobile, offers]);
 
-  const gradients = [
-    "bg-gradient-to-r from-gray-500 to-red-500",
-    "bg-gradient-to-r from-blue-500 to-gray-500",
-    "bg-gradient-to-r from-gray-500 to-pink-500",
-    "bg-gradient-to-r from-indigo-500 to-gray-500",
-    "bg-gradient-to-r from-gray-500 to-teal-500",
-    "bg-gradient-to-r from-orange-500 to-gray-500",
-  ];
-
+  // Animation variants accepting a custom direction parameter
   const slideVariants = {
-    initial: { x: "100%", opacity: 0 },
+    initial: (direction) => ({
+      x: direction > 0 ? "100%" : "-100%",
+      opacity: 0,
+    }),
     animate: { x: "0%", opacity: 1, transition: { ease: 'easeInOut', duration: 0.5 } },
-    exit: { x: "-100%", opacity: 0, transition: { ease: 'easeInOut', duration: 0.5 } },
+    exit: (direction) => ({
+      x: direction > 0 ? "-100%" : "100%",
+      opacity: 0,
+      transition: { ease: 'easeInOut', duration: 0.5 },
+    }),
   };
 
   // Skeleton placeholder for loading state
@@ -101,10 +102,7 @@ const Offers = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {Array.from({ length: 3 }).map((_, index) => (
-              <div
-                key={index}
-                className="relative h-32 rounded-xl shadow-xl p-6"
-              >
+              <div key={index} className="relative h-32 rounded-xl shadow-xl p-6">
                 <Skeleton
                   height={32}
                   containerClassName="h-full"
@@ -126,6 +124,7 @@ const Offers = () => {
             <AnimatePresence mode="wait">
               <motion.div
                 key={offers[currentSlide]._id}
+                custom={direction}
                 className={`absolute inset-0 rounded-xl shadow-xl p-6 flex flex-col justify-center cursor-pointer ${gradients[currentSlide % gradients.length]}`}
                 variants={slideVariants}
                 initial="initial"
@@ -136,8 +135,10 @@ const Offers = () => {
                 onDragEnd={(e, info) => {
                   const swipe = info.offset.x;
                   if (swipe < -50) {
+                    setDirection(1);
                     setCurrentSlide((prev) => (prev + 1) % offers.length);
                   } else if (swipe > 50) {
+                    setDirection(-1);
                     setCurrentSlide((prev) => (prev - 1 + offers.length) % offers.length);
                   }
                 }}
@@ -181,5 +182,14 @@ const Offers = () => {
     </div>
   );
 };
+
+const gradients = [
+  "bg-gradient-to-r from-gray-500 to-red-500",
+  "bg-gradient-to-r from-blue-500 to-gray-500",
+  "bg-gradient-to-r from-gray-500 to-pink-500",
+  "bg-gradient-to-r from-indigo-500 to-gray-500",
+  "bg-gradient-to-r from-gray-500 to-teal-500",
+  "bg-gradient-to-r from-orange-500 to-gray-500",
+];
 
 export default Offers;
