@@ -19,6 +19,7 @@
     "@mui/material": "^6.4.4",
     "axios": "^1.7.8",
     "browser-image-compression": "^2.0.2",
+    "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
     "js-cookie": "^3.0.5",
     "jwt-decode": "^4.0.0",

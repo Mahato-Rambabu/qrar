@@ -20,34 +20,47 @@ router.get("/total-users",authMiddleware, async (req, res) => {
 
 router.get('/users-by-age-group', authMiddleware, async (req, res) => {
   try {
-    const restaurantId = req.user.id; // Extracted from the token via authMiddleware
+    const restaurantId = req.user.id; // Extracted from token
 
     if (!restaurantId || !isValidObjectId(restaurantId)) {
       return res.status(400).json({ error: 'Invalid restaurant ID.' });
     }
+
+    const currentDate = new Date();
 
     const ageGroups = await User.aggregate([
       {
         $match: { restaurantId: new mongoose.Types.ObjectId(restaurantId) },
       },
       {
+        $addFields: {
+          age: {
+            $dateDiff: { 
+              startDate: "$dob", 
+              endDate: currentDate, 
+              unit: "year" 
+            }
+          }
+        }
+      },
+      {
         $group: {
           _id: {
             $cond: [
-              { $lte: ['$age', 27] },
+              { $lte: ['$age', 27] }, 
               'Gen Z',
-              {
+              { 
                 $cond: [
-                  { $and: [{ $gte: ['$age', 28] }, { $lte: ['$age', 42] }] },
-                  'Millennials',
-                  'Gen X',
-                ],
-              },
-            ],
+                  { $and: [{ $gte: ['$age', 28] }, { $lte: ['$age', 42] }] }, 
+                  'Millennials', 
+                  'Gen X'
+                ]
+              }
+            ]
           },
-          count: { $sum: 1 },
-        },
-      },
+          count: { $sum: 1 }
+        }
+      }
     ]);
 
     const formattedResponse = ageGroups.reduce((acc, group) => {
@@ -65,16 +78,19 @@ router.get('/users-by-age-group', authMiddleware, async (req, res) => {
 // Save user details
 router.post("/:restaurantId", async (req, res) => {
   const { restaurantId } = req.params;
-  const { name, phone, age } = req.body;
+  const { name, phone, dob } = req.body;
 
-  if (!name || !phone || !age) {
+  if (!isValidObjectId(restaurantId)) {
+    return res.status(400).json({ error: "Invalid restaurant ID" });
+  }
+
+  if (!name || !phone || !dob) {
     return res.status(400).json({ error: "All fields are required" });
   }
 
   try {
     const existingUser = await User.findOne({ phone, restaurantId });
     if (existingUser) {
-      // Instead of throwing an error, return success with the existing user’s identifier
       return res.status(200).json({
         message: "User already registered. Proceed with existing details.",
         user: existingUser,
@@ -82,7 +98,7 @@ router.post("/:restaurantId", async (req, res) => {
       });
     }
 
-    const newUser = new User({ name, phone, age, restaurantId });
+    const newUser = new User({ name, phone, dob, restaurantId });
     await newUser.save();
 
     res.status(201).json({ 
@@ -106,7 +122,7 @@ router.get("/", authMiddleware, async (req, res) => {
   }
 
   try {
-    const users = await User.find({ restaurantId }).select("name phone age createdAt");
+    const users = await User.find({ restaurantId }).select("name phone dob createdAt");
     res.status(200).json(users);
   } catch (error) {
     console.error("Error fetching user details:", error);

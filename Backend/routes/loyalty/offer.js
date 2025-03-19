@@ -7,15 +7,6 @@ const router = express.Router();
 
 /**
  * Create a new offer.
- * Expects in req.body:
- *   - title (required)
- *   - targetType (required)
- *   - targetId (required if targetType is not 'all')
- *   - discountPercentage (required)
- *   - activationTime (required)
- *   - expirationTime (optional)
- *   - status (optional, default is true)
- * restaurantId is set from req.user.
  */
 router.post('/', authMiddleware, async (req, res) => {
   try {
@@ -30,14 +21,12 @@ router.post('/', authMiddleware, async (req, res) => {
     } = req.body;
     const restaurantId = req.user.restaurantId;
 
-    // Validate required fields including title
     if (!title || !targetType || !discountPercentage || !activationTime) {
       return res.status(400).json({
         error:
           'Missing required fields: title, targetType, discountPercentage, and activationTime are required.',
       });
     }
-    // For product or category offers, targetId must be provided.
     if (targetType !== 'all' && !targetId) {
       return res
         .status(400)
@@ -51,7 +40,7 @@ router.post('/', authMiddleware, async (req, res) => {
       targetId: targetType !== 'all' ? targetId : undefined,
       discountPercentage,
       activationTime,
-      expirationTime, // optional
+      expirationTime,
       status: typeof status !== 'undefined' ? status : true,
     });
 
@@ -77,15 +66,42 @@ router.get('/all', authMiddleware, async (req, res) => {
 });
 
 /**
- * Fetch all active offers for a given restaurant.
+ * Fetch all active offers for the authenticated restaurant.
  * Active offers have:
  *   - status === true,
  *   - activationTime <= now,
  *   - and either no expirationTime or expirationTime > now.
  */
+
+router.get("/active", authMiddleware, async (req, res) => {
+  try {
+    const restaurantId = req.user.id; // Corrected from req.user.restaurantId
+    const now = new Date();
+    
+    const activeOffers = await Offer.find({
+      restaurantId,
+      status: true,
+      activationTime: { $lte: now },
+      $or: [
+        { expirationTime: { $exists: false } },
+        { expirationTime: null },
+        { expirationTime: { $gt: now } },
+      ],
+    }).populate('restaurantId', 'name'); // Add population
+
+    res.status(200).json(activeOffers);
+  } catch (error) {
+    console.error("Error fetching active offers:", error);
+    res.status(500).json({ error: "Server error", details: error.message });
+  }
+});
+/**
+ * Fetch offers by restaurantId (this route is used when the restaurant id is passed in the URL).
+ * Note: Place this route AFTER /active to avoid conflict.
+ */
 router.get('/:restaurantId', async (req, res) => {
   const { restaurantId } = req.params;
-  const { targetType, targetId } = req.query; // Get query parameters for filtering
+  const { targetType, targetId } = req.query;
 
   if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
     return res.status(400).json({ error: 'Invalid restaurantId' });
@@ -104,23 +120,18 @@ router.get('/:restaurantId', async (req, res) => {
       ],
     };
 
-    // Apply targetType filtering
     if (targetType) {
       query.targetType = targetType;
-
-      // If targetId is provided, filter further (for category/product)
       if (targetId && targetType !== 'all') {
         query.targetId = targetId;
       }
     }
 
     const activeOffers = await Offer.find(query);
-
     if (!activeOffers || activeOffers.length === 0) {
       return res.status(404).json({ error: 'No active offers found' });
     }
 
-    // Structure offers for frontend grouping
     const offersByType = {
       all: [],
       categories: {},
@@ -149,10 +160,8 @@ router.get('/:restaurantId', async (req, res) => {
   }
 });
 
-
 /**
  * Get a single offer by its ID.
- * Only returns the offer if it belongs to the authenticated restaurant.
  */
 router.get('/:id', authMiddleware, async (req, res) => {
   try {
@@ -170,7 +179,6 @@ router.get('/:id', authMiddleware, async (req, res) => {
 
 /**
  * Update an offer.
- * Updatable fields: title, targetType, targetId, discountPercentage, activationTime, expirationTime, status.
  */
 router.put('/:id', authMiddleware, async (req, res) => {
   try {
@@ -194,7 +202,6 @@ router.put('/:id', authMiddleware, async (req, res) => {
     if (expirationTime) updateData.expirationTime = expirationTime;
     if (typeof status !== 'undefined') updateData.status = status;
 
-    // Handle targetId update: only assign targetId if offer is not for 'all'
     if ((targetType && targetType !== 'all') || req.body.targetId) {
       updateData.targetId = targetId;
     } else if (targetType === 'all') {
@@ -218,7 +225,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
 });
 
 /**
- * Toggle the active state (status) of an offer.
+ * Toggle the active state of an offer.
  */
 router.put('/toggle/:id', authMiddleware, async (req, res) => {
   try {
