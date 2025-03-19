@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { FaImage, FaTag, FaRupeeSign } from 'react-icons/fa';
 import axiosInstance from '../../../utils/axiosInstance';
+import { CircularProgress } from '@mui/material';
 
 const AddCategory = ({ onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -166,12 +167,13 @@ const AddCategory = ({ onSuccess }) => {
             </div>
           </div>
 
+          {/* Improved Button with Consistent Size */}
           <button
             type="submit"
-            className="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-700 disabled:opacity-50"
+            className="bg-blue-500 text-white px-4 py-2 w-40 h-10 flex justify-center items-center rounded-lg shadow hover:bg-blue-700 disabled:opacity-50"
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Submitting...' : 'Add Category'}
+            {isSubmitting ? <CircularProgress size={20} className="text-white" /> : 'Add Category'}
           </button>
         </form>
       </div>

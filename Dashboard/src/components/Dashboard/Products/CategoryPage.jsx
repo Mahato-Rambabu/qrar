@@ -3,6 +3,7 @@ import axiosInstance from '../../../utils/axiosInstance';
 import { useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { toast } from 'react-hot-toast';
+import CategoryCardSkeleton from "./CategoryCardSkeleton";
 
 const AddCategory = lazy(() => import("./AddCategory"))
 const CategoryCard = lazy(() => import("./CategoryCard"));
@@ -114,7 +115,7 @@ const CategoryPage = () => {
         </div>
 
         {loadingCategories ? (
-          <p className="text-gray-500">Loading categories...</p>
+           [...Array(10)].map((_, index) => <CategoryCardSkeleton key={index} />)
         ) : (
           <Suspense fallback={<p>Loading...</p>}>
           {categories.map((category) => (

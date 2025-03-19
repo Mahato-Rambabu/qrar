@@ -14,6 +14,7 @@ import { getCroppedImg } from '../../../utils/imageUtils';
 import Modal from 'react-modal'
 import { FaTimes } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
+import { CircularProgress } from '@mui/material';
 
 Modal.setAppElement('#root');
 
@@ -365,10 +366,10 @@ const AddProductPage = ({onSuccess}) => {
 
         <button
           type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-700 disabled:opacity-50"
+          className="bg-blue-500 text-white px-4 py-2 w-40 h-10 flex justify-center items-center rounded-lg shadow hover:bg-blue-700 disabled:opacity-50"
           disabled={isSubmitting}
         >
-          {isSubmitting ? 'Submitting...' : 'Add Product'}
+          {isSubmitting ? <CircularProgress size={20} className='text-white'/> : 'Add Product'}
         </button>
       </form>
     </div>

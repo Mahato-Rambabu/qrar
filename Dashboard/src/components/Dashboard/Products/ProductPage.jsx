@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, lazy } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axiosInstance from '../../../utils/axiosInstance';
 import Pagination from "./Pagination";
-import ProductCard from "./ProductCard";
-import ProductTable from "./ProductTable";
 import { Grid, Plus, Table, Trash } from "lucide-react";
 import useDebouncedValue from "../../../Hooks/useDebounce";
-import AddProductPage from "./AddProduct";
 import Modal from "react-modal";
+
+
+const ProductCardSkeleton = lazy(() => import("./ProductCardSkeleton"));
+const AddProductPage = lazy(() => import("./AddProduct"));
+const ProductTable = lazy(() => import("./ProductTable"))
+const ProductCard = lazy(() => import("./ProductCard"))
 
 const ProductPage = () => {
   const navigate = useNavigate();
@@ -254,7 +257,11 @@ const ProductPage = () => {
 
       {/* Product Display */}
       {loadingProducts ? (
-        <p className="text-gray-500">Loading products...</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {[...Array(10)].map((_, index) => (
+            <ProductCardSkeleton key={index} />
+          ))}
+        </div>
       ) : products.length > 0 ? (
         view === "grid" ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
