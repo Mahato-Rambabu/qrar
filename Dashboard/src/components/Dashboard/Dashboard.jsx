@@ -3,11 +3,12 @@ import { Route, Routes, useLocation } from "react-router-dom";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import ErrorBoundary from "./ErrorBoundary";
-import PopCardsPage from "./Loyalty/PopupCard";
-import OffersPage from "./Loyalty/OfferPage";
-import CouponCodesPage from "./Loyalty/CouponCodePage";
-import ComboDealsPage from "./Loyalty/ComboDealsPage";
+
 // Lazy load components for optimization
+const ComboDealsPage = lazy(() => import("./Loyalty/ComboDealsPage"))
+const CouponCodesPage = lazy(() => import("./Loyalty/CouponCodePage"))
+const OffersPage = lazy(() => import("./Loyalty/OfferPage"));
+const PopCardsPage = lazy(() => import("./Loyalty/PopupCard"));
 const OrderDashboard = lazy(() => import('../orders/OrderDashboard'));
 const RestoDashboard = lazy(() => import('./Analytics/RestoDashboard'));
 const RegisterPage = lazy(() => import('../SignUp/RegisterPage'));

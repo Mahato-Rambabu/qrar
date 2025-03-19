@@ -5,6 +5,7 @@ import OrderTable from "../orders/OrderTable";
 import { FaHistory } from "react-icons/fa";
 import io from "socket.io-client";
 import { toast } from "react-hot-toast";
+import { History } from "lucide-react";
 
 // Dynamically set the socket URL based on the environment
 const socketUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:5001";
@@ -123,10 +124,10 @@ const OrderDashboard = () => {
           Order Management
         </h1>
         <button
-          className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-green-500 text-white px-6 py-3 rounded-lg shadow-md hover:from-green-500 hover:to-blue-500 transition-all duration-300"
+          className="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-700 flex items-center gap-2"
           onClick={() => navigate("/history")}
         >
-          <FaHistory className="text-xl" />
+          <History size={20} />
           <span>View History</span>
         </button>
       </div>

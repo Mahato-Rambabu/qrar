@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy } from 'react';
 import axiosInstance from '../../../utils/axiosInstance';
-import OfferModal from './OfferModal';
 import { Edit, Trash, Plus } from 'lucide-react';
+
+const OfferModal = lazy(() => import('./OfferModal'))
 
 const OffersPage = () => {
   const [offers, setOffers] = useState([]);

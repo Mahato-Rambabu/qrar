@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { FaImage, FaTag, FaRupeeSign } from 'react-icons/fa';
 import axiosInstance from '../../../utils/axiosInstance';
-import Cookies from 'js-cookie'; // Import js-cookie
 
 const AddCategory = ({ onSuccess }) => {
   const [formData, setFormData] = useState({

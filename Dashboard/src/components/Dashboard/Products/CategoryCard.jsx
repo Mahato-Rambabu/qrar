@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Edit3, Trash2, MoreVertical } from "lucide-react";
+import { MoreVertical } from "lucide-react";
 import { FaRupeeSign } from "react-icons/fa";
 
 const CategoryCard = ({ category, onEdit, onDelete, onViewProducts }) => {

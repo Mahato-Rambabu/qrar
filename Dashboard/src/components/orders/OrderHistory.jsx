@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import OrderTable from "../orders/OrderTable";
 import { FaArrowLeft } from "react-icons/fa";
 import { io } from "socket.io-client";
+import { CornerUpLeft } from "lucide-react";
 
 // Dynamically set the socket URL based on the environment
 const socketUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:5001"; // Default to localhost for development
@@ -80,10 +81,10 @@ const OrderHistory = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold text-gray-800">Previous Orders</h1>
         <button
-          className="flex items-center gap-2 bg-gradient-to-r from-red-500 to-orange-500 text-white px-6 py-3 rounded-lg shadow-md hover:from-orange-500 hover:to-red-500 transition-all duration-300"
+          className="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-700 flex items-center gap-2"
           onClick={() => navigate("/orders")}
         >
-          <FaArrowLeft className="text-xl" />
+          <CornerUpLeft size={20} />
           <span>Go Back</span>
         </button>
       </div>

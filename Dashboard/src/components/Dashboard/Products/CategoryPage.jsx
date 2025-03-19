@@ -2,10 +2,9 @@ import React, { useEffect, useState, useCallback, lazy, Suspense } from "react";
 import axiosInstance from '../../../utils/axiosInstance';
 import { useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
-import AddCategory from "./AddCategory";
 import { toast } from 'react-hot-toast';
 
-
+const AddCategory = lazy(() => import("./AddCategory"))
 const CategoryCard = lazy(() => import("./CategoryCard"));
 
 const CategoryPage = () => {
