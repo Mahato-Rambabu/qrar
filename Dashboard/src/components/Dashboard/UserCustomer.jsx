@@ -84,12 +84,12 @@ const UserCustomer = () => {
   // Generate a dynamic message using fallback defaults if needed
   const generateDynamicMessage = (user) => {
     if (isBirthdayToday(user.dob)) {
-      return `🎂 Hey ${user.name}, Happy Birthday! ${rName} celebrates you with a special treat at ${rAddress}.`;
+      return `🎂 *Hey ${user.name}!* Wishing you a *spectacular birthday* filled with joy and surprises! *${rName}* is thrilled to celebrate your special day by offering you an *exclusive treat* at *${rAddress}*. Enjoy every moment and have a fantastic day! 🎉`;
     } else {
-      return `Hello ${user.name}, check out our latest offer at ${rName}! ${offerText}. Visit us at ${rAddress}.`;
+      return `Hello *${user.name}* 👋! Don't miss our *latest exciting offer*: *${offerText}*! Visit us at *${rAddress}* to experience the magic of *${rName}* and let our culinary delights brighten your day. See you soon! 🍽️🎉`;
     }
   };
-
+  
   // Build the WhatsApp URL using the dynamically generated message
   const generateWhatsAppLink = (user) => {
     const message = generateDynamicMessage(user);
@@ -186,12 +186,11 @@ const UserCustomer = () => {
               return (
                 <tr
                   key={user._id}
-                  className={`border-b hover:bg-gray-100 ${
-                    birthdayToday ? "bg-yellow-100" : "bg-gray-100"
-                  }`}
+                  className={`border-b hover:bg-gray-100 ${birthdayToday ? "bg-yellow-100" : "bg-gray-100"
+                    }`}
                 >
                   <td className="py-3 px-6">
-                    {birthdayToday ? `🥳 ${user.name} 🎂` : user.name}
+                    {birthdayToday ? ` ${user.name} 🥳` : user.name}
                   </td>
                   <td className="py-3 px-6">{user.phone}</td>
                   <td className="py-3 px-6">
