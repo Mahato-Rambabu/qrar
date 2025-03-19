@@ -115,7 +115,7 @@ const CategoryPage = () => {
         </div>
 
         {loadingCategories ? (
-           [...Array(10)].map((_, index) => <CategoryCardSkeleton key={index} />)
+           [...Array(7)].map((_, index) => <CategoryCardSkeleton key={index} />)
         ) : (
           <Suspense fallback={<p>Loading...</p>}>
           {categories.map((category) => (
