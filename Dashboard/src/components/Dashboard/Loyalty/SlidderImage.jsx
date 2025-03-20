@@ -3,12 +3,13 @@ import axiosInstance from '../../../utils/axiosInstance';
 import { Plus, Trash2 } from 'lucide-react';
 import { CircularProgress } from '@mui/material';
 
-const SliderImagePage = ({ loadingState }) => {
+const SliderImagePage = () => {
   const [loyaltyEntries, setLoyaltyEntries] = useState([]);
   const [offers, setOffers] = useState([]); // State to hold available offers
   const [loading, setLoading] = useState(true); // For fetching entries
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false); // For submission loading
+  const [loadingState, setLoadingState] = useState({}); // Track loading state for each entry deletion
 
   // Modal state and form fields
   const [modalOpen, setModalOpen] = useState(false);
@@ -23,7 +24,6 @@ const SliderImagePage = ({ loadingState }) => {
   const fetchLoyaltyEntries = async () => {
     try {
       setLoading(true);
-      // This endpoint uses your authMiddleware to inject restaurantId.
       const response = await axiosInstance.get('/updatedImageSlider/all');
       setLoyaltyEntries(response.data);
       setError(null);
@@ -46,10 +46,9 @@ const SliderImagePage = ({ loadingState }) => {
 
   const handleAddEntry = async (e) => {
     e.preventDefault();
-    if (!imageFile) return; // Only image is required now
+    if (!imageFile) return;
     const formData = new FormData();
     formData.append('img', imageFile);
-    // Append the offer only if provided
     if (offer) {
       formData.append('offer', offer);
     }
@@ -73,11 +72,14 @@ const SliderImagePage = ({ loadingState }) => {
 
   const handleDeleteEntry = async (id) => {
     try {
+      setLoadingState((prev) => ({ ...prev, [id]: true })); // Set loading for specific entry
       await axiosInstance.delete(`/updatedImageSlider/${id}`);
       fetchLoyaltyEntries();
     } catch (err) {
       console.error('Error deleting loyalty entry:', err);
       setError('Failed to delete loyalty entry.');
+    } finally {
+      setLoadingState((prev) => ({ ...prev, [id]: false })); // Reset loading state
     }
   };
 
@@ -87,15 +89,13 @@ const SliderImagePage = ({ loadingState }) => {
       <div className="flex flex-row justify-between items-center">
         <div>
           <h1 className="text-2xl font-semibold">Slider Images</h1>
-          <p className="mb-4 text-gray-600">
-            Manage your Slider Image
-          </p>
+          <p className="mb-4 text-gray-600">Manage your Slider Image</p>
           {error && <p className="text-red-500 mb-4">{error}</p>}
         </div>
         <div>
           <button
             onClick={() => setModalOpen(true)}
-            className="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-700 flex flex-row items-center gap-2"
+            className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 flex flex-row items-center gap-2"
           >
             <Plus size={16} />
             Add Image
@@ -112,7 +112,6 @@ const SliderImagePage = ({ loadingState }) => {
         <div className="overflow-x-auto">
           <div className="grid grid-flow-col auto-cols-max gap-4 px-2 pb-4">
             {loyaltyEntries.map((entry) => {
-              // Look up the offer title using the offer ID attached in the entry
               const attachedOffer = offers.find((o) => o._id === entry.offer);
               const offerTitle = attachedOffer ? attachedOffer.title : "No offer attached";
 
@@ -154,19 +153,12 @@ const SliderImagePage = ({ loadingState }) => {
       {/* Modal for adding a new loyalty program entry */}
       {modalOpen && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
-          {/* Modal Backdrop */}
-          <div
-            className="absolute inset-0 bg-black opacity-50"
-            onClick={() => setModalOpen(false)}
-          ></div>
-          {/* Modal Content */}
+          <div className="absolute inset-0 bg-black opacity-50" onClick={() => setModalOpen(false)}></div>
           <div className="relative bg-white p-6 rounded shadow-lg z-10 w-11/12 max-w-md">
-            <h2 className="text-xl font-bold mb-4">Add New Slidder Image</h2>
+            <h2 className="text-xl font-bold mb-4">Add New Slider Image</h2>
             <form onSubmit={handleAddEntry}>
               <div className="mb-4">
-                <label className="block mb-2 text-sm font-medium">
-                  Offer (Optional)
-                </label>
+                <label className="block mb-2 text-sm font-medium">Offer (Optional)</label>
                 <select
                   value={offer}
                   onChange={(e) => setOffer(e.target.value)}
@@ -182,19 +174,10 @@ const SliderImagePage = ({ loadingState }) => {
               </div>
               <div className="mb-4">
                 <label className="block mb-2 text-sm font-medium">Image</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setImageFile(e.target.files[0])}
-                  required
-                />
+                <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])} required />
               </div>
               <div className="flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(false)}
-                  className="mr-2 px-4 py-2 border rounded"
-                >
+                <button type="button" onClick={() => setModalOpen(false)} className="mr-2 px-4 py-2 border rounded">
                   Cancel
                 </button>
                 <button
@@ -202,11 +185,7 @@ const SliderImagePage = ({ loadingState }) => {
                   className="px-4 py-2 bg-blue-500 text-white rounded flex items-center gap-2"
                   disabled={submitting}
                 >
-                  {submitting ? (
-                    <CircularProgress size={20} color="inherit" />
-                  ) : (
-                    "Add Entry"
-                  )}
+                  {submitting ? <CircularProgress size={20} color="inherit" /> : "Add Entry"}
                 </button>
               </div>
             </form>

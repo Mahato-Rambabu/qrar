@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { fetchPendingOrders, updateOrderStatus } from "../orders/orderService";
 import { useNavigate } from "react-router-dom";
 import OrderTable from "../orders/OrderTable";
-import { FaHistory } from "react-icons/fa";
 import io from "socket.io-client";
 import { toast } from "react-hot-toast";
 import { History } from "lucide-react";
@@ -154,7 +153,10 @@ const OrderDashboard = () => {
       </div>
 
       {/* Order Table */}
-      <OrderTable orders={filteredOrders} onUpdateStatus={handleUpdateStatus} />
+      <OrderTable 
+        orders={filteredOrders} 
+        onUpdateStatus={handleUpdateStatus} 
+      />
 
       {/* Audio element for notifications */}
       <audio ref={audioRef} src="/new_order.mp3" preload="auto" />
