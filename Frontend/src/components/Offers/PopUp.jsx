@@ -15,9 +15,7 @@ const PopUp = ({ restaurantId }) => {
 
             try {
                 console.log("Fetching pop-up for restaurantId:", restaurantId);
-
                 const response = await axiosInstance.get(`/popups/${restaurantId}/active`);
-
                 console.log("Pop-up response:", response.data);
 
                 if (response.data?.img) {
@@ -39,7 +37,7 @@ const PopUp = ({ restaurantId }) => {
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="relative bg-white p-2 rounded-lg shadow-lg">
+            <div className="relative bg-white p-2 rounded-lg shadow-lg md:max-w-lg">
                 <button
                     className="absolute top-3 right-3 text-white bg-gray-400 rounded-full w-6 h-6 flex items-center justify-center text-2xl z-10"
                     onClick={() => setIsVisible(false)}

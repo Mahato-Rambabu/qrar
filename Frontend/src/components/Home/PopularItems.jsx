@@ -57,21 +57,20 @@ const PopularItems = () => {
   }, [restaurantId]);
 
   // Responsive dimensions
-  useEffect(() => {
-    const updateDimensions = () => {
-      const width = window.innerWidth < 600 ? window.innerWidth : 600;
-      const cWidth = window.innerWidth < 600 ? 180 : 208;
-      setContainerWidth(width);
-      setCardWidth(cWidth);
-    };
+ useEffect(() => {
+  const updateDimensions = () => {
+    let width = window.innerWidth < 600 ? window.innerWidth : 3 * 208 + 2 * 16; // 3 cards + margins
+    let cWidth = window.innerWidth < 600 ? 180 : 208;
+    
+    setContainerWidth(width);
+    setCardWidth(cWidth);
+  };
 
-    updateDimensions();
-    const resizeHandler = () => {
-      if (isVisibleRef.current) updateDimensions();
-    };
-    window.addEventListener("resize", resizeHandler);
-    return () => window.removeEventListener("resize", resizeHandler);
-  }, []);
+  updateDimensions();
+  window.addEventListener("resize", updateDimensions);
+  return () => window.removeEventListener("resize", updateDimensions);
+}, []);
+
 
   // Setup slides with clones for infinite scrolling
   const slides =
@@ -254,7 +253,6 @@ const PopularItems = () => {
                 className={`
                   flex-shrink-0 mx-2 cursor-pointer transition-transform duration-300
                   ${index === currentIndex ? 'scale-110' : 'scale-90'}
-                  hover:scale-105
                 `}
                 style={{ 
                   width: cardWidth,
