@@ -56,7 +56,7 @@ const UserForm = ({ onFormSubmit }) => {
       if (response.status === 201 || response.status === 200) {
         localStorage.setItem("customerIdentifier", response.data.customerIdentifier);
         onFormSubmit();
-        toast.success("User details saved successfully! You can now place orders.");
+        toast.success("User details saved successfully! You can now place orders.",{ position: "top-center" });
       }
     } catch (err) {
       console.error("Error saving user details:", err.response?.data || err.message);

@@ -91,7 +91,7 @@ const MenuCategory = () => {
   return (
     <div className="w-full px-4 pb-4 bg-gray-100">
       <h1 className="text-xl font-bold text-center text-black">Menu</h1>
-      <div className="w-full grid grid-cols-3 md:grid-cols-4 gap-3 mt-4">
+      <div className="w-full grid grid-cols-3 md:grid-cols-6 gap-3 mt-4">
         {categories.map((category) => (
           <Card
             key={category._id}

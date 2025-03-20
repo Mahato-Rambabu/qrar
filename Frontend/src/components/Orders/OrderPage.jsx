@@ -65,7 +65,7 @@ const OrderPage = () => {
       );
 
       if (response.status === 201) {
-        toast.success("Order requested successfully!");
+        toast.success("Order requested successfully!", { position: "top-center" });
         setCartItems([]);
         fetchRecentOrders(customerIdentifier);
       }
@@ -73,7 +73,7 @@ const OrderPage = () => {
       console.error("Error placing order:", error);
       toast.error(
         error.response?.data?.error ||
-          "Failed to request order. Please try again."
+          "Failed to request order. Please try again.",{ position: "top-center" }
       );
 
       if (error.response?.status === 400) {
@@ -93,7 +93,7 @@ const OrderPage = () => {
       setRecentOrders(response.data);
     } catch (error) {
       console.error("Error fetching recent orders:", error);
-      toast.error("Failed to load order history");
+      toast.error("Failed to load order history",{ position: "top-center" });
     }
   };
 
@@ -104,7 +104,7 @@ const OrderPage = () => {
       const customerIdentifier = localStorage.getItem("customerIdentifier");
 
       if (!customerIdentifier) {
-        toast.error("Please complete user registration first");
+        toast.error("Please complete user registration first",{ position: "top-center" });
         setShowUserForm(true);
         return;
       }
@@ -125,7 +125,7 @@ const OrderPage = () => {
       );
 
       if (response.status === 201) {
-        toast.success("Order re-placed successfully!");
+        toast.success("Order re-placed successfully!",{ position: "top-center" });
         // Optionally update the recent orders list
         fetchRecentOrders(customerIdentifier);
       }
@@ -133,7 +133,7 @@ const OrderPage = () => {
       console.error("Error reordering:", error);
       toast.error(
         error.response?.data?.error ||
-          "Failed to place reorder. Please try again."
+          "Failed to place reorder. Please try again.",{ position: "top-center" }
       );
     } finally {
       setLoading(false);
