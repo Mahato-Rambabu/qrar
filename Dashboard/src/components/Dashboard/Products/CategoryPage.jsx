@@ -117,7 +117,7 @@ const CategoryPage = () => {
         {loadingCategories ? (
            [...Array(7)].map((_, index) => <CategoryCardSkeleton key={index} />)
         ) : (
-          <Suspense fallback={<p>Loading...</p>}>
+          <Suspense fallback={[...Array(7)].map((_, index) => <CategoryCardSkeleton key={index} />)}>
           {categories.map((category) => (
             <CategoryCard
               key={category._id}
