@@ -485,42 +485,38 @@ router.get("/top-products/:restaurantId", async (req, res) => {
   }
 });
 
-  // GET route: Fetch recent orders for a specific restaurant
-  router.get("/:restaurantId", async (req, res) => {
-    const { restaurantId } = req.params;
-    const { customerIdentifier } = req.query;
+  // GET route: Fetch all orders for a specific restaurant and customer (all time)
+router.get("/:restaurantId", async (req, res) => {
+  const { restaurantId } = req.params;
+  const { customerIdentifier } = req.query;
 
-    // Validate restaurantId
-    if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
-      return res.status(400).json({ error: "Invalid restaurantId" });
-    }
+  // Validate restaurantId
+  if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
+    return res.status(400).json({ error: "Invalid restaurantId" });
+  }
 
-    // Validate customerIdentifier
-    if (!customerIdentifier) {
-      return res.status(400).json({ error: "Customer identifier is required." });
-    }
+  // Validate customerIdentifier
+  if (!customerIdentifier) {
+    return res.status(400).json({ error: "Customer identifier is required." });
+  }
 
-    try {
-      // Get the start of the day
-      const startOfDay = new Date();
-      startOfDay.setHours(0, 0, 0, 0);
+  try {
+    // Fetch orders for all time (no date filter)
+    const orders = await Order.find({
+      restaurantId,
+      customerIdentifier,
+    })
+      .select("orderNo total items status createdAt") // Include required fields
+      .populate("items.productId", "name description img") // Populate product details
+      .sort({ createdAt: -1 }); // Sort by most recent orders first
 
-      // Fetch orders from the start of the day up to now
-      const recentOrders = await Order.find({
-        restaurantId,
-        customerIdentifier,
-        createdAt: { $gte: startOfDay }, // Filter by today's orders
-      })
-        .select("orderNo total items status createdAt") // Include required fields
-        .populate("items.productId", "name description img") // Populate product details
-        .sort({ createdAt: -1 }); // Sort by most recent orders first
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error("Error fetching customer orders:", error.message);
+    res.status(500).json({ error: "Failed to fetch orders. Please try again later." });
+  }
+});
 
-      res.status(200).json(recentOrders);
-    } catch (error) {
-      console.error("Error fetching customer orders:", error.message);
-      res.status(500).json({ error: "Failed to fetch orders. Please try again later." });
-    }
-  });
 
   router.patch("/:orderId", async (req, res) => {
     const { orderId } = req.params;
