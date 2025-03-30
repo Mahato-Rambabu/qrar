@@ -16,6 +16,11 @@ const orderSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.Mixed,
       required: true,
     },
+    customerIdentifier: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
 
     // 🔹 Customer Information
     customer: {
@@ -26,8 +31,16 @@ const orderSchema = new mongoose.Schema(
     // 🔹 Order Items
     items: [
       {
-        type: mongoose.Schema.Types.Mixed,
-        required: true,
+        productId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Product",
+          required: true,
+        },
+        quantity: {
+          type: Number,
+          required: true,
+          min: [1, "Quantity must be at least 1"],
+        },
       },
     ],
 

@@ -51,14 +51,17 @@ router.post('/', authMiddleware, upload.single('img'), async (req, res) => {
 router.get('/', authMiddleware, async (req, res) => {
   try {
     const { categoryId, page = 1, limit = 10 } = req.query;
-    const filter = categoryId ? { category: categoryId } : {};
+    const filter = { restaurant: req.user.id }; // Ensure products belong to the authenticated restaurant
+
+    if (categoryId) {
+      filter.category = categoryId;
+    }
 
     const total = await Product.countDocuments(filter);
     const products = await Product.find(filter)
       .skip((page - 1) * limit)
       .limit(parseInt(limit));
 
-    // Respond with the products
     res.status(200).json({
       products,
       total,
@@ -69,6 +72,7 @@ router.get('/', authMiddleware, async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+
 
 router.get('/all', authMiddleware, async (req, res) => {
   try {

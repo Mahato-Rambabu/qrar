@@ -35,20 +35,18 @@ const ProductPage = () => {
   const debouncedSearchQuery = useDebouncedValue(searchQuery, 300);
 
   useEffect(() => {
-    const queryParams = new URLSearchParams(location.search);
-    const categoryId = queryParams.get("categoryId") || "";
-    const currentPage = parseInt(queryParams.get("page"), 10) || 1;
-
-    setCategoryFilter(categoryId);
-    setPage(currentPage);
-  }, [location.search]);
-
-  useEffect(() => {
     const fetchProducts = async () => {
       setLoadingProducts(true);
       setProductError(null);
 
       try {
+
+        const queryParams = new URLSearchParams(location.search);
+        const categoryId = queryParams.get("categoryId") || "";
+        const currentPage = parseInt(queryParams.get("page"), 10) || 1;
+    
+        setCategoryFilter(categoryId);
+        setPage(currentPage);
 
         const response = await axiosInstance.get("/products", {
           params: {
@@ -74,7 +72,7 @@ const ProductPage = () => {
     } else {
       fetchProducts();
     }
-  }, [debouncedSearchQuery, categoryFilter, page]);
+  }, [debouncedSearchQuery, categoryFilter, page, location.search]);
 
   useEffect(() => {
     const fetchCategories = async () => {
