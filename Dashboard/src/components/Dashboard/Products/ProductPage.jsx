@@ -40,19 +40,19 @@ const ProductPage = () => {
       setProductError(null);
 
       try {
-
         const queryParams = new URLSearchParams(location.search);
         const categoryId = queryParams.get("categoryId") || "";
         const currentPage = parseInt(queryParams.get("page"), 10) || 1;
     
+        // Update both category filter and page state
         setCategoryFilter(categoryId);
         setPage(currentPage);
 
         const response = await axiosInstance.get("/products", {
           params: {
             search: debouncedSearchQuery,
-            categoryId: categoryFilter,
-            page,
+            categoryId: categoryId, // Use the categoryId from URL directly
+            page: currentPage,
           },
         });
 
@@ -66,13 +66,9 @@ const ProductPage = () => {
         setLoadingProducts(false);
       }
     };
-    if (categoryFilter) {
 
-      fetchProducts();
-    } else {
-      fetchProducts();
-    }
-  }, [debouncedSearchQuery, categoryFilter, page, location.search]);
+    fetchProducts();
+  }, [debouncedSearchQuery, location.search]); // Remove categoryFilter from dependencies
 
   useEffect(() => {
     const fetchCategories = async () => {

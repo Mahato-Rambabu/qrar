@@ -51,16 +51,24 @@ router.post('/', authMiddleware, upload.single('img'), async (req, res) => {
 router.get('/', authMiddleware, async (req, res) => {
   try {
     const { categoryId, page = 1, limit = 10 } = req.query;
-    const filter = { restaurant: req.user.id }; // Ensure products belong to the authenticated restaurant
+    const restaurantId = req.user.id;
 
-    if (categoryId) {
+    // Build the filter object
+    const filter = { restaurant: restaurantId };
+
+    // Add category filter if categoryId is provided
+    if (categoryId && categoryId !== 'all') {
       filter.category = categoryId;
     }
 
+    // Get total count for pagination
     const total = await Product.countDocuments(filter);
+
+    // Fetch products with pagination
     const products = await Product.find(filter)
       .skip((page - 1) * limit)
-      .limit(parseInt(limit));
+      .limit(parseInt(limit))
+      .populate('category'); // Populate category details
 
     res.status(200).json({
       products,
@@ -69,7 +77,8 @@ router.get('/', authMiddleware, async (req, res) => {
       currentPage: parseInt(page),
     });
   } catch (error) {
-    res.status(500).json({ error: 'Server error' });
+    console.error('Error fetching products:', error);
+    res.status(500).json({ error: 'Server error', details: error.message });
   }
 });
 
