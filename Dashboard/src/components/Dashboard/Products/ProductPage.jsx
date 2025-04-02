@@ -2,10 +2,10 @@ import React, { useState, useEffect, lazy } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axiosInstance from '../../../utils/axiosInstance';
 import Pagination from "./Pagination";
-import { Grid, Plus, Table, Trash } from "lucide-react";
+import { Plus } from "lucide-react";
 import useDebouncedValue from "../../../Hooks/useDebounce";
 import Modal from "react-modal";
-
+import ProductToolbar from "./ProductToolbar";
 
 const ProductCardSkeleton = lazy(() => import("./ProductCardSkeleton"));
 const AddProductPage = lazy(() => import("./AddProduct"));
@@ -31,11 +31,14 @@ const ProductPage = () => {
   const [undoProduct, setUndoProduct] = useState(null);
   const [undoTimeout, setUndoTimeout] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
+  const [isInitialDataLoaded, setIsInitialDataLoaded] = useState(false);
 
   const debouncedSearchQuery = useDebouncedValue(searchQuery, 300);
 
   useEffect(() => {
     const fetchProducts = async () => {
+      if (!isInitialDataLoaded) return;
+
       setLoadingProducts(true);
       setProductError(null);
 
@@ -44,14 +47,13 @@ const ProductPage = () => {
         const categoryId = queryParams.get("categoryId") || "";
         const currentPage = parseInt(queryParams.get("page"), 10) || 1;
     
-        // Update both category filter and page state
         setCategoryFilter(categoryId);
         setPage(currentPage);
 
         const response = await axiosInstance.get("/products", {
           params: {
             search: debouncedSearchQuery,
-            categoryId: categoryId, // Use the categoryId from URL directly
+            categoryId: categoryId,
             page: currentPage,
           },
         });
@@ -68,7 +70,7 @@ const ProductPage = () => {
     };
 
     fetchProducts();
-  }, [debouncedSearchQuery, location.search]); // Remove categoryFilter from dependencies
+  }, [debouncedSearchQuery, location.search, isInitialDataLoaded]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -76,9 +78,7 @@ const ProductPage = () => {
       setCategoryError(null);
 
       try {
-
         const response = await axiosInstance.get("/categories");
-
         setCategories(response.data || []);
       } catch (error) {
         console.error("Error fetching categories:", error);
@@ -86,6 +86,7 @@ const ProductPage = () => {
         setCategories([]);
       } finally {
         setLoadingCategories(false);
+        setIsInitialDataLoaded(true);
       }
     };
 
@@ -126,16 +127,40 @@ const ProductPage = () => {
     }
   };
 
-  const handleCategoryChange = (categoryId) => {
+  const handleCategoryChange = (e) => {
+    const categoryId = e.target.value;
     setPage(1);
-    navigate(`?categoryId=${categoryId}&page=1`);
+    setSearchQuery(""); // Clear search when changing category
+    
+    // Update URL parameters
+    const searchParams = new URLSearchParams();
+    if (categoryId) {
+      searchParams.set('categoryId', categoryId);
+      searchParams.set('page', '1');
+    }
+    navigate(`/products?${searchParams.toString()}`);
+  };
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    setPage(1); // Reset to first page when searching
+    
+    // Update URL parameters
+    const searchParams = new URLSearchParams();
+    if (value) {
+      searchParams.set('search', value);
+      searchParams.set('page', '1');
+    }
+    if (categoryFilter) {
+      searchParams.set('categoryId', categoryFilter);
+    }
+    navigate(`/products?${searchParams.toString()}`);
   };
 
   const handleAddProductModal = () => setIsModalOpen(true); // Open Modal
 
   const closeModal = () => setIsModalOpen(false); // Close Modal
-
-  const handleSearchChange = (e) => setSearchQuery(e.target.value);
 
   const handleEditProduct = (productId) => navigate(`/products/edit/${productId}`);
 
@@ -146,152 +171,142 @@ const ProductPage = () => {
   };
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
-      {/* Breadcrumbs */}
-      <div className="mb-4">
-        <nav className="text-sm text-gray-500">
-          <span className="cursor-pointer hover:underline" onClick={() => navigate("/")}>Dashboard</span>
-          <span className="mx-2">/</span>
-          <span className="cursor-pointer hover:underline" onClick={() => navigate("/categories")}>Categories</span>
-          <span className="mx-2">/</span>
-          <span className="cursor-pointer hover:underline">Products</span>
-        </nav>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Main Container */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Breadcrumbs */}
+        <div className="mb-4">
+          <nav className="text-sm text-gray-500">
+            <span className="cursor-pointer hover:underline" onClick={() => navigate("/")}>Dashboard</span>
+            <span className="mx-2">/</span>
+            <span className="cursor-pointer hover:underline" onClick={() => navigate("/categories")}>Categories</span>
+            <span className="mx-2">/</span>
+            <span className="cursor-pointer hover:underline">Products</span>
+          </nav>
+        </div>
 
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Products</h1>
-        <button
-          className="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-700 flex items-center gap-2"
-          onClick={handleAddProductModal} // Open modal on click
-        >
-          <Plus size={16} />
-          Add New Product
-        </button>
-      </div>
 
+
+        {/* Toolbar with Icons and Categories */}
+        <div className="  mb-6">
+          <ProductToolbar
+            searchQuery={searchQuery}
+            onSearchChange={handleSearchChange}
+            categoryFilter={categoryFilter}
+            onCategoryChange={handleCategoryChange}
+            categories={categories}
+            view={view}
+            onViewChange={setView}
+            onAddProduct={handleAddProductModal}
+            loadingProducts={loadingProducts}
+          />
+        </div>
+
+                {/* Header */}
+                <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Products</h1>
+        </div>
+
+        {/* Undo Alert */}
+        {undoProduct && (
+          <div className="bg-yellow-50 border border-yellow-200 p-4 mb-6 rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <span className="text-yellow-800">Product deleted.</span>
+            <button
+              onClick={handleUndo}
+              className="text-blue-600 hover:text-blue-800 font-medium text-sm sm:text-base"
+            >
+              Undo
+            </button>
+          </div>
+        )}
+
+        {/* Product Display */}
+        {loadingProducts || !isInitialDataLoaded ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {[...Array(8)].map((_, index) => (
+              <ProductCardSkeleton key={index} />
+            ))}
+          </div>
+        ) : products.length > 0 ? (
+          view === "grid" ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-auto">
+              {products.map((product) => (
+                <ProductCard 
+                  key={product._id} 
+                  product={product} 
+                  category={categories} 
+                  onEdit={handleEditProduct} 
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+              <ProductTable
+                products={products}
+                category={categories}
+                onEdit={handleEditProduct}
+                selectedItems={selectedItems}
+                handleSelectItem={handleSelectItem}
+                setSelectedItems={setSelectedItems}
+              />
+            </div>
+          )
+        ) : (
+          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+            <p className="text-gray-500 text-lg">No products available.</p>
+          </div>
+        )}
+
+        {/* Pagination */}
+        <div className="mt-6">
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={(newPage) => {
+              setPage(newPage);
+              const searchParams = new URLSearchParams();
+              if (categoryFilter) {
+                searchParams.set('categoryId', categoryFilter);
+              }
+              if (searchQuery) {
+                searchParams.set('search', searchQuery);
+              }
+              searchParams.set('page', newPage.toString());
+              navigate(`/products?${searchParams.toString()}`);
+            }}
+          />
+        </div>
+
+        {/* Error Messages */}
+        {(productError || categoryError) && (
+          <div className="mt-4 space-y-2">
+            {productError && (
+              <p className="text-red-600 bg-red-50 p-3 rounded-lg text-sm">{productError}</p>
+            )}
+            {categoryError && (
+              <p className="text-red-600 bg-red-50 p-3 rounded-lg text-sm">{categoryError}</p>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Modal */}
       <Modal
         isOpen={isModalOpen}
         onRequestClose={closeModal}
         contentLabel="Add Product Modal"
-        className="relative bg-white rounded-lg shadow-lg p-6 max-w-full w-11/12 md:w-3/4 lg:w-1/2 mx-auto max-h-[80vh] mt-20 overflow-y-auto z-10"
-        overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
+        className="relative bg-white rounded-lg shadow-lg p-4 sm:p-6 max-w-full w-11/12 md:w-3/4 lg:w-1/2 mx-auto max-h-[90vh] mt-10 sm:mt-20 overflow-y-auto z-10"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4"
       >
         <button
-          className="absolute top-2 right-2 text-gray-500 hover:text-black"
+          className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 p-2"
           onClick={closeModal}
+          aria-label="Close modal"
         >
           ✖
         </button>
         <AddProductPage onSuccess={handleProductAdded} />
       </Modal>
-
-      {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-4 mb-6">
-        <input
-          type="text"
-          placeholder="Search products..."
-          value={searchQuery}
-          onChange={handleSearchChange}
-          className="flex-1 p-2 border border-gray-300 rounded-lg"
-        />
-        <select
-          value={categoryFilter}
-          onChange={(e) => handleCategoryChange(e.target.value)}
-          className="p-2 border border-gray-300 rounded-lg"
-        >
-          <option value="">All Categories</option>
-          {categories.map((category) => (
-            <option key={category._id} value={category._id}>
-              {category.catName}
-            </option>
-          ))}
-        </select>
-
-        <button
-          onClick={() => setView(view === "grid" ? "table" : "grid")}
-          className="bg-white px-4 py-2 rounded-lg flex items-center gap-2 border border-gray-300"
-        >
-          {view === "grid" ? <Table className="font-extralight" /> : <Grid className="font-extralight" />}
-          {view === "grid" ? "Table View" : "Grid View"}
-        </button>
-        {/* Delete Selected Button */}
-
-        <button
-          className={`px-4 flex  py-2 rounded-lg shadow items-center gap-2 justify-end  ${selectedItems.length === 0
-            ? "bg-gray-300 cursor-not-allowed "
-            : "bg-red-600 hover:bg-red-700 text-white"
-            }`}
-          onClick={handleDeleteSelected}
-          disabled={selectedItems.length === 0}
-        >
-          Delete
-          <Trash
-            size={16}
-          />
-        </button>
-
-
-      </div>
-
-      {/* Undo Alert */}
-      {undoProduct && (
-        <div className="bg-yellow-100 p-4 mb-4 flex justify-between items-center rounded-md">
-          <span>Product deleted. </span>
-          <button
-            onClick={handleUndo}
-            className="text-blue-600 hover:text-blue-800 font-medium"
-          >
-            Undo
-          </button>
-        </div>
-      )}
-
-      {/* Product Display */}
-      {loadingProducts ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {[...Array(8)].map((_, index) => (
-            <ProductCardSkeleton key={index} />
-          ))}
-        </div>
-      ) : products.length > 0 ? (
-        view === "grid" ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {products.map((product) => (
-              <ProductCard key={product._id} product={product} category={categories} onEdit={handleEditProduct} />
-            ))}
-          </div>
-
-        ) : (
-          <ProductTable
-            products={products}
-            category={categories}
-            onEdit={handleEditProduct}
-            selectedItems={selectedItems}
-            handleSelectItem={handleSelectItem}
-            setSelectedItems={setSelectedItems}
-          />
-        )
-      ) : (
-        <p className="text-gray-500">No products available.</p>
-      )}
-
-
-      {/* Pagination */}
-      <Pagination
-        currentPage={page}
-        totalPages={totalPages}
-        onPageChange={(newPage) => {
-          setPage(newPage);
-          navigate(`?categoryId=${categoryFilter}&page=${newPage}`);
-        }}
-      />
-
-      {/* Error Handling */}
-      {productError && <p className="text-red-500 mt-4">{productError}</p>}
-      {categoryError && <p className="text-red-500 mt-4">{categoryError}</p>}
     </div>
   );
 };

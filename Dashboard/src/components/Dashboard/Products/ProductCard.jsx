@@ -1,12 +1,40 @@
-import React, { useState } from "react";
-import { Edit3, Trash2, MoreVertical } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { MoreVertical } from "lucide-react";
 import { FaRupeeSign } from "react-icons/fa";
 
 const ProductCard = ({ product, category, onEdit }) => {
   const [menuVisible, setMenuVisible] = useState(false);
+  const [categoryName, setCategoryName] = useState("Loading...");
 
-  // Find the matching category name
-  const matchedCategory = category.find((cat) => cat._id === product.category);
+  useEffect(() => {
+    // Debug logs
+    if (!category || category.length === 0) {
+      setCategoryName("Loading...");
+      return;
+    }
+
+    // If product.category is already an object with catName, use it directly
+    if (product.category && typeof product.category === 'object' && product.category.catName) {
+      setCategoryName(product.category.catName);
+      return;
+    }
+
+    // Otherwise, find the matching category from the categories array
+    const categoryId = typeof product.category === 'object' ? product.category._id : product.category;
+    
+    const matchedCategory = category.find((cat) => {
+      return cat._id.toString() === categoryId?.toString();
+    });
+
+    console.log("Category ID being searched:", categoryId);
+    console.log("Matched category:", matchedCategory);
+
+    if (matchedCategory?.catName) {
+      setCategoryName(matchedCategory.catName);
+    } else {
+      setCategoryName("Unknown Category");
+    }
+  }, [product.category, category]);
 
   const handleMenuToggle = (e) => {
     e.stopPropagation();
@@ -19,81 +47,83 @@ const ProductCard = ({ product, category, onEdit }) => {
 
   return (
     <div
-      className="relative border rounded-lg shadow-md hover:shadow-lg transition  bg-white flex flex-col cursor-pointer overflow-visible"
+      className="relative border rounded-xl shadow-sm hover:shadow-md transition-all duration-200 bg-white flex flex-col cursor-pointer overflow-visible group h-fit"
       onClick={() => onViewDetails(product._id)}
       onMouseLeave={handleMouseLeave}
     >
-      {/* Product Image */}
-      <div className="w-full h-48 rounded-t-lg overflow-hidden">
+      {/* Product Image Container */}
+      <div className="relative w-full aspect-[4/3] rounded-t-xl overflow-hidden">
         <img
           src={product.img || "https://via.placeholder.com/150"}
           alt={product.name}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
+        {/* Category Badge */}
+        <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-gray-700">
+          {categoryName}
+        </div>
       </div>
 
       {/* Card Content */}
-      <div className="flex flex-col p-4 gap-2">
-        <div className="flex justify-between items-center relative">
+      <div className="flex flex-col p-4 ">
+        {/* Header Section */}
+        <div className="flex justify-between items-start gap-2">
           {/* Product Name */}
-          <h2 className="text-xl font-semibold text-gray-800 truncate">
+          <h2 className="text-lg font-semibold text-gray-800 line-clamp-2 flex-1">
             {product.name}
           </h2>
 
           {/* Three Dot Menu */}
-          <div className="relative">
+          <div className="relative shrink-0">
             <button
-              className="p-2 rounded-full hover:bg-gray-300 transition"
+              className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
               onClick={handleMenuToggle}
+              aria-label="More options"
             >
-              <MoreVertical size={20} />
+              <MoreVertical size={18} className="text-gray-500" />
             </button>
             {menuVisible && (
               <div
-                className="absolute right-0 top-6 w-32 bg-white border shadow-md rounded-md"
+                className="absolute right-0 top-8 w-40 bg-white border border-gray-100 shadow-lg rounded-lg py-1 z-10"
                 onClick={(e) => e.stopPropagation()}
               >
                 <button
-                  className="block w-full text-left px-2 py-2 text-sm hover:bg-gray-100"
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                   onClick={(e) => {
                     e.stopPropagation();
                     onEdit(product._id);
                   }}
                 >
-                  Edit
+                  Edit Product
                 </button>
                 <button
-                  className="block w-full text-left px-2 py-2 text-sm text-red-600 hover:bg-gray-100"
+                  className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                   onClick={(e) => {
                     e.stopPropagation();
                     onDelete(product._id);
                   }}
                 >
-                  Delete
+                  Delete Product
                 </button>
               </div>
             )}
           </div>
         </div>
 
-        {/* Price */}
-        <p className="text-sm text-gray-500">
-          
-          <span className="font-semibold text-gray-700 flex items-center">
-            <FaRupeeSign size={12} />
+        {/* Price Section */}
+        <div className="flex items-center gap-1">
+          <FaRupeeSign size={16} className="text-gray-600" />
+          <span className="text-lg font-semibold text-gray-900">
             {product.price}
           </span>
-        </p>
+        </div>
 
-        {/* Category Name */}
-        <p className="text-sm text-gray-500 line-clamp-3">
-          {" "}
-          <span className="font-semibold text-gray-700">
-            {matchedCategory ? matchedCategory.catName : "Unknown Category"}
-          </span><br></br>
-         {product.description}
-        </p>
-
+        {/* Description Section */}
+        <div>
+          <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed mt-2">
+            {product.description}
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -50,15 +50,41 @@ router.post('/', authMiddleware, upload.single('img'), async (req, res) => {
 // Get All Products for a Restaurant (or by Category)
 router.get('/', authMiddleware, async (req, res) => {
   try {
-    const { categoryId, page = 1, limit = 10 } = req.query;
+    const { categoryId, page = 1, limit = 10, search = '' } = req.query;
     const restaurantId = req.user.id;
 
     // Build the filter object
     const filter = { restaurant: restaurantId };
 
-    // Add category filter if categoryId is provided
-    if (categoryId && categoryId !== 'all') {
-      filter.category = categoryId;
+    // Add category filter if categoryId is provided and valid
+    if (categoryId && categoryId !== 'all' && categoryId !== '') {
+      // Validate if the category exists
+      const categoryExists = await Category.findOne({
+        _id: categoryId,
+        restaurant: restaurantId
+      });
+      
+      if (categoryExists) {
+        filter.category = categoryId;
+      }
+    }
+
+    // Add search filter if search query is provided
+    if (search && search.trim() !== '') {
+      // First, find categories that match the search query
+      const matchingCategories = await Category.find({
+        restaurant: restaurantId,
+        catName: { $regex: search, $options: 'i' }
+      });
+      
+      const matchingCategoryIds = matchingCategories.map(cat => cat._id);
+
+      // Build the search filter
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+        { category: { $in: matchingCategoryIds } }
+      ];
     }
 
     // Get total count for pagination
@@ -78,7 +104,11 @@ router.get('/', authMiddleware, async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching products:', error);
-    res.status(500).json({ error: 'Server error', details: error.message });
+    res.status(500).json({ 
+      error: 'Server error', 
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
