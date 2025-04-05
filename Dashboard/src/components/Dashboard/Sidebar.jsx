@@ -33,7 +33,14 @@ const Sidebar = memo(({ isOpen: pcSidebarOpen }) => {
 
   // Helper to check if a menu item is active based on current location
   const isActive = useCallback(
-    (path) => location.pathname === path,
+    (path) => {
+      // For the Products menu item, check if the path is /products
+      if (path === '/categories') {
+        return location.pathname === path || location.pathname === '/products';
+      }
+      // For other menu items, check for exact match
+      return location.pathname === path;
+    },
     [location]
   );
 

@@ -42,7 +42,6 @@ app.use(express.json());
 const allowedOrigins = [
   'https://qrar-lyart.vercel.app', 
   'https://qrar-front-jet.vercel.app', 
-  'http://localhost:5175',
   'http://localhost:5173',
 ];
 

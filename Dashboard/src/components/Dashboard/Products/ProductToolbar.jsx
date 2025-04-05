@@ -1,6 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback, memo } from 'react';
 import { Search, Grid, Table, Plus, SlidersHorizontal } from 'lucide-react';
 import useDebouncedValue from '../../../Hooks/useDebounce';
+
+// Memoize the category button to prevent unnecessary re-renders
+const CategoryButton = memo(({ category, isSelected, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-colors ${
+      isSelected
+        ? 'bg-blue-500 text-white'
+        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+    }`}
+  >
+    {category.catName}
+  </button>
+));
+
+// Memoize the All button to prevent unnecessary re-renders
+const AllButton = memo(({ isSelected, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-colors ${
+      isSelected
+        ? 'bg-blue-500 text-white'
+        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+    }`}
+  >
+    All
+  </button>
+));
 
 const ProductToolbar = ({
   searchQuery,
@@ -20,13 +50,41 @@ const ProductToolbar = ({
   const debouncedSearchQuery = useDebouncedValue(localSearchQuery, 300);
 
   // Update parent's search query when debounced value changes
-  React.useEffect(() => {
+  useEffect(() => {
+    // Create a synthetic event object with the debounced search query
+    // This will trigger a search across all products regardless of category
     onSearchChange({ target: { value: debouncedSearchQuery } });
   }, [debouncedSearchQuery, onSearchChange]);
 
-  const handleLocalSearchChange = (e) => {
+  // Memoize handlers to prevent unnecessary recreations
+  const handleCategoryClick = useCallback((categoryId) => {
+    console.log('Category clicked:', categoryId); // Debug log
+    // Create a synthetic event object
+    const event = { target: { value: categoryId } };
+    // Call the parent handler directly
+    onCategoryChange(event);
+  }, [onCategoryChange]);
+
+  const handleViewChange = useCallback((newView) => {
+    onViewChange(newView);
+  }, [onViewChange]);
+
+  const handleSearchToggle = useCallback(() => {
+    setIsSearchExpanded(prev => !prev);
+  }, []);
+
+  const handleLocalSearchChange = useCallback((e) => {
     setLocalSearchQuery(e.target.value);
-  };
+  }, []);
+
+  const handleAddProduct = useCallback(() => {
+    onAddProduct();
+  }, [onAddProduct]);
+
+  // Memoize the All button click handler
+  const handleAllClick = useCallback(() => {
+    handleCategoryClick('');
+  }, [handleCategoryClick]);
 
   return (
     <div className="space-y-4">
@@ -35,7 +93,8 @@ const ProductToolbar = ({
         {/* Center - View Toggle */}
         <div className="flex items-center bg-gray-100 rounded-full p-1">
           <button
-            onClick={() => onViewChange('grid')}
+            type="button"
+            onClick={() => handleViewChange('grid')}
             className={`p-2 rounded-full transition-colors ${
               view === 'grid' ? 'bg-white shadow-sm' : 'text-gray-500'
             }`}
@@ -43,7 +102,8 @@ const ProductToolbar = ({
             <Grid size={20} />
           </button>
           <button
-            onClick={() => onViewChange('table')}
+            type="button"
+            onClick={() => handleViewChange('table')}
             className={`p-2 rounded-full transition-colors ${
               view === 'table' ? 'bg-white shadow-sm' : 'text-gray-500'
             }`}
@@ -72,13 +132,15 @@ const ProductToolbar = ({
         {/* Right side - Action Icons */}
         <div className="flex items-center gap-3">
           <button
-            onClick={() => setIsSearchExpanded(!isSearchExpanded)}
+            type="button"
+            onClick={handleSearchToggle}
             className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded-xl"
           >
             <Search size={20} />
           </button>
           <button
-            onClick={onAddProduct}
+            type="button"
+            onClick={handleAddProduct}
             className="p-2 text-white bg-blue-500 rounded-xl hover:bg-blue-600"
           >
             <Plus size={20} />
@@ -90,28 +152,17 @@ const ProductToolbar = ({
       <div className="relative">
         <div className="overflow-x-auto scrollbar-hide">
           <div className="flex gap-2 pb-2">
-            <button
-              onClick={() => onCategoryChange({ target: { value: '' } })}
-              className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-colors ${
-                !categoryFilter
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              All
-            </button>
+            <AllButton 
+              isSelected={!categoryFilter} 
+              onClick={handleAllClick} 
+            />
             {categories.map((category) => (
-              <button
+              <CategoryButton
                 key={category._id}
-                onClick={() => onCategoryChange({ target: { value: category._id } })}
-                className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-colors ${
-                  categoryFilter === category._id
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                {category.catName}
-              </button>
+                category={category}
+                isSelected={categoryFilter === category._id}
+                onClick={() => handleCategoryClick(category._id)}
+              />
             ))}
           </div>
         </div>
@@ -120,4 +171,5 @@ const ProductToolbar = ({
   );
 };
 
-export default ProductToolbar; 
+// Memoize the entire component to prevent unnecessary re-renders
+export default memo(ProductToolbar); 

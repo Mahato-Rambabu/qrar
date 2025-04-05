@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy } from "react";
+import React, { useState, useEffect, lazy, useCallback, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axiosInstance from '../../../utils/axiosInstance';
 import Pagination from "./Pagination";
@@ -30,48 +30,50 @@ const ProductPage = () => {
   const [selectedItems, setSelectedItems] = useState([]);
   const [undoProduct, setUndoProduct] = useState(null);
   const [undoTimeout, setUndoTimeout] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isInitialDataLoaded, setIsInitialDataLoaded] = useState(false);
 
-  const debouncedSearchQuery = useDebouncedValue(searchQuery, 300);
+  const debouncedSearchQuery = useDebouncedValue(searchQuery, 100);
 
+  // Memoize the fetch function to prevent unnecessary recreations
+  const fetchProducts = useCallback(async (params) => {
+    setLoadingProducts(true);
+    setProductError(null);
+
+    try {
+      const response = await axiosInstance.get("/products", { params });
+      setProducts(response.data.products || []);
+      setTotalPages(response.data.totalPages || 1);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      setProductError("Failed to load products. Please try again later.");
+      setProducts([]);
+    } finally {
+      setLoadingProducts(false);
+    }
+  }, []);
+
+  // Fetch products whenever URL parameters change
   useEffect(() => {
-    const fetchProducts = async () => {
-      if (!isInitialDataLoaded) return;
-
-      setLoadingProducts(true);
-      setProductError(null);
-
-      try {
-        const queryParams = new URLSearchParams(location.search);
-        const categoryId = queryParams.get("categoryId") || "";
-        const currentPage = parseInt(queryParams.get("page"), 10) || 1;
+    const queryParams = new URLSearchParams(location.search);
+    const categoryId = queryParams.get("categoryId") || "";
+    const currentPage = parseInt(queryParams.get("page"), 10) || 1;
+    const currentSearch = queryParams.get("search") || "";
     
-        setCategoryFilter(categoryId);
-        setPage(currentPage);
+    // Update state based on URL parameters
+    setCategoryFilter(categoryId);
+    setPage(currentPage);
+    setSearchQuery(currentSearch);
 
-        const response = await axiosInstance.get("/products", {
-          params: {
-            search: debouncedSearchQuery,
-            categoryId: categoryId,
-            page: currentPage,
-          },
-        });
+    // Fetch products with the current parameters
+    fetchProducts({
+      search: currentSearch,
+      categoryId: categoryId,
+      page: currentPage,
+    });
+  }, [location.search, fetchProducts]);
 
-        setProducts(response.data.products || []);
-        setTotalPages(response.data.totalPages || 1);
-      } catch (error) {
-        console.error("Error fetching products:", error);
-        setProductError("Failed to load products. Please try again later.");
-        setProducts([]);
-      } finally {
-        setLoadingProducts(false);
-      }
-    };
-
-    fetchProducts();
-  }, [debouncedSearchQuery, location.search, isInitialDataLoaded]);
-
+  // Fetch categories once when component mounts
   useEffect(() => {
     const fetchCategories = async () => {
       setLoadingCategories(true);
@@ -93,15 +95,16 @@ const ProductPage = () => {
     fetchCategories();
   }, []);
 
-  const handleSelectItem = (id) => {
+  // Memoize handlers to prevent unnecessary recreations
+  const handleSelectItem = useCallback((id) => {
     setSelectedItems((prevSelected) =>
       prevSelected.includes(id)
         ? prevSelected.filter((item) => item !== id)
         : [...prevSelected, id]
     );
-  };
+  }, []);
 
-  const handleDeleteSelected = () => {
+  const handleDeleteSelected = useCallback(() => {
     const updatedProducts = products.filter(
       (product) => !selectedItems.includes(product._id)
     );
@@ -117,58 +120,128 @@ const ProductPage = () => {
     }, 5000);
 
     setUndoTimeout(timeout);
-  };
+  }, [products, selectedItems, undoTimeout]);
 
-  const handleUndo = () => {
+  const handleUndo = useCallback(() => {
     if (undoProduct) {
       setProducts((prevProducts) => [undoProduct, ...prevProducts]);
       clearTimeout(undoTimeout);
       setUndoProduct(null);
     }
-  };
+  }, [undoProduct, undoTimeout]);
 
-  const handleCategoryChange = (e) => {
+  // Improved category change handler with direct URL update
+  const handleCategoryChange = useCallback((e) => {
     const categoryId = e.target.value;
-    setPage(1);
-    setSearchQuery(""); // Clear search when changing category
     
-    // Update URL parameters
+    // Create new URL parameters
     const searchParams = new URLSearchParams();
+    
+    // Always set page to 1 when changing category
+    searchParams.set('page', '1');
+    
+    // Set category if it exists
     if (categoryId) {
       searchParams.set('categoryId', categoryId);
-      searchParams.set('page', '1');
     }
-    navigate(`/products?${searchParams.toString()}`);
-  };
-
-  const handleSearchChange = (e) => {
-    const value = e.target.value;
-    setSearchQuery(value);
-    setPage(1); // Reset to first page when searching
     
-    // Update URL parameters
+    // Preserve search query if it exists
+    if (searchQuery) {
+      searchParams.set('search', searchQuery);
+    }
+    
+    // Update URL in a single operation
+    navigate(`/products?${searchParams.toString()}`);
+    
+    // Update local state directly
+    setCategoryFilter(categoryId);
+    setPage(1);
+  }, [navigate, searchQuery]);
+
+  // Modified search handler to work independently from category
+  const handleSearchChange = useCallback((e) => {
+    const value = e.target.value;
+    
+    // Create new URL parameters
     const searchParams = new URLSearchParams();
+    
+    // Always set page to 1 when searching
+    searchParams.set('page', '1');
+    
+    // Set search if it exists
     if (value) {
       searchParams.set('search', value);
-      searchParams.set('page', '1');
     }
+    
+    // Preserve category if it exists
     if (categoryFilter) {
       searchParams.set('categoryId', categoryFilter);
     }
+    
+    // Update URL in a single operation
     navigate(`/products?${searchParams.toString()}`);
-  };
+    
+    // Update local state directly
+    setSearchQuery(value);
+    setPage(1);
+  }, [navigate, categoryFilter]);
 
-  const handleAddProductModal = () => setIsModalOpen(true); // Open Modal
+  const handleAddProductModal = useCallback(() => setIsModalOpen(true), []);
+  const closeModal = useCallback(() => setIsModalOpen(false), []);
+  const handleEditProduct = useCallback((productId) => navigate(`/products/edit/${productId}`), [navigate]);
 
-  const closeModal = () => setIsModalOpen(false); // Close Modal
-
-  const handleEditProduct = (productId) => navigate(`/products/edit/${productId}`);
-
-  const handleProductAdded = (newProduct) => {
+  const handleProductAdded = useCallback((newProduct) => {
     // Update the product list when a new product is added
     setProducts((prevProducts) => [newProduct, ...prevProducts]);
     closeModal();
-  };
+  }, [closeModal]);
+
+  // Memoize the pagination handler
+  const handlePageChange = useCallback((newPage) => {
+    // Create new URL parameters
+    const searchParams = new URLSearchParams();
+    
+    // Set page
+    searchParams.set('page', newPage.toString());
+    
+    // Preserve category if it exists
+    if (categoryFilter) {
+      searchParams.set('categoryId', categoryFilter);
+    }
+    
+    // Preserve search if it exists
+    if (searchQuery) {
+      searchParams.set('search', searchQuery);
+    }
+    
+    // Update URL in a single operation
+    navigate(`/products?${searchParams.toString()}`);
+    
+    // Update local state directly
+    setPage(newPage);
+  }, [navigate, categoryFilter, searchQuery]);
+
+  // Memoize the toolbar props to prevent unnecessary re-renders
+  const toolbarProps = useMemo(() => ({
+    searchQuery,
+    onSearchChange: handleSearchChange,
+    categoryFilter,
+    onCategoryChange: handleCategoryChange,
+    categories,
+    view,
+    onViewChange: setView,
+    onAddProduct: handleAddProductModal,
+    loadingProducts
+  }), [
+    searchQuery, 
+    handleSearchChange, 
+    categoryFilter, 
+    handleCategoryChange, 
+    categories, 
+    view, 
+    handleAddProductModal, 
+    loadingProducts
+  ]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -185,25 +258,13 @@ const ProductPage = () => {
           </nav>
         </div>
 
-
-
         {/* Toolbar with Icons and Categories */}
-        <div className="  mb-6">
-          <ProductToolbar
-            searchQuery={searchQuery}
-            onSearchChange={handleSearchChange}
-            categoryFilter={categoryFilter}
-            onCategoryChange={handleCategoryChange}
-            categories={categories}
-            view={view}
-            onViewChange={setView}
-            onAddProduct={handleAddProductModal}
-            loadingProducts={loadingProducts}
-          />
+        <div className="mb-6">
+          <ProductToolbar {...toolbarProps} />
         </div>
 
-                {/* Header */}
-                <div className="flex justify-between items-center mb-6">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Products</h1>
         </div>
 
@@ -221,7 +282,7 @@ const ProductPage = () => {
         )}
 
         {/* Product Display */}
-        {loadingProducts || !isInitialDataLoaded ? (
+        {loadingProducts ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {[...Array(8)].map((_, index) => (
               <ProductCardSkeleton key={index} />
@@ -262,18 +323,7 @@ const ProductPage = () => {
           <Pagination
             currentPage={page}
             totalPages={totalPages}
-            onPageChange={(newPage) => {
-              setPage(newPage);
-              const searchParams = new URLSearchParams();
-              if (categoryFilter) {
-                searchParams.set('categoryId', categoryFilter);
-              }
-              if (searchQuery) {
-                searchParams.set('search', searchQuery);
-              }
-              searchParams.set('page', newPage.toString());
-              navigate(`/products?${searchParams.toString()}`);
-            }}
+            onPageChange={handlePageChange}
           />
         </div>
 
