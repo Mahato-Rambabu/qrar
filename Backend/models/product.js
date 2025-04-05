@@ -20,16 +20,19 @@ const productSchema = new mongoose.Schema({
   },
   category: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Category', // Reference to the parent Category
+    ref: 'Category',
     required: true,
   },
   restaurant: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User', // Assuming `User` schema represents restaurants
+    ref: 'User',
     required: true,
+  },
+  taxRate: {
+    type: Number,
+    default: 0, // Only applicable for inclusive tax restaurants
   },
 }, { timestamps: true });
 
 const Product = mongoose.model('Product', productSchema);
-
 export default Product;

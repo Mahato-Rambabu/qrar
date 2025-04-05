@@ -18,7 +18,7 @@ import { CircularProgress } from '@mui/material';
 
 Modal.setAppElement('#root');
 
-const AddProductPage = ({onSuccess}) => {
+const AddProductPage = ({ onSuccess }) => {
   const [formData, setFormData] = useState({
     name: '',
     price: '',
@@ -39,7 +39,22 @@ const AddProductPage = ({onSuccess}) => {
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const [croppedImage, setCroppedImage] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [restaurantTaxType, setRestaurantTaxType] = useState(null);
 
+  useEffect(() => {
+    const fetchRestaurantDetails = async () => {
+      try {
+        const response = await axiosInstance.get('/restaurants/profile');
+        setRestaurantTaxType(response.data.taxType || null); // Ensure valid default
+      } catch (error) {
+        console.error('Error fetching restaurant details:', error);
+        toast.error('Failed to load restaurant details. Please try again.');
+      }
+    };
+  
+    fetchRestaurantDetails();
+  }, []);
+  
   useEffect(() => {
     const fetchCategories = async () => {
       setLoadingCategories(true);
@@ -59,22 +74,22 @@ const AddProductPage = ({onSuccess}) => {
 
   const handleInputChange = (e) => {
     const { name, value, files } = e.target;
-  
+
     if (files && files[0]) {
       const file = files[0];
-  
+
       // Check file size limit
       if (file.size > 5242880) {
         setError('File size exceeds 5MB limit.');
         return;
       }
-  
+
       // Set the file directly into the form data for upload
       setFormData((prevState) => ({
         ...prevState,
         [name]: file, // Store the file object
       }));
-  
+
       // Set the image preview source for cropping or display
       const fileReader = new FileReader();
       fileReader.onload = () => {
@@ -89,23 +104,23 @@ const AddProductPage = ({onSuccess}) => {
         [name]: value,
       }));
     }
-  }; 
+  };
 
   const handleCropComplete = async () => {
     try {
       // Get the cropped Blob
       const croppedBlob = await getCroppedImg(imageSrc, croppedAreaPixels);
-  
+
       // Convert the Blob to an object URL for preview
       const croppedPreview = URL.createObjectURL(croppedBlob);
-  
+
       // Update the state
       setCroppedImage(croppedPreview); // Set cropped image preview
       setFormData((prevState) => ({
         ...prevState,
         img: croppedBlob, // Save the cropped Blob in formData
       }));
-  
+
       // Close the cropping modal
       setIsModalOpen(false);
       setImageSrc(null);
@@ -113,34 +128,37 @@ const AddProductPage = ({onSuccess}) => {
       console.error('Error cropping the image:', err);
     }
   };
-  
-  
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setIsSubmitting(true);
-  
+
     if (!formData.name || !formData.price || !formData.category || !formData.img) {
       setError('All fields are required.');
       setIsSubmitting(false);
       return;
     }
-  
+
+    if (restaurantTaxType === 'inclusive' && (!formData.taxRate || isNaN(formData.taxRate))) {
+      setError('Tax rate is required for inclusive tax products.');
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
-  
       const data = new FormData();
-  
-      // Append all form data fields
       Object.keys(formData).forEach((key) => {
         data.append(key, formData[key]);
       });
-  
+
       const response = await axiosInstance.post('/products', data, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
-  
+
       toast.success('Product added successfully!');
       setFormData({
         name: '',
@@ -149,11 +167,10 @@ const AddProductPage = ({onSuccess}) => {
         category: '',
         tags: '',
         img: null,
+        taxRate: '',
       });
-      setCroppedImage(null);
 
-      if (onSuccess) onSuccess(response.data) // Trigger callback if provided
-      
+      if (onSuccess) onSuccess(response.data);
     } catch (error) {
       console.error('Error submitting form:', error);
       setError('Failed to add product. Please try again.');
@@ -161,7 +178,7 @@ const AddProductPage = ({onSuccess}) => {
       setIsSubmitting(false);
     }
   };
-  
+
   const closeModal = () => {
     setIsModalOpen(false);
     setImageSrc(null); // Clear the image source to prevent re-registering the modal
@@ -237,6 +254,23 @@ const AddProductPage = ({onSuccess}) => {
             )}
           </div>
 
+          {restaurantTaxType === 'inclusive' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                <FontAwesomeIcon icon={faTags} className="mr-2 text-gray-500" /> Tax Rate (%)
+              </label>
+              <input
+                type="number"
+                name="taxRate"
+                value={formData.taxRate || ''}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded shadow-sm"
+                placeholder="Enter GST percentage"
+                required
+              />
+            </div>
+          )}
+
           {/* Tags Input */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -267,7 +301,8 @@ const AddProductPage = ({onSuccess}) => {
                 />
                 <button
                   type="button"
-                  onClick={() => {setCroppedImage(null)
+                  onClick={() => {
+                    setCroppedImage(null)
                     setFormData((prevState) => ({ ...prevState, img: null }));
                   }} // Reset to upload a new image
                   className="absolute top-2 right-2 bg-white p-2 rounded-full shadow-md text-gray-700 hover:bg-gray-100"
@@ -342,7 +377,7 @@ const AddProductPage = ({onSuccess}) => {
                     </button>
                   </div>
                 </div>
-                
+
               </Modal>
             )}
           </div>
@@ -369,7 +404,7 @@ const AddProductPage = ({onSuccess}) => {
           className="bg-blue-500 text-white px-4 py-2 w-40 h-10 flex justify-center items-center rounded-lg shadow hover:bg-blue-700 disabled:opacity-50"
           disabled={isSubmitting}
         >
-          {isSubmitting ? <CircularProgress size={20} className='text-white'/> : 'Add Product'}
+          {isSubmitting ? <CircularProgress size={20} className='text-white' /> : 'Add Product'}
         </button>
       </form>
     </div>

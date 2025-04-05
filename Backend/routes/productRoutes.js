@@ -16,7 +16,7 @@ router.post('/', authMiddleware, upload.single('img'), async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized: Restaurant ID missing in token' });
     }
 
-    const { name, price, description, category } = req.body;
+    const { name, price, description, category, taxRate } = req.body;
 
     // Check if the category exists
     const categoryExists = await Category.findById(category);
@@ -35,6 +35,7 @@ router.post('/', authMiddleware, upload.single('img'), async (req, res) => {
       img: imgUrl, // Save Cloudinary public URL
       category,
       restaurant: restaurantId,
+      taxRate: taxRate,
     });
 
     const savedProduct = await newProduct.save();
@@ -96,6 +97,7 @@ router.get('/', authMiddleware, async (req, res) => {
       .limit(parseInt(limit))
       .populate('category'); // Populate category details
 
+    // Respond with the products
     res.status(200).json({
       products,
       total,
@@ -111,7 +113,6 @@ router.get('/', authMiddleware, async (req, res) => {
     });
   }
 });
-
 
 router.get('/all', authMiddleware, async (req, res) => {
   try {
@@ -177,15 +178,18 @@ router.get('/:restaurantId', async (req, res) => {
     // Fetch products based on the filter
     const products = await Product.find(filter);
 
-    // Directly return the products with their Cloudinary URLs
-    res.status(200).json(products.map((product) => product.toObject()));
+    // Return products with their Cloudinary URLs and taxRate
+    res.status(200).json(
+      products.map((product) => ({
+        ...product.toObject(),
+        taxRate: product.taxRate // include product-specific tax rate
+      }))
+    );
   } catch (error) {
     console.error('Error fetching products:', error);
     res.status(500).json({ error: 'Server error', details: error.message });
   }
 });
-
-
 
 
 // Update a Product

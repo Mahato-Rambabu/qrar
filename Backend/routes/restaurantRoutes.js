@@ -11,53 +11,67 @@ import { z } from 'zod';
 const router = express.Router();
 
 const restaurantValidationSchema = z.object({
-    name: z.string().min(1, 'Name is required'),
-    email: z.string().email('Invalid email address'),
-    password: z.string().min(6, 'Password must be at least 6 characters'),
-    number: z.string().length(10, 'Phone number must be 10 digits'),
-    address: z.string().min(1, 'Address is required'),
+  name: z.string().min(1, 'Name is required'),
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  number: z.string().length(10, 'Phone number must be 10 digits'),
+  address: z.string().min(1, 'Address is required'),
+  taxType: z.enum(['inclusive', 'exclusive', 'none']).default('none'),
+  taxPercentage: z.preprocess(
+      (val) => (val === '' || val === undefined ? 0 : Number(val)),  // Convert empty value to 0
+      z.number().min(0, 'Tax percentage must be a positive number').optional()
+  )
 });
 
 // Ensure FRONTEND_BASE_URL is set
 const frontendBaseURL = process.env.FRONTEND_BASE_URL || 'http://localhost:5173';
 
 router.post('/register', async (req, res) => {
-    try {
-        const data = restaurantValidationSchema.parse(req.body);
+  try {
+      const data = restaurantValidationSchema.parse(req.body);
 
-        const existingRestaurant = await Restaurant.findOne({ email: data.email });
-        if (existingRestaurant) {
-            return res.status(400).json({ error: 'Email is already registered' });
-        }
+      const existingRestaurant = await Restaurant.findOne({ email: data.email });
+      if (existingRestaurant) {
+          return res.status(400).json({ error: 'Email is already registered' });
+      }
 
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(data.password, salt);
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(data.password, salt);
 
-        const newRestaurant = new Restaurant({ ...data, password: hashedPassword });
+      const newRestaurant = new Restaurant({ 
+          ...data, 
+          password: hashedPassword,
+          taxType: data.taxType,  // Add taxType
+          taxPercentage: data.taxPercentage // Add taxPercentage
+      });
 
-        const savedRestaurant = await newRestaurant.save();
+      const savedRestaurant = await newRestaurant.save();
 
-        const qrCodeUrl = `${frontendBaseURL}/home?restaurantId=${savedRestaurant._id}`;
-        const qrCodeImage = await QRCode.toDataURL(qrCodeUrl);
+      const qrCodeUrl = `${frontendBaseURL}/home?restaurantId=${savedRestaurant._id}`;
+      const qrCodeImage = await QRCode.toDataURL(qrCodeUrl);
 
-        savedRestaurant.qrCodeUrl = qrCodeUrl;
-        savedRestaurant.qrCodeImage = qrCodeImage;
-        await savedRestaurant.save();
+      savedRestaurant.qrCodeUrl = qrCodeUrl;
+      savedRestaurant.qrCodeImage = qrCodeImage;
+      await savedRestaurant.save();
 
-        res.status(201).json({
-            message: 'Restaurant registered successfully',
-            restaurant: {
-                id: savedRestaurant._id,
-                name: savedRestaurant.name,
-                qrCodeUrl: savedRestaurant.qrCodeUrl,
-                qrCodeImage: savedRestaurant.qrCodeImage,
-            },
-        });
-    } catch (error) {
-        console.error('Error during registration:', error);
-        res.status(400).json({ error: error.message || 'Registration failed' });
-    }
+      res.status(201).json({
+          message: 'Restaurant registered successfully',
+          restaurant: {
+              id: savedRestaurant._id,
+              name: savedRestaurant.name,
+              qrCodeUrl: savedRestaurant.qrCodeUrl,
+              qrCodeImage: savedRestaurant.qrCodeImage,
+              taxType: savedRestaurant.taxType,
+              taxPercentage: savedRestaurant.taxPercentage
+          },
+      });
+  } catch (error) {
+      console.error('Error during registration:', error);
+      res.status(400).json({ error: error.message || 'Registration failed' });
+  }
 });
+
+
 
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
@@ -140,6 +154,8 @@ router.get('/profile', authMiddleware, async (req, res) => {
       address: restaurant.address,
       profileImage: restaurant.profileImage,
       bannerImage: restaurant.bannerImage,
+      taxType: restaurant.taxType,
+      taxPercentage: restaurant.taxPercentage
     });
   } catch (error) {
     console.log('Error fetching profile:', error);
@@ -267,32 +283,38 @@ router.get('/images', authMiddleware, async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
-
-
-// Fetch a specific restaurant by ID
-router.get('/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    // Find the restaurant by ID
-    const restaurant = await Restaurant.findById(id);
-
-    if (!restaurant) {
-      return res.status(404).json({ error: 'Restaurant not found' });
-    }
-
-    res.status(200).json(restaurant);
-  } catch (error) {
-    console.error('Error fetching restaurant:', error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
 router.post('/logout', authMiddleware, (req, res) => {
   try {
     // Clear the client token (handled on the client-side by removing it)
     res.status(200).json({ message: 'Logged out successfully' });
   } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+// Route to get restaurant profile details by restaurantId (Frontend)
+router.get('/profile/:restaurantId', async (req, res) => {
+  try {
+    const { restaurantId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
+      return res.status(400).json({ error: 'Invalid restaurant ID' });
+    }
+
+    const restaurant = await Restaurant.findById(restaurantId);
+    if (!restaurant) {
+      return res.status(404).json({ error: 'Restaurant not found' });
+    }
+
+    res.status(200).json({
+      name: restaurant.name,
+      address: restaurant.address,
+      profileImage: restaurant.profileImage,
+      bannerImage: restaurant.bannerImage,
+      taxType: restaurant.taxType,
+      taxPercentage: restaurant.taxPercentage,
+    });
+  } catch (error) {
+    console.error('Error fetching restaurant profile:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });

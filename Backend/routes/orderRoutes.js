@@ -307,69 +307,96 @@ router.get("/pending", authMiddleware, async (req, res) => {
 
 // Pass io to your route file if needed
 const configureOrderRoutes = (io) => {
+
   // POST route: Place a new order
   router.post("/:restaurantId", async (req, res) => {
     const { restaurantId } = req.params;
-    const { items, total, customerIdentifier } = req.body;
+    const {
+      items,
+      finalTotal,
+      taxType,
+      itemsTotal,
+      discount,
+      gst,
+      customerIdentifier,
+      taxRate, // for exclusive tax
+      serviceCharge,
+      packingCharge,
+      deliveryCharge,
+      tableNumber,
+      paymentMethod,
+      paymentStatus,
+      refundStatus,
+      modeOfOrder,
+      orderNotes
+    } = req.body;
 
     // Validate customerIdentifier
     if (!customerIdentifier || !mongoose.Types.ObjectId.isValid(customerIdentifier)) {
       return res.status(400).json({ error: "Valid customer identifier is required." });
     }
 
-    // Validate items and total (existing code)
+    // Validate items and finalTotal
     if (!items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: "Items are required and must be a non-empty array." });
     }
 
-    if (!total || typeof total !== "number") {
-      return res.status(400).json({ error: "Total price is required and must be a number." });
+    if (typeof finalTotal !== "number") {
+      return res.status(400).json({ error: "Final total is required and must be a number." });
     }
 
     try {
-      // Get the start of the day (00:00:00) to calculate today's orders
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);
 
-      // Count today's orders for the restaurant (based on createdAt date)
       const orderCount = await Order.countDocuments({
-        createdAt: { $gte: startOfDay }, // Orders created after midnight today
-        restaurantId, // Filter by restaurantId
+        createdAt: { $gte: startOfDay },
+        restaurantId,
       });
 
-      // Create a new order
       const newOrder = new Order({
         restaurantId,
-        items,
-        total,
+        items, // Each item may include its own taxRate (for inclusive tax)
+        taxType,
+        itemsTotal,
+        discount,
+        gst,
+        finalTotal,
+        // For exclusive tax orders, store the restaurant-level tax rate in excTaxRate.
+        excTaxRate: taxType === "exclusive" ? taxRate : 0,
         status: "Pending",
-        orderNo: orderCount + 1, // Start from 1 each day
+        orderNo: orderCount + 1,
         customerIdentifier,
+        // New fields with defaults or values provided from the request:
+        serviceCharge: serviceCharge || 0,
+        packingCharge: packingCharge || 0,
+        deliveryCharge: deliveryCharge || 0,
+        tableNumber, // remains optional
+        paymentMethod: paymentMethod || "Unpaid",
+        paymentStatus: paymentStatus || "Unpaid",
+        refundStatus: refundStatus || "Not Applicable",
+        modeOfOrder: modeOfOrder || "Dine-in",
+        orderNotes: orderNotes || "",
         createdAt: new Date(),
       });
 
-      // Save the new order to the database
       const savedOrder = await newOrder.save();
 
-      // Populate the customer name and product data for each item
-      await savedOrder.populate("customerIdentifier", "name"); // Populate customer name
-      await savedOrder.populate("items.productId"); // Populate product data for each item
+      await savedOrder.populate("customerIdentifier", "name");
+      await savedOrder.populate("items.productId");
 
-      // Prepare the populated order
       const populatedOrder = {
         ...savedOrder.toObject(),
-        customerName: savedOrder.customerIdentifier.name || "Guest", // Set customer name or "Guest"
+        customerName: savedOrder.customerIdentifier.name || "Guest",
       };
 
-      // Emit the populated order with product data
       io.emit("order:created", populatedOrder);
 
-      // Send response back with the new order details
       res.status(201).json({
         message: "Order placed successfully",
         order: {
           orderId: savedOrder._id,
-          orderNo: savedOrder.orderNo, // Order number for the day
+          orderNo: savedOrder.orderNo,
         },
       });
     } catch (error) {
@@ -378,172 +405,172 @@ const configureOrderRoutes = (io) => {
     }
   });
 
- // Weekly popular items
-router.get("/top-products/:restaurantId", async (req, res) => {
-  try {
-    const { restaurantId } = req.params;
+  // Weekly popular items
+  router.get("/top-products/:restaurantId", async (req, res) => {
+    try {
+      const { restaurantId } = req.params;
 
-    // Validate restaurantId
-    if (!isValidObjectId(restaurantId)) {
-      return res.status(400).json({ message: "Invalid restaurant ID" });
+      // Validate restaurantId
+      if (!isValidObjectId(restaurantId)) {
+        return res.status(400).json({ message: "Invalid restaurant ID" });
+      }
+
+      // Calculate start date for last 7 days
+      const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+      // Aggregation pipeline for last 7 days
+      const weeklyPipeline = [
+        {
+          $match: {
+            restaurantId: new mongoose.Types.ObjectId(restaurantId),
+            status: "Served",
+            createdAt: { $gte: startDate }
+          }
+        },
+        { $unwind: "$items" },
+        {
+          $group: {
+            _id: "$items.productId",
+            totalQuantity: { $sum: "$items.quantity" },
+          }
+        },
+        { $sort: { totalQuantity: -1 } },
+        { $limit: 3 },
+        {
+          $lookup: {
+            from: "products",
+            localField: "_id",
+            foreignField: "_id",
+            as: "productDetails",
+          }
+        },
+        { $unwind: "$productDetails" },
+        {
+          $project: {
+            productId: "$_id",
+            productName: "$productDetails.name",
+            productImage: "$productDetails.img",
+            categoryId: "$productDetails.category",
+            totalQuantity: 1,
+            _id: 0,
+          }
+        },
+      ];
+
+      // Fallback pipeline (e.g., all-time top 3, ignoring date)
+      const fallbackPipeline = [
+        {
+          $match: {
+            restaurantId: new mongoose.Types.ObjectId(restaurantId),
+            status: "Served",
+            // No date filter
+          }
+        },
+        { $unwind: "$items" },
+        {
+          $group: {
+            _id: "$items.productId",
+            totalQuantity: { $sum: "$items.quantity" },
+          }
+        },
+        { $sort: { totalQuantity: -1 } },
+        { $limit: 3 },
+        {
+          $lookup: {
+            from: "products",
+            localField: "_id",
+            foreignField: "_id",
+            as: "productDetails",
+          }
+        },
+        { $unwind: "$productDetails" },
+        {
+          $project: {
+            productId: "$_id",
+            productName: "$productDetails.name",
+            productImage: "$productDetails.img",
+            categoryId: "$productDetails.category",
+            totalQuantity: 1,
+            _id: 0,
+          }
+        },
+      ];
+
+      // Execute the weekly aggregator
+      let weeklyPopularProducts = await Order.aggregate(weeklyPipeline);
+
+      // If empty, use fallback aggregator
+      if (weeklyPopularProducts.length === 0) {
+        console.log("No served orders found in the last 7 days. Using fallback.");
+        weeklyPopularProducts = await Order.aggregate(fallbackPipeline);
+      }
+
+      res.status(200).json(weeklyPopularProducts);
+    } catch (error) {
+      console.error("Error fetching weekly popular products:", error);
+      res.status(500).json({ message: "Error fetching weekly popular products" });
     }
-
-    // Calculate start date for last 7 days
-    const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-
-    // Aggregation pipeline for last 7 days
-    const weeklyPipeline = [
-      {
-        $match: {
-          restaurantId: new mongoose.Types.ObjectId(restaurantId),
-          status: "Served",
-          createdAt: { $gte: startDate }
-        }
-      },
-      { $unwind: "$items" },
-      {
-        $group: {
-          _id: "$items.productId",
-          totalQuantity: { $sum: "$items.quantity" },
-        }
-      },
-      { $sort: { totalQuantity: -1 } },
-      { $limit: 3 },
-      {
-        $lookup: {
-          from: "products",
-          localField: "_id",
-          foreignField: "_id",
-          as: "productDetails",
-        }
-      },
-      { $unwind: "$productDetails" },
-      {
-        $project: {
-          productId: "$_id",
-          productName: "$productDetails.name",
-          productImage: "$productDetails.img",
-          categoryId: "$productDetails.category",
-          totalQuantity: 1,
-          _id: 0,
-        }
-      },
-    ];
-
-    // Fallback pipeline (e.g., all-time top 3, ignoring date)
-    const fallbackPipeline = [
-      {
-        $match: {
-          restaurantId: new mongoose.Types.ObjectId(restaurantId),
-          status: "Served",
-          // No date filter
-        }
-      },
-      { $unwind: "$items" },
-      {
-        $group: {
-          _id: "$items.productId",
-          totalQuantity: { $sum: "$items.quantity" },
-        }
-      },
-      { $sort: { totalQuantity: -1 } },
-      { $limit: 3 },
-      {
-        $lookup: {
-          from: "products",
-          localField: "_id",
-          foreignField: "_id",
-          as: "productDetails",
-        }
-      },
-      { $unwind: "$productDetails" },
-      {
-        $project: {
-          productId: "$_id",
-          productName: "$productDetails.name",
-          productImage: "$productDetails.img",
-          categoryId: "$productDetails.category",
-          totalQuantity: 1,
-          _id: 0,
-        }
-      },
-    ];
-
-    // Execute the weekly aggregator
-    let weeklyPopularProducts = await Order.aggregate(weeklyPipeline);
-
-    // If empty, use fallback aggregator
-    if (weeklyPopularProducts.length === 0) {
-      console.log("No served orders found in the last 7 days. Using fallback.");
-      weeklyPopularProducts = await Order.aggregate(fallbackPipeline);
-    }
-
-    res.status(200).json(weeklyPopularProducts);
-  } catch (error) {
-    console.error("Error fetching weekly popular products:", error);
-    res.status(500).json({ message: "Error fetching weekly popular products" });
-  }
-});
+  });
 
   // GET route: Fetch all orders for a specific restaurant and customer (all time)
-router.get("/:restaurantId", async (req, res) => {
-  const { restaurantId } = req.params;
-  const { customerIdentifier } = req.query;
+  router.get("/:restaurantId", async (req, res) => {
+    const { restaurantId } = req.params;
+    const { customerIdentifier } = req.query;
 
-  // Validate restaurantId
-  if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
-    return res.status(400).json({ error: "Invalid restaurantId" });
-  }
+    // Validate restaurantId
+    if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
+      return res.status(400).json({ error: "Invalid restaurantId" });
+    }
 
-  // Validate customerIdentifier
-  if (!customerIdentifier) {
-    return res.status(400).json({ error: "Customer identifier is required." });
-  }
+    // Validate customerIdentifier
+    if (!customerIdentifier) {
+      return res.status(400).json({ error: "Customer identifier is required." });
+    }
 
-  try {
-    // Fetch orders for all time (no date filter)
-    const orders = await Order.find({
-      restaurantId,
-      customerIdentifier,
-    })
-      .select("orderNo total items status createdAt") // Include required fields
-      .populate("items.productId", "name description img") // Populate product details
-      .sort({ createdAt: -1 }); // Sort by most recent orders first
+    try {
+      // Fetch orders for all time (no date filter)
+      const orders = await Order.find({
+        restaurantId,
+        customerIdentifier,
+      })
+        .select("orderNo total items status createdAt") // Include required fields
+        .populate("items.productId", "name description img") // Populate product details
+        .sort({ createdAt: -1 }); // Sort by most recent orders first
 
-    res.status(200).json(orders);
-  } catch (error) {
-    console.error("Error fetching customer orders:", error.message);
-    res.status(500).json({ error: "Failed to fetch orders. Please try again later." });
-  }
-});
+      res.status(200).json(orders);
+    } catch (error) {
+      console.error("Error fetching customer orders:", error.message);
+      res.status(500).json({ error: "Failed to fetch orders. Please try again later." });
+    }
+  });
 
 
   router.patch("/:orderId", async (req, res) => {
     const { orderId } = req.params;
     const { status } = req.body;
-  
+
     if (!isValidObjectId(orderId)) {
       return res.status(400).json({ error: "Invalid order ID." });
     }
-  
+
     // Allow "Rejected" as a valid status now
     if (!["Pending", "Preparing", "Served", "Rejected"].includes(status)) {
       return res.status(400).json({ error: "Invalid status value." });
     }
-  
+
     try {
       const updatedOrder = await Order.findByIdAndUpdate(
         orderId,
         { status },
         { new: true }
       );
-  
+
       if (!updatedOrder) {
         return res.status(404).json({ error: "Order not found." });
       }
-  
+
       io.emit("order:updated", updatedOrder);
-  
+
       res.status(200).json({
         message: "Order status updated successfully.",
         order: updatedOrder,
@@ -551,7 +578,7 @@ router.get("/:restaurantId", async (req, res) => {
     } catch (error) {
       res.status(500).json({ error: "Failed to update order status." });
     }
-  });  
+  });
 
   return router;
 };

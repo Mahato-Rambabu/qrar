@@ -75,12 +75,11 @@ router.get('/users-by-age-group', authMiddleware, async (req, res) => {
   }
 });
 
-// Save user details
 router.post("/:restaurantId", async (req, res) => {
   const { restaurantId } = req.params;
   const { name, phone, dob } = req.body;
 
-  if (!isValidObjectId(restaurantId)) {
+  if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
     return res.status(400).json({ error: "Invalid restaurant ID" });
   }
 
@@ -89,29 +88,44 @@ router.post("/:restaurantId", async (req, res) => {
   }
 
   try {
-    const existingUser = await User.findOne({ phone, restaurantId });
-    if (existingUser) {
+    const cleanedPhone = phone.trim();
+
+    // Check if user exists by phone
+    let user = await User.findOne({ phone: cleanedPhone });
+
+    if (user) {
+      // If user exists but not linked to this restaurant, add restaurantId
+      if (!user.restaurants.includes(restaurantId)) {
+        user.restaurants.push(restaurantId);
+        await user.save();
+      }
+
       return res.status(200).json({
-        message: "User already registered. Proceed with existing details.",
-        user: existingUser,
-        customerIdentifier: existingUser._id.toString(),
+        message: "User already registered. Logging in...",
+        user,
+        customerIdentifier: user.customerIdentifier, // Always send a valid identifier
       });
     }
 
-    const newUser = new User({ name, phone, dob, restaurantId });
+    // Create new user
+    const newUser = new User({
+      name,
+      phone: cleanedPhone,
+      dob,
+      restaurants: [restaurantId], // Assign restaurant during registration
+    });
     await newUser.save();
 
-    res.status(201).json({ 
-      message: "User registered successfully", 
+    res.status(201).json({
+      message: "User registered successfully",
       user: newUser,
-      customerIdentifier: newUser._id.toString(),
+      customerIdentifier: newUser.customerIdentifier, // Send valid identifier
     });
   } catch (error) {
     console.error("Error saving user details:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
 
 // Get user details for a specific restaurant
 router.get("/", authMiddleware, async (req, res) => {

@@ -29,12 +29,12 @@ const OrderItem = ({ item, updateQuantity, showQuantityOnly = false }) => {
             <span className="text-sm text-gray-400 line-through mr-2">
               ₹{item.price.toFixed(2)}
             </span>
-            <span className="font-bold text-gray-800 text-lg mb-2">
+            <span className="font-bold text-gray-800 text-md mb-2">
               ₹{item.discountedPrice.toFixed(2)}
             </span>
           </div>
         ) : (
-          <p className="font-bold text-gray-800 text-lg mb-2">
+          <p className="font-bold text-gray-800 text-md mb-2">
             ₹{item.price.toFixed(2)}
           </p>
         )}
@@ -48,7 +48,7 @@ const OrderItem = ({ item, updateQuantity, showQuantityOnly = false }) => {
             >
               –
             </button>
-            <span className="w-6 text-center text-sm font-semibold text-gray-800">
+            <span className="w-4 text-center text-sm font-semibold text-gray-800">
               {item.quantity}
             </span>
             <button
