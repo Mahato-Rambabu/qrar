@@ -7,6 +7,7 @@ import axiosInstance from '../../utils/axiosInstance';
 const Navbar = ({ toggleSidebar }) => {
   const [profileImage, setProfileImage] = useState(null);
   const [restaurantName, setRestaurantName] = useState('');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Inline skeleton image (a simple placeholder)
   const skeletonImage =
@@ -25,15 +26,21 @@ const Navbar = ({ toggleSidebar }) => {
     fetchProfileImage();
   }, []);
 
+  // Handle sidebar toggle
+  const handleToggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+    toggleSidebar();
+  };
+
   return (
-    <nav className="fixed top-0 left-0 w-full bg-white shadow-md ">
+    <nav className="fixed top-0 left-0 w-full bg-white shadow-md z-50">
       {/* Desktop View */}
       <div className="hidden md:flex items-center justify-between px-4 py-2">
         <div className="flex items-center gap-2">
           {/* Sidebar Toggle Button */}
           <button
             className="p-2 rounded-md hover:bg-gray-200 focus:outline-none"
-            onClick={toggleSidebar}
+            onClick={handleToggleSidebar}
             aria-label="Toggle Sidebar"
           >
             <Menu className="w-6 h-6 text-blue-400" />
@@ -58,7 +65,7 @@ const Navbar = ({ toggleSidebar }) => {
           {/* Sidebar Toggle Button (Also in Mobile) */}
           <button
             className="p-2 rounded-md hover:bg-gray-200 focus:outline-none"
-            onClick={toggleSidebar}
+            onClick={handleToggleSidebar}
             aria-label="Toggle Sidebar"
           >
             <Menu className="w-6 h-6 text-blue-400" />

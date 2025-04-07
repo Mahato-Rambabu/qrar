@@ -39,12 +39,25 @@ const Dashboard = () => {
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
+      const newIsMobile = window.innerWidth < 768;
+      setIsMobile(newIsMobile);
+      
+      // Auto-close sidebar on mobile when resizing from desktop
+      if (newIsMobile && isOpen) {
+        setIsOpen(false);
+      }
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [isOpen]);
+
+  // Close sidebar when navigating on mobile
+  useEffect(() => {
+    if (isMobile) {
+      setIsOpen(false);
+    }
+  }, [location, isMobile]);
 
   return (
     <ErrorBoundary>
@@ -190,7 +203,7 @@ const Dashboard = () => {
             </Suspense>
           </main>
         </div>
-        {/* Render GlobalOrderManage so it’s always active in the dashboard */}
+        {/* Render GlobalOrderManage so it's always active in the dashboard */}
         <GlobalOrderManage />
       </div>
     </ErrorBoundary>

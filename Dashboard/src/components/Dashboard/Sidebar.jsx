@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useState } from 'react';
+import React, { memo, useCallback, useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   ShoppingCart,
@@ -30,6 +30,15 @@ const Sidebar = memo(({ isOpen: pcSidebarOpen }) => {
   const [isLoyaltyOpen, setIsLoyaltyOpen] = useState(false);
   // Local state for mobile overlay sidebar
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  // Update mobile sidebar state when pcSidebarOpen changes
+  useEffect(() => {
+    if (pcSidebarOpen) {
+      setMobileSidebarOpen(true);
+    } else {
+      setMobileSidebarOpen(false);
+    }
+  }, [pcSidebarOpen]);
 
   // Helper to check if a menu item is active based on current location
   const isActive = useCallback(
@@ -310,16 +319,6 @@ const Sidebar = memo(({ isOpen: pcSidebarOpen }) => {
   ========================= */
   const renderMobileSidebar = () => (
     <>
-      {/* Hamburger Icon fixed at top-left */}
-      <div className="fixed top-4 left-4 z-50 md:hidden">
-        <button
-          onClick={() => setMobileSidebarOpen(true)}
-          className="p-2 rounded-md bg-white shadow-md"
-        >
-          <Menu className="w-6 h-6 text-blue-400" />
-        </button>
-      </div>
-
       {/* Overlay Sidebar */}
       {mobileSidebarOpen && (
         <div className="fixed inset-0 z-40 flex">
