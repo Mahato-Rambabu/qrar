@@ -2,7 +2,7 @@ import React from 'react';
 
 const OrderItem = ({ item, updateQuantity, showQuantityOnly = false }) => {
   // Use discounted price if available, otherwise the original price
-  const itemPrice = item.discountedPrice ? item.discountedPrice : item.price;
+  const itemPrice = item.price;
 
   return (
     <div className="flex items-center p-3 mb-4 bg-white rounded-lg shadow-sm">

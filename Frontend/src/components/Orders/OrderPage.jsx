@@ -24,7 +24,7 @@ const OrderPage = () => {
   const itemsTotal = useMemo(() => {
     return cartItems.reduce(
       (sum, item) =>
-        sum + (item.discountedPrice || item.price) * item.quantity,
+        sum + item.price * item.quantity,
       0
     );
   }, [cartItems]);
