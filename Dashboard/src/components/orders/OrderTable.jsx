@@ -1,87 +1,10 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Printer } from "lucide-react";
 import OrderCard from "./OrderCard";
 import { generateOrderBill } from "../../utils/pdfGenerator";
 // import Papa from "papaparse";
 
 const OrderTable = ({ orders, onUpdateStatus, isHistory = false }) => {
-
-  // Add comprehensive logging
-  useEffect(() => {
-    console.log("=== ORDER TABLE DATA ===");
-    console.log("Raw orders data:", orders);
-    
-    if (orders && orders.length > 0) {
-      orders.forEach((order, index) => {
-        console.log(`\n--- Order #${index + 1} (ID: ${order._id || 'N/A'}) ---`);
-        console.log("Basic Info:", {
-          orderNo: order.orderNo,
-          customerName: order.customerName,
-          status: order.status,
-          createdAt: order.createdAt,
-          updatedAt: order.updatedAt
-        });
-        
-        console.log("Payment Info:", {
-          paymentMethod: order.paymentMethod,
-          paymentStatus: order.paymentStatus,
-          refundStatus: order.refundStatus
-        });
-        
-        console.log("Order Details:", {
-          modeOfOrder: order.modeOfOrder,
-          tableNumber: order.tableNumber,
-          orderNotes: order.orderNotes
-        });
-        
-        console.log("Financial Info:", {
-          itemsTotal: order.itemsTotal,
-          discount: order.discount,
-          gst: order.gst,
-          serviceCharge: order.serviceCharge,
-          packingCharge: order.packingCharge,
-          deliveryCharge: order.deliveryCharge,
-          finalTotal: order.finalTotal
-        });
-        
-        console.log("Items:", order.items?.map(item => ({
-          productId: item.productId?._id,
-          productName: item.productId?.name,
-          productPrice: item.productId?.price,
-          quantity: item.quantity,
-          taxRate: item.taxRate
-        })));
-        
-        // Log the safe version of the order
-        const safeOrder = {
-          _id: order._id || "",
-          orderNo: order.orderNo || "N/A",
-          customerName: order.customerName || "Guest",
-          items: order.items || [],
-          status: order.status || "Pending",
-          paymentMethod: order.paymentMethod || "Unpaid",
-          paymentStatus: order.paymentStatus || "Unpaid",
-          modeOfOrder: order.modeOfOrder || "Dine-in",
-          tableNumber: order.tableNumber || null,
-          itemsTotal: order.itemsTotal || 0,
-          discount: order.discount || 0,
-          gst: order.gst || 0,
-          serviceCharge: order.serviceCharge || 0,
-          packingCharge: order.packingCharge || 0,
-          deliveryCharge: order.deliveryCharge || 0,
-          finalTotal: order.finalTotal || 0,
-          orderNotes: order.orderNotes || "",
-          createdAt: order.createdAt || new Date(),
-          updatedAt: order.updatedAt || new Date()
-        };
-        
-        console.log("Safe Order Version:", safeOrder);
-      });
-    } else {
-      console.log("No orders to display");
-    }
-  }, [orders]);
-
   const handleDownloadSingleOrder = (order) => {
     // Use the utility function to generate and download the PDF bill
     generateOrderBill(order);
@@ -143,10 +66,14 @@ const OrderTable = ({ orders, onUpdateStatus, isHistory = false }) => {
                           quantity: item.quantity || 0
                         };
                         
+                        // Ensure product price is properly accessed
+                        const productPrice = safeItem.productId?.price || 0;
+                        const itemTotal = productPrice * safeItem.quantity;
+                        
                         return (
                           <div key={safeItem.productId._id || Math.random()} className="flex justify-between">
                             <span>{safeItem.productId.name || "Unknown"} x {safeItem.quantity}</span>
-                            <span className="text-gray-600">₹{((safeItem.productId.price || 0) * safeItem.quantity).toFixed(2)}</span>
+                            <span className="text-gray-600">₹{itemTotal.toFixed(2)}</span>
                           </div>
                         );
                       })}
@@ -202,7 +129,6 @@ const OrderTable = ({ orders, onUpdateStatus, isHistory = false }) => {
                           className="px-2 py-1 rounded-md border border-gray-300 text-sm"
                         >
                           <option value="Pending">Pending</option>
-                          <option value="Preparing">Preparing</option>
                           <option value="Served">Served</option>
                         </select>
                       )}

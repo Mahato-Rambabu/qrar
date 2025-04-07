@@ -36,28 +36,92 @@ export const handleDownloadAllOrders = () => {
 
 export const fetchPendingOrders = async (dateRange) => {
   try {
-
+    // console.log("Fetching pending orders with dateRange:", dateRange);
+    
     const response = await axiosInstance.get(`${API_BASE_URL}/orders/pending`, {
       params: { dateRange }
     });
 
-    return Array.isArray(response.data) ? response.data : [];
+    // Log the response data to debug product values
+    // console.log("Pending orders response:", response.data);
+    
+    // Ensure product data is properly populated
+    const orders = Array.isArray(response.data) ? response.data : [];
+    
+    // Log each order's items to check product data
+    // orders.forEach((order, index) => {
+    //   console.log(`Order #${index + 1} items:`, order.items);
+      
+    //   // Log financial information
+    //   console.log(`Order #${index + 1} financial info:`, {
+    //     itemsTotal: order.itemsTotal,
+    //     discount: order.discount,
+    //     gst: order.gst,
+    //     finalTotal: order.finalTotal,
+    //     serviceCharge: order.serviceCharge,
+    //     packingCharge: order.packingCharge,
+    //     deliveryCharge: order.deliveryCharge
+    //   });
+      
+    //   order.items.forEach((item, itemIndex) => {
+    //     console.log(`  Item #${itemIndex + 1}:`, {
+    //       productId: item.productId?._id,
+    //       productName: item.productId?.name,
+    //       productPrice: item.productId?.price,
+    //       quantity: item.quantity
+    //     });
+    //   });
+    // });
+
+    return orders;
   } catch (error) {
-    // console.error("Error fetching pending orders:", error.message);
+    console.error("Error fetching pending orders:", error.message);
     return [];
   }
 };
 
 export const fetchOrderHistory = async (dateRange) => {
   try {
-
+    console.log("Fetching order history with dateRange:", dateRange);
+    
     const response = await axiosInstance.get(`${API_BASE_URL}/orders/history`, {
       params: { dateRange }
     });
 
-    return Array.isArray(response.data) ? response.data : [];
+    // Log the response data to debug product values
+    console.log("Order history response:", response.data);
+    
+    // Ensure product data is properly populated
+    const orders = Array.isArray(response.data) ? response.data : [];
+    
+    // Log each order's items to check product data
+    // orders.forEach((order, index) => {
+    //   console.log(`Order #${index + 1} items:`, order.items);
+      
+    //   // Log financial information
+    //   console.log(`Order #${index + 1} financial info:`, {
+    //     itemsTotal: order.itemsTotal,
+    //     discount: order.discount,
+    //     gst: order.gst,
+    //     finalTotal: order.finalTotal,
+    //     serviceCharge: order.serviceCharge,
+    //     packingCharge: order.packingCharge,
+    //     deliveryCharge: order.deliveryCharge
+    //   });
+      
+    //   order.items.forEach((item, itemIndex) => {
+    //     console.log(`  Item #${itemIndex + 1}:`, {
+    //       productId: item.productId?._id,
+    //       productName: item.productId?.name,
+    //       productPrice: item.productId?.price,
+    //       quantity: item.quantity
+    //     });
+    //   });
+    // });
+
+    return orders;
   } catch (error) {
-    // console.error("Error fetching order history:", error.message);
+    console.error("Error fetching order history:", error.message);
     return [];
   }
 };
@@ -70,7 +134,7 @@ export const updateOrderStatus = async (orderId, status) => {
     );
     return response.data;
   } catch (error) {
-    // console.error("Error updating order status:", error.message);
+    console.error("Error updating order status:", error.message);
     throw error;
   }
 };

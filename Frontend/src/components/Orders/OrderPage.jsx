@@ -22,54 +22,61 @@ const OrderPage = () => {
 
   // Total calculated using discountedPrice (if available)
   const itemsTotal = useMemo(() => {
-    return cartItems.reduce(
+    const total = cartItems.reduce(
       (sum, item) =>
-        sum + item.price * item.quantity,
+        sum + (item.price || 0) * (item.quantity || 1),
       0
     );
+    console.log("Calculated itemsTotal:", total);
+    return total;
   }, [cartItems]);
 
   // Original total using the item.price (without discount)
   const originalTotal = useMemo(() => {
-    return cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const total = cartItems.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 1), 0);
+    console.log("Calculated originalTotal:", total);
+    return total;
   }, [cartItems]);
 
   // Discount: difference between original and discounted prices.
   const discount = useMemo(() => {
-    return cartItems.reduce(
+    const totalDiscount = cartItems.reduce(
       (sum, item) =>
         sum +
-        (item.price - (item.discountedPrice || item.price)) * item.quantity,
+        ((item.price || 0) - (item.discountedPrice || item.price || 0)) * (item.quantity || 1),
       0
     );
+    console.log("Calculated discount:", totalDiscount);
+    return totalDiscount;
   }, [cartItems]);
 
   // Tax calculation based on taxType.
   const calculatedTax = useMemo(() => {
+    let tax = 0;
     if (taxType === "none") {
-      return 0;
+      tax = 0;
     } else if (taxType === "inclusive") {
       // Calculate GST per product for inclusive tax.
-      return cartItems.reduce((sum, item) => {
-        const itemPrice = item.discountedPrice || item.price;
+      tax = cartItems.reduce((sum, item) => {
+        const itemPrice = item.discountedPrice || item.price || 0;
         const productTaxRate = item.taxRate || 0;
-        return (
-          sum +
-          itemPrice *
-            item.quantity *
-            (productTaxRate / (100 + productTaxRate))
-        );
+        const itemTax = itemPrice * (item.quantity || 1) * (productTaxRate / (100 + productTaxRate));
+        console.log(`Item tax for ${item.name || 'product'}: ${itemTax}`);
+        return sum + itemTax;
       }, 0);
     } else {
       // For exclusive tax, use the restaurant-level taxRate.
-      return itemsTotal * (taxRate / 100);
+      tax = itemsTotal * ((taxRate || 0) / 100);
     }
+    console.log("Calculated tax:", tax, "Tax type:", taxType, "Tax rate:", taxRate);
+    return tax;
   }, [taxType, taxRate, itemsTotal, cartItems]);
 
   // Final payable amount (finalTotal) always adds GST,
   // then rounds the result to two decimals.
   const totalPayable = useMemo(() => {
     const final = itemsTotal - discount + calculatedTax;
+    console.log("Calculated totalPayable:", final, "from itemsTotal:", itemsTotal, "discount:", discount, "tax:", calculatedTax);
     return parseFloat(final.toFixed(2));
   }, [itemsTotal, discount, calculatedTax]);
 
@@ -151,25 +158,43 @@ const OrderPage = () => {
         return;
       }
   
-      // Map order items and attach taxRate when applicable.
-      const orderItems = cartItems.map((item) => ({
-        productId: item._id,
-        quantity: item.quantity,
-        // For inclusive tax, send the product's taxRate along with each item.
-        ...(taxType === "inclusive" && { taxRate: item.taxRate || 0 }),
-      }));
+      // Log cart items for debugging
+      console.log("Cart items before submission:", cartItems);
   
+      // Map order items and attach taxRate when applicable.
+      const orderItems = cartItems.map((item) => {
+        console.log("Processing item:", item);
+        return {
+          productId: item._id,
+          quantity: item.quantity || 1,
+          // For inclusive tax, send the product's taxRate along with each item.
+          ...(taxType === "inclusive" && { taxRate: item.taxRate || 0 }),
+        };
+      });
+  
+      // Ensure all numeric values are properly calculated and not undefined
       const orderPayload = {
         items: orderItems,
-        finalTotal: totalPayable,
-        taxType,
-        itemsTotal,
-        discount,
+        finalTotal: parseFloat(totalPayable.toFixed(2)),
+        taxType: taxType || "none",
+        itemsTotal: parseFloat(itemsTotal.toFixed(2)),
+        discount: parseFloat(discount.toFixed(2)),
         gst: parseFloat(calculatedTax.toFixed(2)),
         customerIdentifier,
         // For exclusive tax, include the restaurant-level taxRate.
-        ...(taxType === "exclusive" && { taxRate }),
+        ...(taxType === "exclusive" && { taxRate: parseFloat(taxRate.toFixed(2)) }),
+        // Add additional fields with default values
+        serviceCharge: 0,
+        packingCharge: 0,
+        deliveryCharge: 0,
+        paymentMethod: "Unpaid",
+        paymentStatus: "Unpaid",
+        refundStatus: "Not Applicable",
+        modeOfOrder: "Dine-in",
+        orderNotes: ""
       };
+  
+      console.log("Sending order payload:", orderPayload);
   
       const response = await axiosInstance.post(`/orders/${restaurantId}`, orderPayload);
   
@@ -221,15 +246,28 @@ const OrderPage = () => {
       }));
 
       // For reordering, use stored bill details including finalTotal.
-      const response = await axiosInstance.post(`/orders/${restaurantId}`, {
+      const reorderPayload = {
         items: orderItems,
-        finalTotal: order.finalTotal,
-        taxType: order.taxType,
-        itemsTotal: order.itemsTotal,
-        discount: order.discount,
-        gst: order.gst,
+        finalTotal: parseFloat(order.finalTotal.toFixed(2)),
+        taxType: order.taxType || "none",
+        itemsTotal: parseFloat(order.itemsTotal.toFixed(2)),
+        discount: parseFloat(order.discount.toFixed(2)),
+        gst: parseFloat(order.gst.toFixed(2)),
         customerIdentifier,
-      });
+        // Add additional fields with default values
+        serviceCharge: 0,
+        packingCharge: 0,
+        deliveryCharge: 0,
+        paymentMethod: "Unpaid",
+        paymentStatus: "Unpaid",
+        refundStatus: "Not Applicable",
+        modeOfOrder: "Dine-in",
+        orderNotes: ""
+      };
+
+      console.log("Sending reorder payload:", reorderPayload);
+
+      const response = await axiosInstance.post(`/orders/${restaurantId}`, reorderPayload);
       if (response.status === 201) {
         toast.success("Order re-placed successfully!", { position: "top-center" });
         fetchRecentOrders(customerIdentifier);

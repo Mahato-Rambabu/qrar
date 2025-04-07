@@ -30,7 +30,7 @@ const OrderCard = ({ order, onUpdateStatus, isHistory = false, onDownload }) => 
     switch (status) {
       case "Served":
         return "bg-green-100 text-green-800";
-      case "Preparing":
+      case "Pending":
         return "bg-yellow-100 text-yellow-800";
       default:
         return "bg-blue-100 text-blue-800";
@@ -78,10 +78,14 @@ const OrderCard = ({ order, onUpdateStatus, isHistory = false, onDownload }) => 
                 quantity: item.quantity || 0
               };
               
+              // Ensure product price is properly accessed
+              const productPrice = safeItem.productId?.price || 0;
+              const itemTotal = productPrice * safeItem.quantity;
+              
               return (
                 <div key={safeItem.productId._id || Math.random()} className="flex justify-between items-center">
                   <span>{safeItem.productId.name || "Unknown"} x {safeItem.quantity}</span>
-                  <span className="text-gray-600">₹{((safeItem.productId.price || 0) * safeItem.quantity).toFixed(2)}</span>
+                  <span className="text-gray-600">₹{itemTotal.toFixed(2)}</span>
                 </div>
               );
             })}
@@ -189,7 +193,6 @@ const OrderCard = ({ order, onUpdateStatus, isHistory = false, onDownload }) => 
             className="px-3 py-1 rounded-md border border-gray-300 text-sm"
           >
             <option value="Pending">Pending</option>
-            <option value="Preparing">Preparing</option>
             <option value="Served">Served</option>
           </select>
         )}

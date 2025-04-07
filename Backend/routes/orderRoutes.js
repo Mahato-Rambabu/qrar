@@ -249,8 +249,8 @@ router.get("/history", authMiddleware, async (req, res) => {
       updatedAt: { $gte: startDate },
     })
       .populate("customerIdentifier", "name")
-      .populate("items.productId", "name description img")
-      .select("orderNo total items status updatedAt customerIdentifier")
+      .populate("items.productId", "name description img price")
+      .select("orderNo itemsTotal discount gst finalTotal serviceCharge packingCharge deliveryCharge items status updatedAt customerIdentifier paymentMethod paymentStatus modeOfOrder tableNumber orderNotes")
       .sort({ updatedAt: -1 });
 
     // Transform orders to include customerName with a default value
@@ -289,8 +289,8 @@ router.get("/pending", authMiddleware, async (req, res) => {
       createdAt: { $gte: startDate }, // Filter by startDate
     })
       .populate("customerIdentifier", "name")
-      .populate("items.productId", "name description img")
-      .select("orderNo total items status createdAt customerIdentifier")
+      .populate("items.productId", "name description img price")
+      .select("orderNo itemsTotal discount gst finalTotal serviceCharge packingCharge deliveryCharge items status createdAt customerIdentifier paymentMethod paymentStatus modeOfOrder tableNumber orderNotes")
       .sort({ createdAt: -1 });
 
     const transformedOrders = pendingOrders.map((order) => ({
@@ -341,8 +341,31 @@ const configureOrderRoutes = (io) => {
       return res.status(400).json({ error: "Items are required and must be a non-empty array." });
     }
 
-    if (typeof finalTotal !== "number") {
-      return res.status(400).json({ error: "Final total is required and must be a number." });
+    // Ensure all numeric values are properly formatted
+    const sanitizedItemsTotal = parseFloat(itemsTotal) || 0;
+    const sanitizedDiscount = parseFloat(discount) || 0;
+    const sanitizedGst = parseFloat(gst) || 0;
+    const sanitizedFinalTotal = parseFloat(finalTotal) || 0;
+    const sanitizedTaxRate = parseFloat(taxRate) || 0;
+    const sanitizedServiceCharge = parseFloat(serviceCharge) || 0;
+    const sanitizedPackingCharge = parseFloat(packingCharge) || 0;
+    const sanitizedDeliveryCharge = parseFloat(deliveryCharge) || 0;
+
+    // Log sanitized values
+    // console.log("Sanitized values:", {
+    //   itemsTotal: sanitizedItemsTotal,
+    //   discount: sanitizedDiscount,
+    //   gst: sanitizedGst,
+    //   finalTotal: sanitizedFinalTotal,
+    //   taxRate: sanitizedTaxRate,
+    //   serviceCharge: sanitizedServiceCharge,
+    //   packingCharge: sanitizedPackingCharge,
+    //   deliveryCharge: sanitizedDeliveryCharge
+    // });
+
+    // Validate finalTotal
+    if (isNaN(sanitizedFinalTotal) || sanitizedFinalTotal <= 0) {
+      return res.status(400).json({ error: "Final total is required and must be a positive number." });
     }
 
     try {
@@ -357,20 +380,20 @@ const configureOrderRoutes = (io) => {
       const newOrder = new Order({
         restaurantId,
         items, // Each item may include its own taxRate (for inclusive tax)
-        taxType,
-        itemsTotal,
-        discount,
-        gst,
-        finalTotal,
+        taxType: taxType || "none",
+        itemsTotal: sanitizedItemsTotal,
+        discount: sanitizedDiscount,
+        gst: sanitizedGst,
+        finalTotal: sanitizedFinalTotal,
         // For exclusive tax orders, store the restaurant-level tax rate in excTaxRate.
-        excTaxRate: taxType === "exclusive" ? taxRate : 0,
+        excTaxRate: taxType === "exclusive" ? sanitizedTaxRate : 0,
         status: "Pending",
         orderNo: orderCount + 1,
         customerIdentifier,
         // New fields with defaults or values provided from the request:
-        serviceCharge: serviceCharge || 0,
-        packingCharge: packingCharge || 0,
-        deliveryCharge: deliveryCharge || 0,
+        serviceCharge: sanitizedServiceCharge,
+        packingCharge: sanitizedPackingCharge,
+        deliveryCharge: sanitizedDeliveryCharge,
         tableNumber, // remains optional
         paymentMethod: paymentMethod || "Unpaid",
         paymentStatus: paymentStatus || "Unpaid",
