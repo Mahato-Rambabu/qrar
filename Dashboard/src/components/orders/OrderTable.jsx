@@ -1,105 +1,292 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Printer } from "lucide-react";
+import OrderCard from "./OrderCard";
+import { generateOrderBill } from "../../utils/pdfGenerator";
 // import Papa from "papaparse";
 
 const OrderTable = ({ orders, onUpdateStatus, isHistory = false }) => {
 
+  // Add comprehensive logging
+  useEffect(() => {
+    console.log("=== ORDER TABLE DATA ===");
+    console.log("Raw orders data:", orders);
+    
+    if (orders && orders.length > 0) {
+      orders.forEach((order, index) => {
+        console.log(`\n--- Order #${index + 1} (ID: ${order._id || 'N/A'}) ---`);
+        console.log("Basic Info:", {
+          orderNo: order.orderNo,
+          customerName: order.customerName,
+          status: order.status,
+          createdAt: order.createdAt,
+          updatedAt: order.updatedAt
+        });
+        
+        console.log("Payment Info:", {
+          paymentMethod: order.paymentMethod,
+          paymentStatus: order.paymentStatus,
+          refundStatus: order.refundStatus
+        });
+        
+        console.log("Order Details:", {
+          modeOfOrder: order.modeOfOrder,
+          tableNumber: order.tableNumber,
+          orderNotes: order.orderNotes
+        });
+        
+        console.log("Financial Info:", {
+          itemsTotal: order.itemsTotal,
+          discount: order.discount,
+          gst: order.gst,
+          serviceCharge: order.serviceCharge,
+          packingCharge: order.packingCharge,
+          deliveryCharge: order.deliveryCharge,
+          finalTotal: order.finalTotal
+        });
+        
+        console.log("Items:", order.items?.map(item => ({
+          productId: item.productId?._id,
+          productName: item.productId?.name,
+          productPrice: item.productId?.price,
+          quantity: item.quantity,
+          taxRate: item.taxRate
+        })));
+        
+        // Log the safe version of the order
+        const safeOrder = {
+          _id: order._id || "",
+          orderNo: order.orderNo || "N/A",
+          customerName: order.customerName || "Guest",
+          items: order.items || [],
+          status: order.status || "Pending",
+          paymentMethod: order.paymentMethod || "Unpaid",
+          paymentStatus: order.paymentStatus || "Unpaid",
+          modeOfOrder: order.modeOfOrder || "Dine-in",
+          tableNumber: order.tableNumber || null,
+          itemsTotal: order.itemsTotal || 0,
+          discount: order.discount || 0,
+          gst: order.gst || 0,
+          serviceCharge: order.serviceCharge || 0,
+          packingCharge: order.packingCharge || 0,
+          deliveryCharge: order.deliveryCharge || 0,
+          finalTotal: order.finalTotal || 0,
+          orderNotes: order.orderNotes || "",
+          createdAt: order.createdAt || new Date(),
+          updatedAt: order.updatedAt || new Date()
+        };
+        
+        console.log("Safe Order Version:", safeOrder);
+      });
+    } else {
+      console.log("No orders to display");
+    }
+  }, [orders]);
+
   const handleDownloadSingleOrder = (order) => {
-    const csvContent = [
-      ["Order No", "Customer Name", "Item", "Quantity", "Total", "Status"],
-      ...order.items.map((item) => [
-        order.orderNo,
-        order.customerName || "Guest",
-        item.productId?.name || "Unknown",
-        item.quantity,
-        `₹${order.total.toFixed(2)}`,
-        order.status,
-      ]),
-    ]
-      .map((row) => row.join(","))
-      .join("\n");
-  
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", `order-${order.orderNo}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Use the utility function to generate and download the PDF bill
+    generateOrderBill(order);
   };
 
-
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full bg-gray-100 shadow-md rounded-lg overflow-hidden">
-        <thead>
-          <tr className="bg-gray-200 text-gray-700">
-            <th className="py-3 px-6 text-left">Order No</th>
-            <th className="py-3 px-6 text-left">Name</th>
-            <th className="py-3 px-6 text-left">Orders</th>
-            <th className="py-3 px-6 text-left">Total</th>
-            <th className="py-3 px-6 text-left">Status</th>
-            <th className="py-3 px-6 text-left">Time</th>
-            <th className="py-3 px-6 text-left">Download</th>
-          </tr>
-        </thead>
-        <tbody>
-          {orders.length > 0 ? (
-            orders.map((order) => (
-              <tr key={order._id} className="border-b border-gray-200 hover:bg-gray-100">
-                <td className="py-3 px-6">{order.orderNo || "N/A"}</td>
-                <td className="py-3 px-6">{order.customerName || "N/A"}</td>
-                <td className="py-3 px-6">
-                  {order.items.map((item) => (
-                    <div key={item.productId?._id}>
-                      {item.productId?.name || "Unknown"} x {item.quantity}
-                    </div>
-                  ))}
-                </td>
-                <td className="py-3 px-6">₹{order.total.toFixed(2)}</td>
-                <td className="py-3 px-6">
-                  {isHistory ? (
-                    <span>Served</span>
-                  ) : (
-                    <select value={order.status} onChange={(e) => onUpdateStatus(order._id, e.target.value)}>
-                      <option value="Pending">Pending</option>
-                      <option value="Served">Served</option>
-                      <option value="Rejected">Rejected</option>
-                    </select>
-                  )}
-                </td>
-                <td className="py-3 px-6">
-                  {isHistory ? (
-                    <div>
-                      <div>{new Date(order.updatedAt).toLocaleDateString()}</div>
-                      <div>{new Date(order.updatedAt).toLocaleTimeString()}</div>
-                    </div>
-                  ) : (
-                    <div>
-                      <div>{new Date(order.createdAt).toLocaleDateString()}</div>
-                      <div>{new Date(order.createdAt).toLocaleTimeString()}</div>
-                    </div>
-                  )}
-                </td>
-                <td className="p-6  flex justify-center items-center">
-                  <Printer
-                    size={20}
-                    className="cursor-pointer text-blue-600 hover:text-blue-500 transition-colors"
-                    onClick={() => handleDownloadSingleOrder(order)}
-                  />
+    <div>
+      {/* Desktop Table View (hidden on mobile) */}
+      <div className="hidden md:block overflow-x-auto">
+        <table className="min-w-full bg-gray-100 shadow-md rounded-lg overflow-hidden">
+          <thead>
+            <tr className="bg-gray-200 text-gray-700">
+              <th className="py-3 px-6 text-left">Order No</th>
+              <th className="py-3 px-6 text-left">Name</th>
+              <th className="py-3 px-6 text-left">Orders</th>
+              <th className="py-3 px-6 text-left">Total</th>
+              <th className="py-3 px-6 text-left">Status</th>
+              <th className="py-3 px-6 text-left">Payment</th>
+              <th className="py-3 px-6 text-left">Mode</th>
+              <th className="py-3 px-6 text-left">Time</th>
+              <th className="py-3 px-6 text-left">Download</th>
+            </tr>
+          </thead>
+          <tbody>
+            {orders && orders.length > 0 ? (
+              orders.map((order) => {
+                // Create a safe version of the order with default values
+                const safeOrder = {
+                  _id: order._id || "",
+                  orderNo: order.orderNo || "N/A",
+                  customerName: order.customerName || "Guest",
+                  items: order.items || [],
+                  status: order.status || "Pending",
+                  paymentMethod: order.paymentMethod || "Unpaid",
+                  paymentStatus: order.paymentStatus || "Unpaid",
+                  modeOfOrder: order.modeOfOrder || "Dine-in",
+                  tableNumber: order.tableNumber || null,
+                  itemsTotal: order.itemsTotal || 0,
+                  discount: order.discount || 0,
+                  gst: order.gst || 0,
+                  serviceCharge: order.serviceCharge || 0,
+                  packingCharge: order.packingCharge || 0,
+                  deliveryCharge: order.deliveryCharge || 0,
+                  finalTotal: order.finalTotal || 0,
+                  orderNotes: order.orderNotes || "",
+                  createdAt: order.createdAt || new Date(),
+                  updatedAt: order.updatedAt || new Date()
+                };
+
+                return (
+                  <tr key={safeOrder._id} className="border-b border-gray-200 hover:bg-gray-100">
+                    <td className="py-3 px-6">{safeOrder.orderNo}</td>
+                    <td className="py-3 px-6">{safeOrder.customerName}</td>
+                    <td className="py-3 px-6">
+                      {safeOrder.items.map((item) => {
+                        // Create a safe version of the item with default values
+                        const safeItem = {
+                          productId: item.productId || {},
+                          quantity: item.quantity || 0
+                        };
+                        
+                        return (
+                          <div key={safeItem.productId._id || Math.random()} className="flex justify-between">
+                            <span>{safeItem.productId.name || "Unknown"} x {safeItem.quantity}</span>
+                            <span className="text-gray-600">₹{((safeItem.productId.price || 0) * safeItem.quantity).toFixed(2)}</span>
+                          </div>
+                        );
+                      })}
+                      <div className="mt-2 pt-2 border-t border-gray-200">
+                        <div className="flex justify-between text-sm">
+                          <span>Subtotal:</span>
+                          <span>₹{safeOrder.itemsTotal.toFixed(2)}</span>
+                        </div>
+                        {safeOrder.discount > 0 && (
+                          <div className="flex justify-between text-sm text-green-600">
+                            <span>Discount:</span>
+                            <span>-₹{safeOrder.discount.toFixed(2)}</span>
+                          </div>
+                        )}
+                        {safeOrder.gst > 0 && (
+                          <div className="flex justify-between text-sm">
+                            <span>GST:</span>
+                            <span>₹{safeOrder.gst.toFixed(2)}</span>
+                          </div>
+                        )}
+                        {safeOrder.serviceCharge > 0 && (
+                          <div className="flex justify-between text-sm">
+                            <span>Service Charge:</span>
+                            <span>₹{safeOrder.serviceCharge.toFixed(2)}</span>
+                          </div>
+                        )}
+                        {safeOrder.packingCharge > 0 && (
+                          <div className="flex justify-between text-sm">
+                            <span>Packing Charge:</span>
+                            <span>₹{safeOrder.packingCharge.toFixed(2)}</span>
+                          </div>
+                        )}
+                        {safeOrder.deliveryCharge > 0 && (
+                          <div className="flex justify-between text-sm">
+                            <span>Delivery Charge:</span>
+                            <span>₹{safeOrder.deliveryCharge.toFixed(2)}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between font-semibold mt-1">
+                          <span>Total:</span>
+                          <span>₹{safeOrder.finalTotal.toFixed(2)}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3 px-6 font-semibold">₹{safeOrder.finalTotal.toFixed(2)}</td>
+                    <td className="py-3 px-6">
+                      {isHistory ? (
+                        <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Served</span>
+                      ) : (
+                        <select 
+                          value={safeOrder.status} 
+                          onChange={(e) => onUpdateStatus(safeOrder._id, e.target.value)}
+                          className="px-2 py-1 rounded-md border border-gray-300 text-sm"
+                        >
+                          <option value="Pending">Pending</option>
+                          <option value="Preparing">Preparing</option>
+                          <option value="Served">Served</option>
+                        </select>
+                      )}
+                    </td>
+                    <td className="py-3 px-6">
+                      <div className="flex flex-col gap-1">
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          safeOrder.paymentStatus === "Paid" 
+                            ? "bg-green-100 text-green-800" 
+                            : safeOrder.paymentStatus === "Refunded" 
+                              ? "bg-yellow-100 text-yellow-800" 
+                              : "bg-red-100 text-red-800"
+                        }`}>
+                          {safeOrder.paymentStatus}
+                        </span>
+                        <span className="text-xs text-gray-600">
+                          {safeOrder.paymentMethod}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-3 px-6">
+                      <div className="flex flex-col gap-1">
+                        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                          {safeOrder.modeOfOrder}
+                        </span>
+                        {safeOrder.tableNumber && (
+                          <span className="text-xs text-gray-600">
+                            Table: {safeOrder.tableNumber}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-3 px-6">
+                      {isHistory ? (
+                        <div>
+                          <div>{new Date(safeOrder.updatedAt).toLocaleDateString()}</div>
+                          <div>{new Date(safeOrder.updatedAt).toLocaleTimeString()}</div>
+                        </div>
+                      ) : (
+                        <div>
+                          <div>{new Date(safeOrder.createdAt).toLocaleDateString()}</div>
+                          <div>{new Date(safeOrder.createdAt).toLocaleTimeString()}</div>
+                        </div>
+                      )}
+                    </td>
+                    <td className="p-6 flex justify-center items-center">
+                      <Printer
+                        size={20}
+                        className="cursor-pointer text-blue-600 hover:text-blue-500 transition-colors"
+                        onClick={() => handleDownloadSingleOrder(order)}
+                      />
+                    </td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan={isHistory ? "9" : "9"} className="py-4 text-center text-gray-500">
+                  {isHistory ? "No served orders in the last 24 hours" : "No pending orders"}
                 </td>
               </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan={isHistory ? "7" : "6"} className="py-4 text-center text-gray-500">
-                {isHistory ? "No served orders in the last 24 hours" : "No pending orders"}
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile Card View (hidden on desktop) */}
+      <div className="md:hidden">
+        {orders && orders.length > 0 ? (
+          orders.map(order => (
+            <OrderCard 
+              key={order._id || Math.random()}
+              order={order}
+              onUpdateStatus={onUpdateStatus}
+              isHistory={isHistory}
+              onDownload={handleDownloadSingleOrder}
+            />
+          ))
+        ) : (
+          <div className="bg-white rounded-lg shadow-md p-6 text-center text-gray-500">
+            {isHistory ? "No served orders in the last 24 hours" : "No pending orders"}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

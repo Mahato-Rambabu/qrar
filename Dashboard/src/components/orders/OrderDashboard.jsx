@@ -127,7 +127,7 @@ const OrderDashboard = () => {
           onClick={() => navigate("/history")}
         >
           <History size={20} />
-          <span>View History</span>
+          <span>History</span>
         </button>
       </div>
 
