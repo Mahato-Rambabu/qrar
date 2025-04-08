@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { MoreVertical } from "lucide-react";
 import { FaRupeeSign } from "react-icons/fa";
+import axiosInstance from "../../../utils/axiosInstance";
+import { toast } from "react-hot-toast";
 
-const ProductCard = ({ product, category, onEdit }) => {
+const ProductCard = ({ product, category, onEdit, onDelete }) => {
   const [menuVisible, setMenuVisible] = useState(false);
   const [categoryName, setCategoryName] = useState("Loading...");
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     // Debug logs
@@ -43,6 +46,27 @@ const ProductCard = ({ product, category, onEdit }) => {
 
   const handleMouseLeave = () => {
     setMenuVisible(false);
+  };
+
+  const handleDelete = async (e) => {
+    e.stopPropagation();
+    
+    if (window.confirm(`Are you sure you want to delete "${product.name}"?`)) {
+      setIsDeleting(true);
+      try {
+        await axiosInstance.delete(`/products/${product._id}`);
+        toast.success("Product deleted successfully");
+        if (onDelete) {
+          onDelete(product._id);
+        }
+      } catch (error) {
+        console.error("Error deleting product:", error);
+        toast.error("Failed to delete product. Please try again.");
+      } finally {
+        setIsDeleting(false);
+        setMenuVisible(false);
+      }
+    }
   };
 
   return (
@@ -98,12 +122,10 @@ const ProductCard = ({ product, category, onEdit }) => {
                 </button>
                 <button
                   className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete(product._id);
-                  }}
+                  onClick={handleDelete}
+                  disabled={isDeleting}
                 >
-                  Delete Product
+                  {isDeleting ? "Deleting..." : "Delete Product"}
                 </button>
               </div>
             )}

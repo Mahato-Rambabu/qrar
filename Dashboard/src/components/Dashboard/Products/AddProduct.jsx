@@ -44,11 +44,24 @@ const AddProductPage = ({ onSuccess }) => {
   useEffect(() => {
     const fetchRestaurantDetails = async () => {
       try {
-        const response = await axiosInstance.get('/restaurants/profile');
-        setRestaurantTaxType(response.data.taxType || null); // Ensure valid default
+        // Use AbortController for timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        
+        const response = await axiosInstance.get('/restaurants/profile', {
+          signal: controller.signal,
+          timeout: 10000,
+        });
+        
+        clearTimeout(timeoutId);
+        setRestaurantTaxType(response.data.taxType || null);
       } catch (error) {
         console.error('Error fetching restaurant details:', error);
-        toast.error('Failed to load restaurant details. Please try again.');
+        if (error.name === 'AbortError') {
+          toast.error('Restaurant details request timed out. Please refresh the page.');
+        } else {
+          toast.error('Failed to load restaurant details. Please try again.');
+        }
       }
     };
   
@@ -59,11 +72,24 @@ const AddProductPage = ({ onSuccess }) => {
     const fetchCategories = async () => {
       setLoadingCategories(true);
       try {
-        const response = await axiosInstance.get('/categories');
+        // Use AbortController for timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        
+        const response = await axiosInstance.get('/categories', {
+          signal: controller.signal,
+          timeout: 10000,
+        });
+        
+        clearTimeout(timeoutId);
         setCategories(response.data || []);
       } catch (error) {
         console.error('Error fetching categories:', error);
-        setError('Failed to load categories. Please try again later.');
+        if (error.name === 'AbortError') {
+          setError('Categories request timed out. Please refresh the page.');
+        } else {
+          setError('Failed to load categories. Please try again later.');
+        }
       } finally {
         setLoadingCategories(false);
       }
@@ -148,16 +174,77 @@ const AddProductPage = ({ onSuccess }) => {
     }
 
     try {
+      // Optimize image before upload
+      let optimizedImage = formData.img;
+      
+      // If the image is a File object, optimize it
+      if (formData.img instanceof File) {
+        // Create a canvas to resize the image
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        
+        // Create a promise to handle image loading
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
+          img.src = URL.createObjectURL(formData.img);
+        });
+        
+        // Calculate dimensions while maintaining aspect ratio
+        const MAX_WIDTH = 800;
+        const MAX_HEIGHT = 800;
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Convert to blob with reduced quality
+        const blob = await new Promise(resolve => {
+          canvas.toBlob(resolve, 'image/jpeg', 0.7);
+        });
+        
+        // Create a new File object with the optimized image
+        optimizedImage = new File([blob], formData.img.name, { type: 'image/jpeg' });
+      }
+
       const data = new FormData();
       Object.keys(formData).forEach((key) => {
-        data.append(key, formData[key]);
+        if (key === 'img') {
+          data.append(key, optimizedImage);
+        } else {
+          data.append(key, formData[key]);
+        }
       });
 
+      // Use AbortController for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      
       const response = await axiosInstance.post('/products', data, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        signal: controller.signal,
+        // Add timeout to the request
+        timeout: 30000,
       });
+      
+      clearTimeout(timeoutId);
 
       toast.success('Product added successfully!');
       setFormData({
@@ -173,7 +260,13 @@ const AddProductPage = ({ onSuccess }) => {
       if (onSuccess) onSuccess(response.data);
     } catch (error) {
       console.error('Error submitting form:', error);
-      setError('Failed to add product. Please try again.');
+      if (error.name === 'AbortError') {
+        setError('Request timed out. Please try again.');
+      } else if (error.response && error.response.status === 413) {
+        setError('Image file is too large. Please use a smaller image.');
+      } else {
+        setError('Failed to add product. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -338,9 +431,32 @@ const AddProductPage = ({ onSuccess }) => {
                 isOpen={isModalOpen}
                 onRequestClose={closeModal}
                 contentLabel="Crop Image Modal"
-                ariaHideApp={false} // If you haven't set the app root element
-                className="fixed inset-0 flex items-center justify-center z-50"
-                overlayClassName="fixed inset-0 bg-black bg-opacity-50"
+                ariaHideApp={false}
+                className="fixed inset-0 flex items-center justify-center z-[9999]"
+                overlayClassName="fixed inset-0 bg-black bg-opacity-50 z-[9998]"
+                style={{
+                  content: {
+                    position: 'fixed',
+                    top: '50%',
+                    left: '50%',
+                    right: 'auto',
+                    bottom: 'auto',
+                    transform: 'translate(-50%, -50%)',
+                    padding: '1.5rem',
+                    borderRadius: '0.5rem',
+                    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                    maxHeight: '90vh',
+                    overflowY: 'auto',
+                    zIndex: 9999
+                  },
+                  overlay: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 9998
+                  }
+                }}
               >
                 <div className="bg-white rounded-lg p-6 shadow-lg w-full max-w-2xl">
                   <h2 className="text-lg font-semibold mb-4">Crop Your Image</h2>

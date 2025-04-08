@@ -122,6 +122,43 @@ const ProductPage = () => {
     setUndoTimeout(timeout);
   }, [products, selectedItems, undoTimeout]);
 
+  // New centralized delete function
+  const handleDeleteProducts = useCallback(async (productIds) => {
+    try {
+      // Delete each product
+      const deletePromises = productIds.map(id => 
+        axiosInstance.delete(`/products/${id}`)
+      );
+      
+      await Promise.all(deletePromises);
+      
+      // Update the products list
+      const updatedProducts = products.filter(
+        (product) => !productIds.includes(product._id)
+      );
+      
+      setProducts(updatedProducts);
+      
+      // If only one product was deleted, set it for undo
+      if (productIds.length === 1) {
+        const lastDeleted = products.find((p) => productIds.includes(p._id));
+        setUndoProduct(lastDeleted);
+        
+        clearTimeout(undoTimeout);
+        const timeout = setTimeout(() => {
+          setUndoProduct(null);
+        }, 5000);
+        
+        setUndoTimeout(timeout);
+      }
+      
+      // Clear selection
+      setSelectedItems([]);
+    } catch (error) {
+      console.error("Error deleting products:", error);
+    }
+  }, [products, undoTimeout]);
+
   const handleUndo = useCallback(() => {
     if (undoProduct) {
       setProducts((prevProducts) => [undoProduct, ...prevProducts]);
@@ -296,7 +333,8 @@ const ProductPage = () => {
                   key={product._id} 
                   product={product} 
                   category={categories} 
-                  onEdit={handleEditProduct} 
+                  onEdit={handleEditProduct}
+                  onDelete={handleDeleteProducts}
                 />
               ))}
             </div>
@@ -307,8 +345,8 @@ const ProductPage = () => {
                 category={categories}
                 onEdit={handleEditProduct}
                 selectedItems={selectedItems}
-                handleSelectItem={handleSelectItem}
                 setSelectedItems={setSelectedItems}
+                onDelete={handleDeleteProducts}
               />
             </div>
           )
