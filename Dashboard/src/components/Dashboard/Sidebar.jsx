@@ -104,6 +104,7 @@ const Sidebar = memo(({ isOpen: pcSidebarOpen }) => {
       } w-[60%] sm:w-[40%] hidden md:flex transform ${
         pcSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
       }`}
+      style={{ zIndex: 10 }}
     >
       {/* Menu Items */}
       <ul className="flex flex-col gap-2 py-4">
@@ -321,7 +322,7 @@ const Sidebar = memo(({ isOpen: pcSidebarOpen }) => {
     <>
       {/* Overlay Sidebar */}
       {mobileSidebarOpen && (
-        <div className="fixed inset-0 z-40 flex">
+        <div className="fixed inset-0 z-40 flex md:hidden">
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black opacity-50"

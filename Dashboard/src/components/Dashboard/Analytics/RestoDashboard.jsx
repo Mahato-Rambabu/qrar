@@ -16,25 +16,38 @@ const RestoDashboard = () => {
   const [totalUsers, setTotalUsers] = useState(0);
   const [dateRange, setDateRange] = useState('24h');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      
       try {
         
-        const [profitResponse, productResponse, orderResponse, usersResponse] = await Promise.all([
-          axiosInstance.get(`/orders/total-profit?dateRange=${dateRange}`),
-          axiosInstance.get('/products/count'),
-          axiosInstance.get(`/orders/order-count?dateRange=${dateRange}`),
-          axiosInstance.get('/users/total-users'),
-        ]);
-
-        setProfitData(profitResponse.data.data || { totalProfit: 0, dailyData: [], monthlyData: [] });
-        setTotalProducts(productResponse.data.totalProducts);
-        setOrderCount(orderResponse.data.orderCount);
-        setTotalUsers(usersResponse.data.totalUsers);
+        // Fetch profit data
+        const profitResponse = await axiosInstance.get(`/orders/total-profit?dateRange=${dateRange}`);
+        
+        if (profitResponse.data && profitResponse.data.data) {
+          setProfitData(profitResponse.data.data);
+        } else {
+          setProfitData({ totalProfit: 0, dailyData: [], monthlyData: [] });
+        }
+        
+        // Fetch product count
+        const productResponse = await axiosInstance.get('/products/count');
+        setTotalProducts(productResponse.data.totalProducts || 0);
+        
+        // Fetch order count
+        const orderResponse = await axiosInstance.get(`/orders/order-count?dateRange=${dateRange}`);
+        setOrderCount(orderResponse.data.orderCount || 0);
+        
+        // Fetch user count
+        const usersResponse = await axiosInstance.get('/users/total-users');
+        setTotalUsers(usersResponse.data.totalUsers || 0);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        setError('Failed to load dashboard data. Please try again later.');
       } finally {
         setLoading(false);
       }
@@ -47,11 +60,38 @@ const RestoDashboard = () => {
     setDateRange(event.target.value);
   };
 
+  // Format profit data for the LineGraph component
+  const formattedProfitData = useMemo(() => {
+    if (!profitData) return [];
+    
+    if (dateRange === 'week' || dateRange === 'month') {
+      if (!profitData.dailyData || !Array.isArray(profitData.dailyData)) {
+        console.log('No daily data available in formattedProfitData');
+        return [];
+      }
+      return profitData.dailyData.map(day => ({
+        date: day.day,
+        profit: day.totalProfit
+      }));
+    } else if (dateRange === 'year') {
+      if (!profitData.monthlyData || !Array.isArray(profitData.monthlyData)) {
+        console.log('No monthly data available in formattedProfitData');
+        return [];
+      }
+      return profitData.monthlyData.map(month => ({
+        date: `Month ${month.month}`,
+        profit: month.totalProfit
+      }));
+    }
+    
+    return [];
+  }, [profitData, dateRange]);
+
   // Memoize the summaryData to prevent re-rendering unless dateRange changes
   const summaryData = useMemo(() => [
     {
       title: 'Total Profit',
-      value: `${profitData.totalProfit.toFixed(2)}`,
+      value: `₹${profitData.totalProfit ? profitData.totalProfit.toFixed(2) : '0.00'}`,
       subtitle: `Last ${dateRange}`,
       color: 'bg-white hover:bg-gray-100',
       onClick: () => navigate('/'),
@@ -77,7 +117,7 @@ const RestoDashboard = () => {
       color: 'bg-white hover:bg-gray-100',
       onClick: () => navigate('/customers'),
     },
-  ], [dateRange, profitData, totalProducts, orderCount, totalUsers]);
+  ], [dateRange, profitData, totalProducts, orderCount, totalUsers, navigate]);
 
   return (
     <div className={`min-h-screen pt-8 p-6 ${darkMode === 'dark' ? 'bg-gray-900 text-gray-200' : 'bg-white text-gray-900'}`}>
@@ -97,8 +137,16 @@ const RestoDashboard = () => {
         </select>
       </div>
 
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+        </div>
+      )}
+
       {loading ? (
-        <p>Loading...</p>
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -109,7 +157,7 @@ const RestoDashboard = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
             <div className="lg:col-span-2 bg-white dark:bg-gray-800 border-2 rounded-lg ">
-              <LineGraph />
+              <LineGraph data={formattedProfitData} dateRange={dateRange} />
             </div>
             <div className="bg-white dark:bg-gray-800 rounded-lg border-2">
               <h2 className="text-xl font-semibold mb-4 pt-2 px-4">Age Group</h2>

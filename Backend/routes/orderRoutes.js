@@ -49,7 +49,7 @@ router.get("/total-profit", authMiddleware, async (req, res) => {
       },
       {
         $project: {
-          total: 1, // Include the total of the order
+          finalTotal: 1, // Include the finalTotal of the order
           createdAt: 1, // Include the created date of the order
         },
       },
@@ -60,14 +60,14 @@ router.get("/total-profit", authMiddleware, async (req, res) => {
       aggregationPipeline.push({
         $group: {
           _id: null, // Single group for the entire 24 hours
-          totalProfit: { $sum: "$total" }, // Sum the order totals for the last 24 hours
+          totalProfit: { $sum: "$finalTotal" }, // Sum the order finalTotals for the last 24 hours
         },
       });
     } else if (dateRange === "week" || dateRange === "month") {
       aggregationPipeline.push({
         $group: {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }, // Group by day
-          totalProfit: { $sum: "$total" }, // Sum the order totals for each day
+          totalProfit: { $sum: "$finalTotal" }, // Sum the order finalTotals for each day
         },
       });
 
@@ -87,7 +87,7 @@ router.get("/total-profit", authMiddleware, async (req, res) => {
       aggregationPipeline.push({
         $group: {
           _id: { $month: "$createdAt" }, // Group by month
-          totalProfit: { $sum: "$total" }, // Sum the order totals for each month
+          totalProfit: { $sum: "$finalTotal" }, // Sum the order finalTotals for each month
         },
       });
 

@@ -74,6 +74,7 @@ const Dashboard = () => {
             className={`flex-1 overflow-auto transition-all duration-300 mt-[8vh] ${
               isOpen ? "sm:ml-0 md:ml-[20%]" : "sm:ml-0 lg:ml-[5%]"
             }`}
+            style={{ zIndex: 5, position: 'relative' }}
           >
             <Suspense fallback={<div className="flex items-center justify-center h-full">Loading...</div>}>
               <Routes>
