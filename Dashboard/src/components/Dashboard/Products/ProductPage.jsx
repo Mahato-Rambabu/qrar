@@ -345,8 +345,32 @@ const ProductPage = () => {
         isOpen={isModalOpen}
         onRequestClose={closeModal}
         contentLabel="Add Product Modal"
-        className="relative bg-white rounded-lg shadow-lg p-4 sm:p-6 max-w-full w-11/12 md:w-3/4 lg:w-1/2 mx-auto max-h-[90vh] mt-10 sm:mt-20 overflow-y-auto z-10"
-        overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4"
+        className="fixed top-0 left-0 right-0 bg-white rounded-lg shadow-lg p-4 sm:p-6 max-w-full w-11/12 md:w-3/4 lg:w-1/2 mx-auto max-h-[90vh] mt-10 sm:mt-20 overflow-y-auto z-[9999]"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start p-4 z-[9998]"
+        style={{
+          content: {
+            position: 'fixed',
+            top: '20px',
+            left: '50%',
+            right: 'auto',
+            bottom: 'auto',
+            transform: 'translateX(-50%)',
+            margin: '0 auto',
+            padding: '1.5rem',
+            borderRadius: '0.5rem',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            maxHeight: '90vh',
+            overflowY: 'auto'
+          },
+          overlay: {
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'center',
+            paddingTop: '20px',
+            zIndex: 9998
+          }
+        }}
       >
         <button
           className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 p-2"
