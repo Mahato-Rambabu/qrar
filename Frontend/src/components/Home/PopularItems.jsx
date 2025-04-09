@@ -19,6 +19,7 @@ const PopularItems = () => {
   const intervalRef = useRef(null);
   const isVisibleRef = useRef(true);
   const touchStartX = useRef(null); // For swipe functionality
+  const [error, setError] = useState(null);
 
   // Cache popular items per restaurantId
   const popularItemsCacheRef = useRef({});
@@ -42,13 +43,18 @@ const PopularItems = () => {
 
     const fetchPopularItems = async () => {
       try {
+        console.log('Fetching popular items for restaurant:', restaurantId);
         const response = await axiosInstance.get(`/orders/top-products/${restaurantId}`);
+        console.log('Popular items response:', response.data);
+        
         // Cache the fetched popular items
         popularItemsCacheRef.current[restaurantId] = response.data;
         setPopularItems(response.data);
         setCurrentIndex(1);
       } catch (err) {
         console.error("Error fetching popular items:", err);
+        console.error("Error details:", err.response?.data);
+        setError("Failed to fetch popular items. Please try again later.");
       } finally {
         setLoading(false);
       }
@@ -177,6 +183,17 @@ const PopularItems = () => {
     return <span>#{rank}</span>;
   };
 
+  const renderProductInfo = (item, rank) => {
+    return (
+      <div className="mt-1 text-center text-sm font-bold">
+        {renderCrown(rank)}
+        {item.isRandom && (
+          <span className="ml-1 text-gray-500 text-xs">(Random Selection)</span>
+        )}
+      </div>
+    );
+  };
+
   // Touch event handlers for swipe functionality
   const swipeThreshold = 50; // Minimum swipe distance in pixels
 
@@ -246,7 +263,6 @@ const PopularItems = () => {
           onTouchCancel={handleTouchEnd}
         >
           {slides.map((item, index) => {
-            const rank = getRank(index);
             return (
               <div
                 key={`${item.productId}-${index}`}
@@ -268,9 +284,7 @@ const PopularItems = () => {
                     loading="lazy"
                   />
                 </div>
-                <div className="mt-1 text-center text-sm font-bold">
-                  {renderCrown(rank)}
-                </div>
+                {renderProductInfo(item, getRank(index))}
                 <div className="mt-1 text-center text-sm font-bold text-black truncate overflow-hidden whitespace-nowrap">
                   {item.productName}
                 </div>

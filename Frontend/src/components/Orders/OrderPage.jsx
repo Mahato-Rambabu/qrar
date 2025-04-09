@@ -1,21 +1,28 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { RiArrowLeftSLine } from "react-icons/ri";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useCart } from "@context/CartContext.jsx";
 import axiosInstance from "../../utils/axiosInstance";
 import OrderItem from "./OrderItem";
 import UserForm from "./UserForm";
 import { toast } from "react-hot-toast";
+import { format } from 'date-fns';
+import { Clock, CheckCircle2, XCircle, AlertCircle, CreditCard, Package, Utensils, Truck } from 'lucide-react';
+import GlobalLoader from '../common/GlobalLoader';
 
 const OrderPage = () => {
   const { cartItems, setCartItems, updateQuantity } = useCart();
   const navigate = useNavigate();
   const { restaurantId } = useParams();
-
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  
+  const [orders, setOrders] = useState([]); // orders for admin/general view if needed
+  const [recentOrders, setRecentOrders] = useState([]); // orders for the logged-in customer
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showUserForm, setShowUserForm] = useState(false);
-  const [recentOrders, setRecentOrders] = useState([]);
   const [showRecentOrders, setShowRecentOrders] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [taxType, setTaxType] = useState("none");
   const [taxRate, setTaxRate] = useState(0);
   const [showTaxBreakdown, setShowTaxBreakdown] = useState(false);
@@ -23,8 +30,7 @@ const OrderPage = () => {
   // Total calculated using discountedPrice (if available)
   const itemsTotal = useMemo(() => {
     const total = cartItems.reduce(
-      (sum, item) =>
-        sum + (item.price || 0) * (item.quantity || 1),
+      (sum, item) => sum + (item.price || 0) * (item.quantity || 1),
       0
     );
     console.log("Calculated itemsTotal:", total);
@@ -33,7 +39,10 @@ const OrderPage = () => {
 
   // Original total using the item.price (without discount)
   const originalTotal = useMemo(() => {
-    const total = cartItems.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 1), 0);
+    const total = cartItems.reduce(
+      (sum, item) => sum + (item.price || 0) * (item.quantity || 1),
+      0
+    );
     console.log("Calculated originalTotal:", total);
     return total;
   }, [cartItems]);
@@ -43,7 +52,8 @@ const OrderPage = () => {
     const totalDiscount = cartItems.reduce(
       (sum, item) =>
         sum +
-        ((item.price || 0) - (item.discountedPrice || item.price || 0)) * (item.quantity || 1),
+        ((item.price || 0) - (item.discountedPrice || item.price || 0)) *
+          (item.quantity || 1),
       0
     );
     console.log("Calculated discount:", totalDiscount);
@@ -85,11 +95,7 @@ const OrderPage = () => {
     if (taxType === "inclusive") {
       return cartItems.reduce((sum, item) => {
         const productTaxRate = item.taxRate || 0;
-        return (
-          sum +
-          item.price * item.quantity *
-          (productTaxRate / (100 + productTaxRate))
-        );
+        return sum + item.price * item.quantity * (productTaxRate / (100 + productTaxRate));
       }, 0);
     } else if (taxType === "exclusive") {
       return originalTotal * (taxRate / 100);
@@ -148,6 +154,28 @@ const OrderPage = () => {
     }
   }, [restaurantId]);
 
+  // Fetch all orders for the restaurant (optional)
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await axiosInstance.get(`/orders/restaurant/${restaurantId}`);
+        console.log('Orders response:', response.data);
+        setOrders(response.data);
+      } catch (err) {
+        console.error('Error fetching orders:', err);
+        setError('Failed to fetch orders. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (restaurantId) {
+      fetchOrders();
+    }
+  }, [restaurantId]);
+
   const handleOrderSubmission = async () => {
     try {
       setLoading(true);
@@ -158,21 +186,17 @@ const OrderPage = () => {
         return;
       }
   
-      // Log cart items for debugging
       console.log("Cart items before submission:", cartItems);
   
-      // Map order items and attach taxRate when applicable.
       const orderItems = cartItems.map((item) => {
         console.log("Processing item:", item);
         return {
           productId: item._id,
           quantity: item.quantity || 1,
-          // For inclusive tax, send the product's taxRate along with each item.
           ...(taxType === "inclusive" && { taxRate: item.taxRate || 0 }),
         };
       });
   
-      // Ensure all numeric values are properly calculated and not undefined
       const orderPayload = {
         items: orderItems,
         finalTotal: parseFloat(totalPayable.toFixed(2)),
@@ -181,9 +205,7 @@ const OrderPage = () => {
         discount: parseFloat(discount.toFixed(2)),
         gst: parseFloat(calculatedTax.toFixed(2)),
         customerIdentifier,
-        // For exclusive tax, include the restaurant-level taxRate.
         ...(taxType === "exclusive" && { taxRate: parseFloat(taxRate.toFixed(2)) }),
-        // Add additional fields with default values
         serviceCharge: 0,
         packingCharge: 0,
         deliveryCharge: 0,
@@ -245,16 +267,17 @@ const OrderPage = () => {
         quantity: item.quantity,
       }));
 
-      // For reordering, use stored bill details including finalTotal.
+      // Use finalTotal if available; otherwise, use total
+      const finalAmount = order.finalTotal !== undefined ? order.finalTotal : order.total || 0;
+
       const reorderPayload = {
         items: orderItems,
-        finalTotal: parseFloat(order.finalTotal.toFixed(2)),
+        finalTotal: parseFloat(finalAmount.toFixed(2)),
         taxType: order.taxType || "none",
-        itemsTotal: parseFloat(order.itemsTotal.toFixed(2)),
-        discount: parseFloat(order.discount.toFixed(2)),
-        gst: parseFloat(order.gst.toFixed(2)),
+        itemsTotal: parseFloat((order.itemsTotal || order.total || 0).toFixed(2)),
+        discount: parseFloat((order.discount || 0).toFixed(2)),
+        gst: parseFloat((order.gst || 0).toFixed(2)),
         customerIdentifier,
-        // Add additional fields with default values
         serviceCharge: 0,
         packingCharge: 0,
         deliveryCharge: 0,
@@ -284,6 +307,59 @@ const OrderPage = () => {
     }
   };
 
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'Served':
+        return <CheckCircle2 className="w-5 h-5 text-green-500" />;
+      case 'Pending':
+        return <Clock className="w-5 h-5 text-yellow-500" />;
+      case 'Preparing':
+        return <Utensils className="w-5 h-5 text-blue-500" />;
+      case 'Cancelled':
+        return <XCircle className="w-5 h-5 text-red-500" />;
+      default:
+        return <AlertCircle className="w-5 h-5 text-gray-500" />;
+    }
+  };
+
+  const getModeIcon = (mode) => {
+    switch (mode) {
+      case 'Dine-in':
+        return <Utensils className="w-5 h-5 text-blue-500" />;
+      case 'Takeaway':
+        return <Package className="w-5 h-5 text-purple-500" />;
+      case 'Delivery':
+        return <Truck className="w-5 h-5 text-green-500" />;
+      default:
+        return <Utensils className="w-5 h-5 text-gray-500" />;
+    }
+  };
+
+  const getPaymentIcon = (status) => {
+    return <CreditCard className={`w-5 h-5 ${status === 'Paid' ? 'text-green-500' : 'text-red-500'}`} />;
+  };
+
+  if (loading) {
+    return (
+      <GlobalLoader 
+        message="Preparing your orders..." 
+        subMessage="Just a moment while we fetch your delicious history"
+      />
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center text-red-500 p-4">
+            {error}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
@@ -303,6 +379,10 @@ const OrderPage = () => {
           Recent Orders
         </button>
 
+        {/* Render recent orders if toggle is ON.
+            We now map over recentOrders (which are fetched using the customerIdentifier)
+            instead of the general orders array.
+        */}
         {showRecentOrders && (
           <div className="mb-4 p-4 bg-gray-100 rounded-md shadow-sm">
             {recentOrders.length > 0 ? (
@@ -461,6 +541,7 @@ const OrderPage = () => {
   );
 };
 
+// Updated OrderSummary: use order.finalTotal if defined, otherwise fallback to order.total.
 const OrderSummary = ({ order, onReorder }) => {
   const orderDate = new Date(order.createdAt).toLocaleString();
   const statusColor =
@@ -469,6 +550,11 @@ const OrderSummary = ({ order, onReorder }) => {
       : order.status === "Served"
       ? "text-green-500"
       : "text-red-500";
+  
+  // Use finalTotal if available; otherwise use total (fallback to 0.00)
+  const payableAmount = order.finalTotal !== undefined 
+    ? order.finalTotal 
+    : (order.total !== undefined ? order.total : 0);
 
   return (
     <div className="mb-6 border-b pb-4 flex flex-col gap-4">
@@ -507,7 +593,7 @@ const OrderSummary = ({ order, onReorder }) => {
           Reorder
         </button>
         <p className="font-bold text-gray-800 text-xl">
-          To Pay: ₹{order.finalTotal.toFixed(2)}
+          To Pay: ₹{parseFloat(payableAmount).toFixed(2)}
         </p>
       </div>
     </div>

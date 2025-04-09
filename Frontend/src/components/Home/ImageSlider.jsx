@@ -4,21 +4,22 @@ import { RiArrowLeftWideFill, RiArrowRightWideFill } from 'react-icons/ri';
 import { fetchSliderImages } from '../../api/fetchSliderImages';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
+import GlobalLoader from '../common/GlobalLoader';
 
 // Helper function to extract query parameters
 const useQuery = () => new URLSearchParams(useLocation().search);
 
 const ImageSlider = () => {
   const query = useQuery();
-  const restaurantId = query.get('restaurantId'); // Extract restaurantId from URL query
+  const restaurantId = query.get('restaurantId');
   const [images, setImages] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const touchStartX = useRef(null);
-  const swipeThreshold = 50; // Minimum distance (in px) to be considered a swipe
+  const swipeThreshold = 50;
 
-  // Cache slider images for each restaurant using a ref (persists across renders)
+  // Cache slider images for each restaurant using a ref
   const sliderCacheRef = useRef({});
 
   useEffect(() => {
@@ -38,9 +39,10 @@ const ImageSlider = () => {
 
       try {
         const fetchedImages = await fetchSliderImages(restaurantId);
-        const formattedImages = fetchedImages.map((image) =>
-          image.img ? image.img : '/placeholder.png'
-        );
+        const formattedImages = fetchedImages
+          .filter(image => image.img) // Only include images that have a valid img property
+          .map(image => image.img);
+        
         // Cache the images for this restaurantId
         sliderCacheRef.current[restaurantId] = formattedImages;
         setImages(formattedImages);
@@ -98,22 +100,17 @@ const ImageSlider = () => {
           maxHeight: '45vh',
         }}
       >
-        <Skeleton
-          height="100%"
-          width="100%"
-          containerClassName="h-full w-full"
-          style={{ borderRadius: '0 0 8% 8%' }}
+        <GlobalLoader 
+          message="Loading images..." 
+          subMessage="Preparing your visual experience"
         />
       </div>
     );
   }
 
-  if (error) {
-    return <div className="text-red-500 p-4">Error: {error}</div>;
-  }
-
-  if (images.length === 0) {
-    return <div className="p-4">No images available for the slider.</div>;
+  // Return null (hide component) if there are no images or there's an error
+  if (error || images.length === 0) {
+    return null;
   }
 
   return (

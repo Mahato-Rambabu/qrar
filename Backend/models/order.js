@@ -1,7 +1,4 @@
 import mongoose from "mongoose";
-import AutoIncrementFactory from "mongoose-sequence";
-
-const AutoIncrement = AutoIncrementFactory(mongoose);
 
 const orderSchema = new mongoose.Schema(
   {
@@ -22,7 +19,6 @@ const orderSchema = new mongoose.Schema(
           required: true,
           min: [1, "Quantity must be at least 1"],
         },
-        // Store product-level tax rate (for inclusive tax)
         taxRate: {
           type: Number,
           default: 0,
@@ -34,7 +30,6 @@ const orderSchema = new mongoose.Schema(
       enum: ["none", "inclusive", "exclusive"],
       default: "none",
     },
-    // For exclusive tax orders, store the restaurant-level tax rate here.
     excTaxRate: {
       type: Number,
       default: 0,
@@ -56,7 +51,6 @@ const orderSchema = new mongoose.Schema(
       required: true,
       min: [0, "Final total must be a positive number"],
     },
-    // New fields for future use:
     serviceCharge: {
       type: Number,
       default: 0,
@@ -104,7 +98,8 @@ const orderSchema = new mongoose.Schema(
     },
     orderNo: {
       type: Number,
-      unique: true,
+      required: true,
+      index:true,
     },
     customerIdentifier: {
       type: mongoose.Schema.Types.ObjectId,
@@ -122,8 +117,5 @@ orderSchema.pre("validate", function (next) {
   }
   next();
 });
-
-// Use AutoIncrement for orderNo
-orderSchema.plugin(AutoIncrement, { inc_field: "orderNo" });
 
 export default mongoose.model("Order", orderSchema);

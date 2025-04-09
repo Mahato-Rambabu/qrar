@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import Order from "../models/order.js";
 import authMiddleware from "../middlewares/authMiddlewares.js";
 import moment from "moment";
+import Product from '../models/product.js';
 
 const router = express.Router();
 
@@ -305,10 +306,50 @@ router.get("/pending", authMiddleware, async (req, res) => {
   }
 });
 
+// Get all orders for a restaurant
+router.get("/restaurant/:restaurantId", async (req, res) => {
+  try {
+    const { restaurantId } = req.params;
+    console.log('Fetching orders for restaurant:', restaurantId);
+
+    if (!restaurantId) {
+      return res.status(400).json({ error: "Restaurant ID is required" });
+    }
+
+    const orders = await Order.find({ restaurantId })
+      .sort({ createdAt: -1 })
+      .populate({
+        path: 'items.productId',
+        select: 'name price img'
+      })
+      .populate('customerIdentifier', 'name email phone');
+
+    console.log('Found orders:', orders.length);
+
+    // Transform the orders to include product details
+    const transformedOrders = orders.map(order => ({
+      ...order.toObject(),
+      items: order.items.map(item => ({
+        ...item.toObject(),
+        productName: item.productId.name,
+        productImage: item.productId.img,
+        price: item.price
+      }))
+    }));
+
+    res.json(transformedOrders);
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    res.status(500).json({
+      error: "Failed to fetch orders",
+      details: error.message
+    });
+  }
+});
+
 // Pass io to your route file if needed
 const configureOrderRoutes = (io) => {
 
-  // POST route: Place a new order
   router.post("/:restaurantId", async (req, res) => {
     const { restaurantId } = req.params;
     const {
@@ -319,7 +360,7 @@ const configureOrderRoutes = (io) => {
       discount,
       gst,
       customerIdentifier,
-      taxRate, // for exclusive tax
+      taxRate,
       serviceCharge,
       packingCharge,
       deliveryCharge,
@@ -331,76 +372,62 @@ const configureOrderRoutes = (io) => {
       orderNotes
     } = req.body;
 
-    // Validate customerIdentifier
+    // Validate
     if (!customerIdentifier || !mongoose.Types.ObjectId.isValid(customerIdentifier)) {
       return res.status(400).json({ error: "Valid customer identifier is required." });
     }
 
-    // Validate items and finalTotal
     if (!items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: "Items are required and must be a non-empty array." });
     }
 
-    // Ensure all numeric values are properly formatted
-    const sanitizedItemsTotal = parseFloat(itemsTotal) || 0;
-    const sanitizedDiscount = parseFloat(discount) || 0;
-    const sanitizedGst = parseFloat(gst) || 0;
     const sanitizedFinalTotal = parseFloat(finalTotal) || 0;
-    const sanitizedTaxRate = parseFloat(taxRate) || 0;
-    const sanitizedServiceCharge = parseFloat(serviceCharge) || 0;
-    const sanitizedPackingCharge = parseFloat(packingCharge) || 0;
-    const sanitizedDeliveryCharge = parseFloat(deliveryCharge) || 0;
-
-    // Log sanitized values
-    // console.log("Sanitized values:", {
-    //   itemsTotal: sanitizedItemsTotal,
-    //   discount: sanitizedDiscount,
-    //   gst: sanitizedGst,
-    //   finalTotal: sanitizedFinalTotal,
-    //   taxRate: sanitizedTaxRate,
-    //   serviceCharge: sanitizedServiceCharge,
-    //   packingCharge: sanitizedPackingCharge,
-    //   deliveryCharge: sanitizedDeliveryCharge
-    // });
-
-    // Validate finalTotal
     if (isNaN(sanitizedFinalTotal) || sanitizedFinalTotal <= 0) {
-      return res.status(400).json({ error: "Final total is required and must be a positive number." });
+      return res.status(400).json({ error: "Final total must be a positive number." });
     }
 
     try {
-      const startOfDay = new Date();
-      startOfDay.setHours(0, 0, 0, 0);
+      // 👇 Step 1: Get IST start & end of the day
+      const now = new Date();
+      const IST_OFFSET = 5.5 * 60 * 60 * 1000; // +5:30 in ms
+      const istNow = new Date(now.getTime() + IST_OFFSET);
+      const istStartOfDay = new Date(istNow.getFullYear(), istNow.getMonth(), istNow.getDate());
+      const utcStartOfDay = new Date(istStartOfDay.getTime() - IST_OFFSET);
+      const utcEndOfDay = new Date(utcStartOfDay.getTime() + 24 * 60 * 60 * 1000);
 
-      const orderCount = await Order.countDocuments({
-        createdAt: { $gte: startOfDay },
+      // 👇 Step 2: Get last orderNo for this restaurant today
+      const latestOrder = await Order.findOne({
         restaurantId,
-      });
+        createdAt: { $gte: utcStartOfDay, $lt: utcEndOfDay }
+      })
+        .sort({ orderNo: -1 })
+        .select("orderNo");
 
+      const orderNoToday = latestOrder ? latestOrder.orderNo + 1 : 1;
+
+      // 👇 Step 3: Save new order with orderNo reset per day
       const newOrder = new Order({
         restaurantId,
-        items, // Each item may include its own taxRate (for inclusive tax)
+        items,
         taxType: taxType || "none",
-        itemsTotal: sanitizedItemsTotal,
-        discount: sanitizedDiscount,
-        gst: sanitizedGst,
+        itemsTotal: parseFloat(itemsTotal) || 0,
+        discount: parseFloat(discount) || 0,
+        gst: parseFloat(gst) || 0,
         finalTotal: sanitizedFinalTotal,
-        // For exclusive tax orders, store the restaurant-level tax rate in excTaxRate.
-        excTaxRate: taxType === "exclusive" ? sanitizedTaxRate : 0,
-        status: "Pending",
-        orderNo: orderCount + 1,
-        customerIdentifier,
-        // New fields with defaults or values provided from the request:
-        serviceCharge: sanitizedServiceCharge,
-        packingCharge: sanitizedPackingCharge,
-        deliveryCharge: sanitizedDeliveryCharge,
-        tableNumber, // remains optional
+        excTaxRate: taxType === "exclusive" ? parseFloat(taxRate) || 0 : 0,
+        serviceCharge: parseFloat(serviceCharge) || 0,
+        packingCharge: parseFloat(packingCharge) || 0,
+        deliveryCharge: parseFloat(deliveryCharge) || 0,
+        tableNumber,
         paymentMethod: paymentMethod || "Unpaid",
         paymentStatus: paymentStatus || "Unpaid",
         refundStatus: refundStatus || "Not Applicable",
         modeOfOrder: modeOfOrder || "Dine-in",
         orderNotes: orderNotes || "",
-        createdAt: new Date(),
+        status: "Pending",
+        customerIdentifier,
+        orderNo: orderNoToday,
+        createdAt: new Date() // always UTC
       });
 
       const savedOrder = await newOrder.save();
@@ -408,12 +435,10 @@ const configureOrderRoutes = (io) => {
       await savedOrder.populate("customerIdentifier", "name");
       await savedOrder.populate("items.productId");
 
-      const populatedOrder = {
+      io.emit("order:created", {
         ...savedOrder.toObject(),
-        customerName: savedOrder.customerIdentifier.name || "Guest",
-      };
-
-      io.emit("order:created", populatedOrder);
+        customerName: savedOrder.customerIdentifier?.name || "Guest",
+      });
 
       res.status(201).json({
         message: "Order placed successfully",
@@ -422,9 +447,10 @@ const configureOrderRoutes = (io) => {
           orderNo: savedOrder.orderNo,
         },
       });
+
     } catch (error) {
-      console.error("Error placing order:", error.message);
-      res.status(500).json({ error: "Failed to place order. Please try again later." });
+      console.error("Order error:", error);
+      res.status(500).json({ error: "Something went wrong. Try again later." });
     }
   });
 
@@ -535,6 +561,7 @@ const configureOrderRoutes = (io) => {
     }
   });
 
+
   // GET route: Fetch all orders for a specific restaurant and customer (all time)
   router.get("/:restaurantId", async (req, res) => {
     const { restaurantId } = req.params;
@@ -556,7 +583,7 @@ const configureOrderRoutes = (io) => {
         restaurantId,
         customerIdentifier,
       })
-        .select("orderNo total items status createdAt") // Include required fields
+        .select("orderNo finalTotal items status createdAt") // Include required fields
         .populate("items.productId", "name description img") // Populate product details
         .sort({ createdAt: -1 }); // Sort by most recent orders first
 

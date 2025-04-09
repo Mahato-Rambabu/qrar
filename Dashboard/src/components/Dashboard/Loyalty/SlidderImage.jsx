@@ -46,25 +46,38 @@ const SliderImagePage = () => {
 
   const handleAddEntry = async (e) => {
     e.preventDefault();
-    if (!imageFile) return;
+    if (!imageFile) {
+      setError('Please select an image');
+      return;
+    }
+
     const formData = new FormData();
     formData.append('img', imageFile);
-    if (offer) {
+    // Only append offer if it's not empty
+    if (offer && offer.trim() !== '') {
       formData.append('offer', offer);
     }
 
     try {
       setSubmitting(true);
-      await axiosInstance.post('/updatedImageSlider', formData, {
+      setError(null); // Clear any previous errors
+      const response = await axiosInstance.post('/updatedImageSlider', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      setModalOpen(false);
-      setOffer('');
-      setImageFile(null);
-      fetchLoyaltyEntries();
+      
+      if (response.data) {
+        setModalOpen(false);
+        setOffer('');
+        setImageFile(null);
+        fetchLoyaltyEntries();
+      }
     } catch (err) {
       console.error('Error adding loyalty entry:', err);
-      setError('Failed to add loyalty entry.');
+      if (err.response) {
+        setError(err.response.data.message || 'Failed to add loyalty entry');
+      } else {
+        setError('Failed to add loyalty entry. Please try again.');
+      }
     } finally {
       setSubmitting(false);
     }
