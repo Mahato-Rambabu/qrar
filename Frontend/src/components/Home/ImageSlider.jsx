@@ -4,7 +4,6 @@ import { RiArrowLeftWideFill, RiArrowRightWideFill } from 'react-icons/ri';
 import { fetchSliderImages } from '../../api/fetchSliderImages';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
-import GlobalLoader from '../common/GlobalLoader';
 
 // Helper function to extract query parameters
 const useQuery = () => new URLSearchParams(useLocation().search);
@@ -30,7 +29,6 @@ const ImageSlider = () => {
     }
 
     const loadImages = async () => {
-      // Check if we already have images cached for this restaurant
       if (sliderCacheRef.current[restaurantId]) {
         setImages(sliderCacheRef.current[restaurantId]);
         setLoading(false);
@@ -40,10 +38,9 @@ const ImageSlider = () => {
       try {
         const fetchedImages = await fetchSliderImages(restaurantId);
         const formattedImages = fetchedImages
-          .filter(image => image.img) // Only include images that have a valid img property
+          .filter(image => image.img)
           .map(image => image.img);
-        
-        // Cache the images for this restaurantId
+
         sliderCacheRef.current[restaurantId] = formattedImages;
         setImages(formattedImages);
       } catch (err) {
@@ -68,7 +65,7 @@ const ImageSlider = () => {
   };
 
   useEffect(() => {
-    if (images.length > 0) {
+    if (images.length > 1) {
       const interval = setInterval(() => {
         handleNext();
       }, 5000);
@@ -76,7 +73,6 @@ const ImageSlider = () => {
     }
   }, [images]);
 
-  // Touch event handlers for swipe functionality
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX;
   };
@@ -94,73 +90,71 @@ const ImageSlider = () => {
   if (loading) {
     return (
       <div
-        className="relative w-full overflow-hidden rounded-b-[8%] bg-gray-100"
+        className="relative w-full overflow-hidden rounded-b-[8%] bg-gray-200"
         style={{
           aspectRatio: '16/9',
           maxHeight: '45vh',
         }}
       >
-        <GlobalLoader 
-          message="Loading images..." 
-          subMessage="Preparing your visual experience"
+        <Skeleton
+          height="100%"
+          width="100%"
+          style={{ borderRadius: "0 0 8% 8%" }}
         />
       </div>
     );
   }
 
-  // Return null (hide component) if there are no images or there's an error
   if (error || images.length === 0) {
     return null;
   }
 
   return (
     <div
-      className="relative w-full overflow-hidden rounded-b-[8%] bg-gray-100"
-      style={{
-        aspectRatio: '16/9',
-        maxHeight: '45vh',
-      }}
+      className="relative w-full h-[125px] md:h-[350px] lg:h-[450px] overflow-hidden bg-white"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Navigation Arrows */}
-      <div className="absolute inset-0 flex items-center justify-between z-10">
-        <button
-          onClick={handlePrev}
-          className="p-2 text-gray-100 text-3xl md:text-4xl hover:bg-black/10 transition-all"
-        >
-          <RiArrowLeftWideFill />
-        </button>
-        <button
-          onClick={handleNext}
-          className="p-2 text-gray-100 text-3xl md:text-4xl hover:bg-black/10 transition-all"
-        >
-          <RiArrowRightWideFill />
-        </button>
-      </div>
-
-      {/* Image Container */}
-      <div className="relative w-full h-full">
-        <img
-          src={images[currentIndex]}
-          alt={`Slider ${currentIndex + 1}`}
-          className="w-full h-full object-cover object-center rounded-b-xl"
-          loading="lazy"
-        />
-      </div>
-
-      {/* Indicator Dots */}
-      <div className="absolute bottom-2 md:bottom-4 w-full px-4 flex justify-center gap-1.5 md:gap-2 z-10">
-        {images.map((_, index) => (
+      {/* Show arrows only if more than 1 image */}
+      {images.length > 1 && (
+        <div className="absolute inset-0 flex items-center justify-between z-10">
           <button
-            key={index}
-            className={`h-2 w-2 md:h-2.5 md:w-2.5 rounded-full transition-all duration-300 ${
-              currentIndex === index ? 'bg-white scale-125' : 'bg-white/50'
-            }`}
-            onClick={() => setCurrentIndex(index)}
-          />
-        ))}
-      </div>
+            onClick={handlePrev}
+            className="p-2 text-gray-100 text-3xl md:text-4xl hover:bg-black/10 transition-all"
+          >
+            <RiArrowLeftWideFill />
+          </button>
+          <button
+            onClick={handleNext}
+            className="p-2 text-gray-100 text-3xl md:text-4xl hover:bg-black/10 transition-all"
+          >
+            <RiArrowRightWideFill />
+          </button>
+        </div>
+      )}
+
+      {/* Image */}
+      <img
+        src={images[currentIndex]}
+        alt={`Slider ${currentIndex + 1}`}
+        className="w-full object-contain object-center"
+        loading="lazy"
+      />
+
+      {/* Show indicator dots only if more than 1 image */}
+      {images.length > 1 && (
+        <div className="absolute bottom-2 md:bottom-4 w-full px-4 flex justify-center gap-1.5 md:gap-2 z-10">
+          {images.map((_, index) => (
+            <button
+              key={index}
+              className={`h-2 w-2 md:h-2.5 md:w-2.5 rounded-full transition-all duration-300 ${
+                currentIndex === index ? 'bg-white scale-125' : 'bg-white/50'
+              }`}
+              onClick={() => setCurrentIndex(index)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

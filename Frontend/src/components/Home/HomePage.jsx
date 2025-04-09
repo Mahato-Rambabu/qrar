@@ -83,7 +83,7 @@ const HomePage = () => {
 
   return (
     <div className="h-screen w-full relative bg-gray-200">
-      <header className="w-full h-[10%] flex items-center justify-between px-6 bg-gray-100">
+      <header className="w-full h-[10%] flex items-center justify-evenly bg-gray-100">
         <button
           onClick={() => setShowRestaurantDetails(true)}
           className="flex items-center"
@@ -91,20 +91,20 @@ const HomePage = () => {
           <img
             src={profileImage}
             alt="Restaurant logo"
-            className="w-12 h-12 rounded-full border-2 border-gray-300 object-cover hover:border-blue-500 transition-all duration-300"
+            className="w-14 h-14 rounded-full border-2 border-gray-300 object-cover hover:border-blue-500 transition-all duration-300"
             loading="lazy"
           />
         </button>
-          <SearchBar restaurantId={restaurantId} />
+        <SearchBar restaurantId={restaurantId} />
       </header>
 
-      <main className="w-full bg-white overflow-hidden" id="image-slider">
+      <main className="w-full h-[125px] md:h-[350px] lg:h-[450px] bg-white overflow-hidden" id="image-slider">
         {loadSlider && <ImageSlider />}
       </main>
 
       <PopularItems />
       <Offers />
-      
+
       <section className="w-full bg-gray-100" id="menu-category"> {/* Added bg-gray-100 here */}
         {loadCategory && <MenuCategory />}
       </section>

@@ -533,6 +533,7 @@ const configureOrderRoutes = (io) => {
           }
         },
         { $unwind: "$productDetails" },
+        // Add this in the final $project stage of fallback pipeline
         {
           $project: {
             productId: "$_id",
@@ -540,6 +541,7 @@ const configureOrderRoutes = (io) => {
             productImage: "$productDetails.img",
             categoryId: "$productDetails.category",
             totalQuantity: 1,
+            isRandom: { $literal: true }, // Add this flag
             _id: 0,
           }
         },
@@ -560,8 +562,7 @@ const configureOrderRoutes = (io) => {
       res.status(500).json({ message: "Error fetching weekly popular products" });
     }
   });
-
-
+  
   // GET route: Fetch all orders for a specific restaurant and customer (all time)
   router.get("/:restaurantId", async (req, res) => {
     const { restaurantId } = req.params;

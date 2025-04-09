@@ -1,3 +1,4 @@
+// --- No change to imports ---
 import React, { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosInstance';
@@ -18,73 +19,50 @@ const PopularItems = () => {
   const sliderRef = useRef(null);
   const intervalRef = useRef(null);
   const isVisibleRef = useRef(true);
-  const touchStartX = useRef(null); // For swipe functionality
-  const [error, setError] = useState(null);
-
-  // Cache popular items per restaurantId
-  const popularItemsCacheRef = useRef({});
+  const touchStartX = useRef(null);
 
   const cardMargin = 16;
   const step = cardWidth + cardMargin;
   const offset = (containerWidth - cardWidth) / 2;
   const translateX = -currentIndex * step + offset;
 
-  // Fetch popular items with caching
   useEffect(() => {
     if (!restaurantId) return;
-    setLoading(true);
-    // Check if we already have cached data for this restaurantId
-    if (popularItemsCacheRef.current[restaurantId]) {
-      setPopularItems(popularItemsCacheRef.current[restaurantId]);
-      setCurrentIndex(1);
-      setLoading(false);
-      return;
-    }
 
     const fetchPopularItems = async () => {
       try {
-        console.log('Fetching popular items for restaurant:', restaurantId);
         const response = await axiosInstance.get(`/orders/top-products/${restaurantId}`);
-        console.log('Popular items response:', response.data);
-        
-        // Cache the fetched popular items
-        popularItemsCacheRef.current[restaurantId] = response.data;
         setPopularItems(response.data);
         setCurrentIndex(1);
       } catch (err) {
         console.error("Error fetching popular items:", err);
-        console.error("Error details:", err.response?.data);
-        setError("Failed to fetch popular items. Please try again later.");
       } finally {
         setLoading(false);
       }
     };
+
     fetchPopularItems();
   }, [restaurantId]);
 
-  // Responsive dimensions
- useEffect(() => {
-  const updateDimensions = () => {
-    let width = window.innerWidth < 600 ? window.innerWidth : 3 * 208 + 2 * 16; // 3 cards + margins
-    let cWidth = window.innerWidth < 600 ? 180 : 208;
-    
-    setContainerWidth(width);
-    setCardWidth(cWidth);
-  };
+  useEffect(() => {
+    const updateDimensions = () => {
+      const width = window.innerWidth < 600 ? window.innerWidth : 3 * 208 + 2 * 16;
+      const cWidth = window.innerWidth < 600 ? 180 : 208;
 
-  updateDimensions();
-  window.addEventListener("resize", updateDimensions);
-  return () => window.removeEventListener("resize", updateDimensions);
-}, []);
+      setContainerWidth(width);
+      setCardWidth(cWidth);
+    };
 
+    updateDimensions();
+    window.addEventListener("resize", updateDimensions);
+    return () => window.removeEventListener("resize", updateDimensions);
+  }, []);
 
-  // Setup slides with clones for infinite scrolling
   const slides =
     popularItems.length > 0
       ? [popularItems[popularItems.length - 1], ...popularItems, popularItems[0]]
       : [];
 
-  // Auto slide with visibility handling
   useEffect(() => {
     const handleVisibilityChange = () => {
       isVisibleRef.current = !document.hidden;
@@ -127,7 +105,6 @@ const PopularItems = () => {
     }, 5000);
   };
 
-  // Transition handling for infinite looping
   const handleTransitionEnd = () => {
     if (currentIndex === 0) {
       sliderRef.current.style.transition = 'none';
@@ -151,51 +128,33 @@ const PopularItems = () => {
     );
   };
 
-  const getRank = (index) => {
-    if (index === 0) return popularItems.length;
-    if (index === slides.length - 1) return 1;
-    return index;
-  };
-
   const renderCrown = (rank) => {
-    if (rank === 1) {
-      return (
-        <>
-          <span className="text-yellow-500 text-3xl inline-block">👑</span>
-          <span className="ml-1 text-[18px] text-yellow-500 font-bold">#{rank}</span>
-        </>
-      );
-    } else if (rank === 2) {
-      return (
-        <>
-          <span className="text-gray-600 text-3xl inline-block">🥈</span>
-          <span className="ml-1 text-[18px] text-gray-400 font-bold">#{rank}</span>
-        </>
-      );
-    } else if (rank === 3) {
-      return (
-        <>
-          <span className="text-orange-600 text-3xl inline-block">🥉</span>
-          <span className="ml-1 text-[18px] text-orange-900 font-bold">#{rank}</span>
-        </>
-      );
-    }
-    return <span>#{rank}</span>;
-  };
-
-  const renderProductInfo = (item, rank) => {
+    const iconMap = {
+      1: { emoji: "👑", color: "text-yellow-500" },
+      2: { emoji: "🥈", color: "text-gray-500" },
+      3: { emoji: "🥉", color: "text-orange-600" },
+    };
+    const medal = iconMap[rank];
+    if (!medal) return null;
     return (
-      <div className="mt-1 text-center text-sm font-bold">
-        {renderCrown(rank)}
-        {item.isRandom && (
-          <span className="ml-1 text-gray-500 text-xs">(Random Selection)</span>
-        )}
+      <div className="flex items-center justify-center space-x-1">
+        <span className={`text-2xl ${medal.color}`}>{medal.emoji}</span>
+        <span className={`text-[14px] font-bold ${medal.color}`}>#{rank}</span>
       </div>
     );
   };
 
-  // Touch event handlers for swipe functionality
-  const swipeThreshold = 50; // Minimum swipe distance in pixels
+  const renderProductInfo = (index) => {
+    const visibleIndex = index - 1;
+    if (visibleIndex >= 0 && visibleIndex < 3) {
+      return (
+        <div className="mt-1 text-center text-sm font-bold">
+          {renderCrown(visibleIndex + 1)}
+        </div>
+      );
+    }
+    return null;
+  };
 
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX;
@@ -204,23 +163,14 @@ const PopularItems = () => {
   const handleTouchEnd = (e) => {
     const touchEndX = e.changedTouches[0].clientX;
     const deltaX = touchEndX - touchStartX.current;
-    if (deltaX > swipeThreshold) {
-      // Swipe right: go to previous slide
-      setCurrentIndex(prev => {
-        const newIndex = prev - 1;
-        return newIndex < 0 ? slides.length - 1 : newIndex;
-      });
-    } else if (deltaX < -swipeThreshold) {
-      // Swipe left: go to next slide
-      setCurrentIndex(prev => {
-        const newIndex = prev + 1;
-        return newIndex >= slides.length ? 0 : newIndex;
-      });
+    if (deltaX > 50) {
+      setCurrentIndex(prev => (prev - 1 < 0 ? slides.length - 1 : prev - 1));
+    } else if (deltaX < -50) {
+      setCurrentIndex(prev => (prev + 1 >= slides.length ? 0 : prev + 1));
     }
   };
 
   if (loading) {
-    // Render a skeleton slider with similar dimensions
     return (
       <section className="popular-items bg-gray-100">
         <h1 className="text-xl font-bold text-center pt-4 text-black">
@@ -230,67 +180,56 @@ const PopularItems = () => {
           className="mx-auto overflow-hidden relative pt-9"
           style={{ width: containerWidth, height: 375 }}
         >
-          <Skeleton
-            height={375}
-            width={containerWidth}
-            containerClassName="mx-auto"
-            style={{ borderRadius: '1rem' }}
-          />
+          <Skeleton height={375} width={containerWidth} style={{ borderRadius: '1rem' }} />
         </div>
       </section>
     );
   }
 
   return (
-    <section className="popular-items bg-gray-100">
+    <section className="popular-items bg-gray-100 h-[31%]">
       <h1 className="text-xl font-bold text-center pt-4 text-black">
         Popular <span className="text-yellow-500 italic">Weekly</span>
       </h1>
       <div
-        className="mx-auto overflow-hidden relative pt-9"
+        className="mx-auto overflow-hidden relative pt-6"
         style={{ width: containerWidth, height: 375 }}
       >
         <div
           ref={sliderRef}
           className="flex transition-transform duration-500"
-          style={{ 
-            transform: `translateX(${translateX}px)`,
-            willChange: 'transform'
-          }}
+          style={{ transform: `translateX(${translateX}px)` }}
           onTransitionEnd={handleTransitionEnd}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
           onTouchCancel={handleTouchEnd}
         >
-          {slides.map((item, index) => {
-            return (
-              <div
-                key={`${item.productId}-${index}`}
-                className={`
-                  flex-shrink-0 mx-2 cursor-pointer transition-transform duration-300
-                  ${index === currentIndex ? 'scale-110' : 'scale-90'}
-                `}
-                style={{ 
-                  width: cardWidth,
-                  transition: 'transform 0.3s ease-in-out'
-                }}
-                onClick={() => handleProductClick(item)}
-              >
-                <div className="relative">
-                  <img
-                    src={item.productImage}
-                    alt={item.productName}
-                    className="w-full h-64 object-cover rounded-2xl shadow-gray-500 shadow-sm"
-                    loading="lazy"
-                  />
-                </div>
-                {renderProductInfo(item, getRank(index))}
-                <div className="mt-1 text-center text-sm font-bold text-black truncate overflow-hidden whitespace-nowrap">
-                  {item.productName}
-                </div>
+          {slides.map((item, index) => (
+            <div
+              key={`${item.productId}-${index}`}
+              className={`
+                flex-shrink-0 mx-2 cursor-pointer 
+                transition-transform duration-300 
+                ${index === currentIndex ? 'scale-105' : 'scale-95'}
+              `}
+              style={{ width: cardWidth }}
+              onClick={() => handleProductClick(item)}
+            >
+              <div className="relative">
+                <img
+                  src={item.productImage}
+                  alt={item.productName}
+                  className="w-full h-40 md:h-44 lg:h-48 object-cover object-center rounded-xl shadow-md"
+                  loading="lazy"
+                />
               </div>
-            );
-          })}
+              {/* Fix: Show rank/medal based on index not item.rank */}
+              {index > 0 && index < slides.length - 1 && renderProductInfo(index)}
+              <div className="mt-1 text-center text-sm font-medium text-gray-800 truncate">
+                {item.productName}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
