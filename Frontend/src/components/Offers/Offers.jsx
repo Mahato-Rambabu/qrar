@@ -16,9 +16,9 @@ const Offers = () => {
   const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [direction, setDirection] = useState(1); // 1 for forward, -1 for backward
+  const [direction, setDirection] = useState(1);
 
-  // Responsive detection
+  // Detect mobile
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
@@ -62,7 +62,7 @@ const Offers = () => {
     fetchOffersData();
   }, [restaurantId]);
 
-  // Mobile auto-slide for offers (every 5 seconds) with forward direction
+  // Auto-slide
   useEffect(() => {
     if (isMobile && offers.length > 0) {
       const interval = setInterval(() => {
@@ -73,41 +73,35 @@ const Offers = () => {
     }
   }, [isMobile, offers]);
 
-  // Animation variants accepting a custom direction parameter
   const slideVariants = {
     initial: (direction) => ({
       x: direction > 0 ? "100%" : "-100%",
       opacity: 0,
     }),
-    animate: { x: "0%", opacity: 1, transition: { ease: 'easeInOut', duration: 0.5 } },
+    animate: {
+      x: "0%",
+      opacity: 1,
+      transition: { ease: 'easeInOut', duration: 0.5 }
+    },
     exit: (direction) => ({
       x: direction > 0 ? "-100%" : "100%",
       opacity: 0,
-      transition: { ease: 'easeInOut', duration: 0.5 },
+      transition: { ease: 'easeInOut', duration: 0.5 }
     }),
   };
 
-  // Skeleton placeholder for loading state
   if (loading) {
     return (
       <div className="w-full p-4 pt-4 bg-gray-100">
         {isMobile ? (
           <div className="relative h-32 rounded-xl shadow-xl p-6">
-            <Skeleton
-              height={32}
-              containerClassName="h-full"
-              style={{ borderRadius: '0.75rem' }}
-            />
+            <Skeleton height={32} containerClassName="h-full" style={{ borderRadius: '0.75rem' }} />
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {Array.from({ length: 3 }).map((_, index) => (
               <div key={index} className="relative h-32 rounded-xl shadow-xl p-6">
-                <Skeleton
-                  height={32}
-                  containerClassName="h-full"
-                  style={{ borderRadius: '0.75rem' }}
-                />
+                <Skeleton height={32} containerClassName="h-full" style={{ borderRadius: '0.75rem' }} />
               </div>
             ))}
           </div>
@@ -117,15 +111,15 @@ const Offers = () => {
   }
 
   return (
-    <div className="w-full p-4 pt-4 bg-gray-100">
+    <div className="w-full p-4 bg-gray-100">
       {offers.length > 0 ? (
         isMobile ? (
-          <div className="relative h-32 overflow-hidden">
+          <div className="relative h-24 overflow-hidden">
             <AnimatePresence mode="wait">
               <motion.div
                 key={offers[currentSlide]._id}
                 custom={direction}
-                className={`absolute inset-0 rounded-xl shadow-xl p-6 flex flex-col justify-center cursor-pointer ${gradients[currentSlide % gradients.length]}`}
+                className={`absolute inset-0 rounded-xl shadow-md p-4 flex flex-col justify-center items-center text-center cursor-pointer ${solidColors[currentSlide % solidColors.length]}`}
                 variants={slideVariants}
                 initial="initial"
                 animate="animate"
@@ -144,15 +138,14 @@ const Offers = () => {
                 }}
               >
                 {offers[currentSlide].discountPercentage && (
-                  <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md">
-                    {offers[currentSlide].discountPercentage}% off
+                  <span className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full shadow">
+                    {offers[currentSlide].discountPercentage}% OFF
                   </span>
                 )}
-                <h2 className="text-lg font-bold mb-2 animate-pulse text-white flex items-center">
-                  <BadgePercent size={20} className="mr-2" /> 
+                <h2 className="text-xl font-extrabold text-white flex items-center gap-2">
+                  <BadgePercent size={24} />
                   {offers[currentSlide].title}
                 </h2>
-                <p className="text-sm text-gray-100">Check out the hottest offers for you!</p>
               </motion.div>
             </AnimatePresence>
           </div>
@@ -161,19 +154,18 @@ const Offers = () => {
             {offers.map((offer, index) => (
               <motion.div
                 key={offer._id}
-                className={`relative h-32 rounded-xl shadow-xl p-6 flex flex-col justify-center cursor-pointer ${gradients[index % gradients.length]}`}
+                className={`relative h-32 rounded-xl shadow-md p-6 flex flex-col justify-center items-center text-center cursor-pointer ${solidColors[index % solidColors.length]}`}
                 whileHover={{ scale: 1.05 }}
               >
                 {offer.discountPercentage && (
-                  <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                    {offer.discountPercentage}% off
+                  <span className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full shadow">
+                    {offer.discountPercentage}% OFF
                   </span>
                 )}
-                <h2 className="text-lg font-bold mb-2 animate-pulse text-white flex items-center">
-                  <BadgePercent size={20} className="mr-2" /> 
+                <h2 className="text-xl font-extrabold text-white flex items-center gap-2">
+                  <BadgePercent size={24} />
                   {offer.title}
                 </h2>
-                <p className="text-sm text-white">Check out the hottest offers for you!</p>
               </motion.div>
             ))}
           </div>
@@ -183,13 +175,13 @@ const Offers = () => {
   );
 };
 
-const gradients = [
-  "bg-gradient-to-r from-gray-500 to-red-500",
-  "bg-gradient-to-r from-blue-500 to-gray-500",
-  "bg-gradient-to-r from-gray-500 to-pink-500",
-  "bg-gradient-to-r from-indigo-500 to-gray-500",
-  "bg-gradient-to-r from-gray-500 to-teal-500",
-  "bg-gradient-to-r from-orange-500 to-gray-500",
+const solidColors = [
+  "bg-blue-600",
+  "bg-green-600",
+  "bg-orange-500",
+  "bg-purple-600",
+  "bg-teal-600",
+  "bg-rose-500"
 ];
 
 export default Offers;

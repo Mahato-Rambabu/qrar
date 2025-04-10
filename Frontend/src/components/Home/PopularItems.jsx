@@ -187,13 +187,13 @@ const PopularItems = () => {
   }
 
   return (
-    <section className="popular-items bg-gray-100 h-[31%]">
+    <section className="popular-items bg-gray-100 w-full">
       <h1 className="text-xl font-bold text-center pt-4 text-black">
         Popular <span className="text-yellow-500 italic">Weekly</span>
       </h1>
       <div
         className="mx-auto overflow-hidden relative pt-6"
-        style={{ width: containerWidth, height: 375 }}
+        style={{ width: containerWidth}}
       >
         <div
           ref={sliderRef}
@@ -219,7 +219,7 @@ const PopularItems = () => {
                 <img
                   src={item.productImage}
                   alt={item.productName}
-                  className="w-full h-40 md:h-44 lg:h-48 object-cover object-center rounded-xl shadow-md"
+                  className="w-full object-cover object-center rounded-xl shadow-md"
                   loading="lazy"
                 />
               </div>

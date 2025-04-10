@@ -111,7 +111,7 @@ const ImageSlider = () => {
 
   return (
     <div
-      className="relative w-full h-[125px] md:h-[350px] lg:h-[450px] overflow-hidden bg-white"
+      className="relative w-full overflow-hidden bg-gray-100"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
