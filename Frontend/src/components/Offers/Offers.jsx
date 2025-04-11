@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import axiosInstance from '../../utils/axiosInstance';
-import { BadgePercent } from 'lucide-react';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 
@@ -18,7 +17,6 @@ const Offers = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [direction, setDirection] = useState(1);
 
-  // Detect mobile
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
@@ -28,7 +26,6 @@ const Offers = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Fetch offers
   useEffect(() => {
     if (!restaurantId) {
       setLoading(false);
@@ -62,7 +59,6 @@ const Offers = () => {
     fetchOffersData();
   }, [restaurantId]);
 
-  // Auto-slide
   useEffect(() => {
     if (isMobile && offers.length > 0) {
       const interval = setInterval(() => {
@@ -75,19 +71,47 @@ const Offers = () => {
 
   const slideVariants = {
     initial: (direction) => ({
-      x: direction > 0 ? "100%" : "-100%",
+      x: direction > 0 ? '100%' : '-100%',
       opacity: 0,
     }),
     animate: {
-      x: "0%",
+      x: '0%',
       opacity: 1,
-      transition: { ease: 'easeInOut', duration: 0.5 }
+      transition: { ease: 'easeInOut', duration: 0.5 },
     },
     exit: (direction) => ({
-      x: direction > 0 ? "-100%" : "100%",
+      x: direction > 0 ? '-100%' : '100%',
       opacity: 0,
-      transition: { ease: 'easeInOut', duration: 0.5 }
+      transition: { ease: 'easeInOut', duration: 0.5 },
     }),
+  };
+
+  const handleSwipe = (e, { offset }) => {
+    const swipeThreshold = 50;
+    if (offset.x > swipeThreshold) {
+      // Swipe Right
+      setDirection(-1);
+      setCurrentSlide(prev => (prev - 1 + offers.length) % offers.length);
+    } else if (offset.x < -swipeThreshold) {
+      // Swipe Left
+      setDirection(1);
+      setCurrentSlide(prev => (prev + 1) % offers.length);
+    }
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return 'N/A';
+    return new Date(dateStr).toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  const getOfferText = (offer) => {
+    if (offer.amountOff && Number(offer.amountOff) > 0) return `₹${offer.amountOff} OFF`;
+    if (offer.percentOff && Number(offer.percentOff) > 0) return `${offer.percentOff}% OFF`;
+    return '';
   };
 
   if (loading) {
@@ -112,76 +136,81 @@ const Offers = () => {
 
   return (
     <div className="w-full p-4 bg-gray-100">
-      {offers.length > 0 ? (
+      {offers.length > 0 && (
         isMobile ? (
           <div className="relative h-24 overflow-hidden">
-            <AnimatePresence mode="wait">
+            <AnimatePresence custom={direction} mode="wait">
               <motion.div
                 key={offers[currentSlide]._id}
                 custom={direction}
-                className={`absolute inset-0 rounded-xl shadow-md p-4 flex flex-col justify-center items-center text-center cursor-pointer ${solidColors[currentSlide % solidColors.length]}`}
                 variants={slideVariants}
                 initial="initial"
                 animate="animate"
                 exit="exit"
                 drag="x"
                 dragConstraints={{ left: 0, right: 0 }}
-                onDragEnd={(e, info) => {
-                  const swipe = info.offset.x;
-                  if (swipe < -50) {
-                    setDirection(1);
-                    setCurrentSlide((prev) => (prev + 1) % offers.length);
-                  } else if (swipe > 50) {
-                    setDirection(-1);
-                    setCurrentSlide((prev) => (prev - 1 + offers.length) % offers.length);
-                  }
-                }}
+                onDragEnd={handleSwipe}
+                className="absolute inset-0 flex justify-center items-center cursor-grab active:cursor-grabbing"
               >
-                {offers[currentSlide].discountPercentage && (
-                  <span className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full shadow">
-                    {offers[currentSlide].discountPercentage}% OFF
+                <div className="flex w-full mx-auto max-w-sm rounded-2xl border-dashed border-2 border-orange-400 bg-white p-2 relative shadow-md overflow-hidden">
+                  <span className="absolute top-1 right-2 text-[10px] text-gray-500">
+                    Valid through {formatDate(offers[currentSlide].expirationTime)}
                   </span>
-                )}
-                <h2 className="text-xl font-extrabold text-white flex items-center gap-2">
-                  <BadgePercent size={24} />
-                  {offers[currentSlide].title}
-                </h2>
+                  <div className="flex flex-col items-center justify-center px-2 border-r border-dashed border-orange-300 text-center">
+                    <img
+                      src={offers[currentSlide].logoUrl || "/default-logo.png"}
+                      alt="Logo"
+                      className="w-10 h-10 rounded-full object-cover mb-1"
+                    />
+                    <span className="text-[10px] text-gray-500">Avail Now*</span>
+                  </div>
+                  <div className="flex-1 pl-3 pr-1 flex flex-col justify-center">
+                    <h2 className="text-sm font-bold text-orange-600 truncate">
+                      {offers[currentSlide].title}
+                    </h2>
+                    <p className="text-[11px] text-gray-500 truncate">
+                      {offers[currentSlide].description || 'Enjoy a special discount!'}
+                    </p>
+                    {offers[currentSlide].discountPercentage && (
+                      <span className="absolute bottom-2 right-4 text-red-500 text-md font-bold rounded-full">
+                        {offers[currentSlide].discountPercentage}% OFF
+                      </span>
+                    )}
+                  </div>
+                </div>
               </motion.div>
             </AnimatePresence>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {offers.map((offer, index) => (
+            {offers.map((offer) => (
               <motion.div
                 key={offer._id}
-                className={`relative h-32 rounded-xl shadow-md p-6 flex flex-col justify-center items-center text-center cursor-pointer ${solidColors[index % solidColors.length]}`}
-                whileHover={{ scale: 1.05 }}
+                className="bg-white border border-dashed border-orange-400 rounded-2xl shadow-md p-4 flex items-center gap-4 hover:scale-105 transition-transform"
+                whileHover={{ scale: 1.03 }}
               >
-                {offer.discountPercentage && (
-                  <span className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full shadow">
-                    {offer.discountPercentage}% OFF
-                  </span>
-                )}
-                <h2 className="text-xl font-extrabold text-white flex items-center gap-2">
-                  <BadgePercent size={24} />
-                  {offer.title}
-                </h2>
+                <img
+                  src={offer.logoUrl || "/default-logo.png"}
+                  alt="Restaurant Logo"
+                  className="w-14 h-14 rounded-full object-cover"
+                />
+                <div className="flex-1">
+                  <div className="flex justify-end text-xs text-gray-500 mb-1">
+                    Valid through {formatDate(offer.expirationTime)}
+                  </div>
+                  <h2 className="text-md font-bold text-orange-600">{offer.title}</h2>
+                  <p className="text-sm text-gray-600">{offer.description || "Enjoy a special discount!"}</p>
+                  <div className="text-xl font-extrabold text-orange-600 mt-1">
+                    {getOfferText(offer)}
+                  </div>
+                </div>
               </motion.div>
             ))}
           </div>
         )
-      ) : null}
+      )}
     </div>
   );
 };
-
-const solidColors = [
-  "bg-blue-600",
-  "bg-green-600",
-  "bg-orange-500",
-  "bg-purple-600",
-  "bg-teal-600",
-  "bg-rose-500"
-];
 
 export default Offers;
