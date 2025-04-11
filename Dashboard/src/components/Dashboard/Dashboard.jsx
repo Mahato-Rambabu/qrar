@@ -22,7 +22,7 @@ const ProfilePage = lazy(() => import('./Profile'));
 const ProtectedRoute = lazy(() => import('./ProtectedRoute'));
 const OrderHistory = lazy(() => import('../orders/OrderHistory'));
 const QRCodeGenerator = lazy(() => import('./QrCode'));
-const UserTable = lazy(() => import('./UserCustomer'));
+const UserCustomer = lazy(() => import('./UserCustomer/UserCustomer'));
 
 // Import the global order manager component for operators
 import GlobalOrderManage from "../orders/GlobalOrderManage";
@@ -92,7 +92,7 @@ const Dashboard = () => {
                   path="/customers"
                   element={
                     <ProtectedRoute>
-                      <UserTable />
+                      <UserCustomer />
                     </ProtectedRoute>
                   }
                 />

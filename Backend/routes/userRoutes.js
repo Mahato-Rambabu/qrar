@@ -1,5 +1,6 @@
 import express from "express";
 import User from "../models/user.js";
+import RestaurantUser from "../models/restaurantUser.js";
 import authMiddleware from '../middlewares/authMiddlewares.js';
 import mongoose from 'mongoose';
 
@@ -10,7 +11,8 @@ const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 router.get("/total-users",authMiddleware, async (req, res) => {
   try {
     const restaurantId = req.user.id;
-    const totalUsers = await User.countDocuments({restaurantId}); // Count all user documents
+    // Use RestaurantUser model for faster counting
+    const totalUsers = await RestaurantUser.countDocuments({ restaurantId });
     res.status(200).json({ totalUsers });
   } catch (error) {
     console.error("Error fetching total users:", error);
@@ -28,9 +30,18 @@ router.get('/users-by-age-group', authMiddleware, async (req, res) => {
 
     const currentDate = new Date();
 
+    // First, get all RestaurantUser documents for this restaurant
+    const restaurantUsers = await RestaurantUser.find({ restaurantId })
+      .select('userId')
+      .lean();
+    
+    // Extract user IDs
+    const userIds = restaurantUsers.map(ru => ru.userId);
+    
+    // Then, aggregate users by age group
     const ageGroups = await User.aggregate([
       {
-        $match: { restaurantId: new mongoose.Types.ObjectId(restaurantId) },
+        $match: { _id: { $in: userIds } },
       },
       {
         $addFields: {
@@ -98,6 +109,24 @@ router.post("/:restaurantId", async (req, res) => {
       if (!user.restaurants.includes(restaurantId)) {
         user.restaurants.push(restaurantId);
         await user.save();
+        
+        // Create a new RestaurantUser entry for this user-restaurant pair
+        await RestaurantUser.create({
+          userId: user._id,
+          restaurantId: restaurantId,
+          lastVisit: new Date(),
+          visitCount: 1
+        });
+      } else {
+        // Update the RestaurantUser entry with the latest visit
+        await RestaurantUser.findOneAndUpdate(
+          { userId: user._id, restaurantId: restaurantId },
+          { 
+            $inc: { visitCount: 1 },
+            lastVisit: new Date()
+          },
+          { upsert: true }
+        );
       }
 
       return res.status(200).json({
@@ -115,6 +144,14 @@ router.post("/:restaurantId", async (req, res) => {
       restaurants: [restaurantId], // Assign restaurant during registration
     });
     await newUser.save();
+
+    // Create a new RestaurantUser entry for this user-restaurant pair
+    await RestaurantUser.create({
+      userId: newUser._id,
+      restaurantId: restaurantId,
+      lastVisit: new Date(),
+      visitCount: 1
+    });
 
     res.status(201).json({
       message: "User registered successfully",
@@ -136,8 +173,34 @@ router.get("/", authMiddleware, async (req, res) => {
   }
 
   try {
-    const users = await User.find({ restaurantId }).select("name phone dob createdAt");
-    res.status(200).json(users);
+    // Find users associated with this restaurant
+    const users = await User.find({ restaurants: restaurantId }).select("name phone dob createdAt");
+    
+    // Get restaurant-specific user data
+    const restaurantUsers = await RestaurantUser.find({ restaurantId })
+      .select("userId lastVisit visitCount preferences")
+      .lean();
+    
+    // Create a map of restaurant-specific data by userId
+    const restaurantUserMap = restaurantUsers.reduce((map, ru) => {
+      map[ru.userId.toString()] = ru;
+      return map;
+    }, {});
+    
+    // Combine user data with restaurant-specific data
+    const enrichedUsers = users.map(user => {
+      const userObj = user.toObject();
+      const restaurantUserData = restaurantUserMap[user._id.toString()] || {};
+      
+      return {
+        ...userObj,
+        lastVisit: restaurantUserData.lastVisit,
+        visitCount: restaurantUserData.visitCount,
+        preferences: restaurantUserData.preferences || {}
+      };
+    });
+    
+    res.status(200).json(enrichedUsers);
   } catch (error) {
     console.error("Error fetching user details:", error);
     res.status(500).json({ error: "Failed to fetch user details" });
