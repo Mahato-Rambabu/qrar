@@ -6,8 +6,11 @@ import { generateOrderBill } from "../../utils/pdfGenerator";
 
 const OrderTable = ({ orders, onUpdateStatus, isHistory = false }) => {
   const handleDownloadSingleOrder = (order) => {
-    // Use the utility function to generate and download the PDF bill
-    generateOrderBill(order);
+    try {
+      generateOrderBill(order);
+    } catch (error) {
+      console.error("PDF generation failed:", error);
+    }
   };
 
   return (

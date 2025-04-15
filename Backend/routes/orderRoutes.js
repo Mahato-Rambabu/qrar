@@ -4,12 +4,50 @@ import Order from "../models/order.js";
 import authMiddleware from "../middlewares/authMiddlewares.js";
 import moment from "moment";
 import Product from '../models/product.js';
+import RestaurantUser from '../models/restaurantUser.js';
+import Restaurant from '../models/restaurant.js';
 
 const router = express.Router();
 
 // Helper function to validate ObjectId
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
+// Helper function to generate WhatsApp link
+const generateWhatsAppLink = (phoneNumber, message) => {
+  // Format phone number (remove spaces, add country code if needed)
+  let formattedPhone = phoneNumber.replace(/\s+/g, '');
+  if (!formattedPhone.startsWith('+')) {
+    formattedPhone = '+91' + formattedPhone; // Default to India, adjust as needed
+  }
+  
+  // Encode message for URL
+  const encodedMessage = encodeURIComponent(message);
+  
+  // Return WhatsApp API URL
+  return `https://wa.me/${formattedPhone}?text=${encodedMessage}`;
+};
+
+// Helper function to send automated WhatsApp notification
+const sendAutomatedWhatsAppNotification = async (phoneNumber, message, orderId) => {
+  try {
+    // Generate WhatsApp link
+    const whatsappLink = generateWhatsAppLink(phoneNumber, message);
+    
+    // Store notification in database for tracking
+    // This could be expanded to a Notification model if needed
+    console.log(`WhatsApp notification link generated for order ${orderId}: ${whatsappLink}`);
+    
+    // In a real implementation, you could:
+    // 1. Use a service like Twilio to send SMS with the WhatsApp link
+    // 2. Use a browser automation tool to open the link (for testing)
+    // 3. Store the notification in a database for tracking
+    
+    return whatsappLink;
+  } catch (error) {
+    console.error('WhatsApp notification error:', error);
+    return null;
+  }
+};
 
 // Helper function to calculate date ranges
 const getDateRange = (dateRange) => {
@@ -432,12 +470,49 @@ const configureOrderRoutes = (io) => {
 
       const savedOrder = await newOrder.save();
 
+      // Update the user's lastVisit time in RestaurantUser collection
+      await RestaurantUser.findOneAndUpdate(
+        { userId: customerIdentifier, restaurantId },
+        { 
+          $inc: { visitCount: 1 },
+          lastVisit: new Date()
+        },
+        { upsert: true }
+      );
+
+      // Get restaurant details for notification
+      const restaurant = await Restaurant.findById(restaurantId);
+      const customer = await RestaurantUser.findOne({ userId: customerIdentifier });
+
+      // Prepare order details for notification
+      const orderDetails = items.map(item => 
+        `${item.quantity}x ${item.productId.name} - ₹${item.price * item.quantity}`
+      ).join('\n');
+
+      // Send notification to customer
+      const customerMessage = `New Order #${savedOrder.orderNo}\n\nItems:\n${orderDetails}\n\nTotal: ₹${finalTotal}\n\nThank you for ordering from ${restaurant.name}!`;
+      const customerWhatsAppLink = await sendAutomatedWhatsAppNotification(
+        customer.phone, 
+        customerMessage, 
+        savedOrder._id
+      );
+
+      // Send notification to restaurant
+      const restaurantMessage = `New Order #${savedOrder.orderNo}\n\nCustomer: ${customer.name}\nPhone: ${customer.phone}\n\nItems:\n${orderDetails}\n\nTotal: ₹${finalTotal}\n\nMode: ${modeOfOrder}\nTable: ${tableNumber || 'N/A'}`;
+      const restaurantWhatsAppLink = await sendAutomatedWhatsAppNotification(
+        restaurant.phone, 
+        restaurantMessage, 
+        savedOrder._id
+      );
+
       await savedOrder.populate("customerIdentifier", "name");
       await savedOrder.populate("items.productId");
 
       io.emit("order:created", {
         ...savedOrder.toObject(),
         customerName: savedOrder.customerIdentifier?.name || "Guest",
+        customerWhatsAppLink,
+        restaurantWhatsAppLink
       });
 
       res.status(201).json({
@@ -445,6 +520,8 @@ const configureOrderRoutes = (io) => {
         order: {
           orderId: savedOrder._id,
           orderNo: savedOrder.orderNo,
+          customerWhatsAppLink,
+          restaurantWhatsAppLink
         },
       });
 

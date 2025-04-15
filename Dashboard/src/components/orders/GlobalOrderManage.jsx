@@ -8,10 +8,48 @@ import { generateOrderBill } from "../../utils/pdfGenerator";
 const socketUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:5001";
 const socket = io(socketUrl);
 
+// Helper function to send web notification
+const sendWebNotification = (title, options = {}) => {
+  if (!("Notification" in window)) {
+    console.log("This browser does not support notifications");
+    return;
+  }
+
+  if (Notification.permission === "granted") {
+    const notification = new Notification(title, {
+      icon: "/logo192.png",
+      badge: "/favicon.ico",
+      vibrate: [100, 50, 100],
+      ...options
+    });
+    
+    notification.onclick = () => {
+      window.focus();
+      notification.close();
+    };
+  } else if (Notification.permission !== "denied") {
+    Notification.requestPermission().then(permission => {
+      if (permission === "granted") {
+        sendWebNotification(title, options);
+      }
+    });
+  }
+};
+
 const GlobalOrderManage = () => {
   const [modalOrder, setModalOrder] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [notificationEnabled, setNotificationEnabled] = useState(false);
   const audioRef = useRef(null);
+
+  // Request notification permission on component mount
+  useEffect(() => {
+    if ("Notification" in window) {
+      Notification.requestPermission().then(permission => {
+        setNotificationEnabled(permission === "granted");
+      });
+    }
+  }, []);
 
   // Handle new order notifications
   useEffect(() => {
@@ -39,7 +77,36 @@ const GlobalOrderManage = () => {
         .play()
         .catch((err) => console.warn("Audio playback prevented:", err.message));
     }
-  }, []);
+
+    // Send web notification if enabled
+    if (notificationEnabled) {
+      const notificationOptions = {
+        body: `New order #${order.orderNo} from ${order.customerName}`,
+        tag: `order-${order._id}`,
+        data: {
+          orderId: order._id,
+          orderNo: order.orderNo
+        },
+        actions: [
+          {
+            action: 'accept',
+            title: 'Accept'
+          },
+          {
+            action: 'reject',
+            title: 'Reject'
+          }
+        ]
+      };
+      
+      sendWebNotification('New Order Received', notificationOptions);
+    }
+
+    // If WhatsApp link is available, open it in a new tab
+    if (newOrder.restaurantWhatsAppLink) {
+      window.open(newOrder.restaurantWhatsAppLink, '_blank');
+    }
+  }, [notificationEnabled]);
 
   // Handle order acceptance
   const handleAccept = useCallback(async (order) => {
