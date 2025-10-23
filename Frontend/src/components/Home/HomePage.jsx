@@ -89,7 +89,7 @@ const HomePage = () => {
           <img
             src={profileImage}
             alt="Restaurant logo"
-            className="w-14 h-14 rounded-full border-2 border-gray-300 object-cover hover:border-blue-500 transition duration-300"
+            className="w-12 h-12 rounded-full border-2 border-gray-300 object-cover hover:border-blue-500 transition duration-300"
             loading="lazy"
           />
         </button>
