@@ -156,7 +156,7 @@ const ProductGrid = memo(({ products = [], highlightedProduct, isLoading = false
             onClick={() => setSelectedProduct(null)}
           >
             <motion.div
-              className="bg-gray-100 rounded-t-3xl w-full h-[80vh] flex flex-col relative"
+              className="bg-gray-100 rounded-t-3xl w-full flex flex-col relative"
               initial={{ y: '100%' }}
               animate={{ y: '0' }}
               exit={{ y: '100%' }}
@@ -197,7 +197,7 @@ const ProductGrid = memo(({ products = [], highlightedProduct, isLoading = false
               </div>
               <div className="absolute bottom-0 left-0 right-0 px-3 pb-10 flex justify-between items-center border-t bg-gray-100">
                 {selectedProduct.discountedPrice ? (
-                  <p className="font-bold text-2xl relative top-4">
+                  <p className="font-bold text-xl relative top-4">
                     <span className="text-gray-500 line-through mr-2">₹{selectedProduct.price}.00</span>
                     <span className="text-green-600">₹{selectedProduct.discountedPrice}.00</span>
                   </p>
@@ -206,7 +206,7 @@ const ProductGrid = memo(({ products = [], highlightedProduct, isLoading = false
                 )}
                 {getProductQuantity(selectedProduct._id) === 0 ? (
                   <button
-                    className="relative bg-red-600 px-8 py-3 top-4 rounded-xl shadow-sm text-white font-semibold"
+                    className="relative bg-gray-600 px-8 py-3 top-4 rounded-xl shadow-sm text-white font-semibold"
                     onClick={() => handleOrderClick(selectedProduct)}
                   >
                     Add +
@@ -214,16 +214,16 @@ const ProductGrid = memo(({ products = [], highlightedProduct, isLoading = false
                 ) : (
                   <div className="relative top-4 bg-white flex items-center justify-between px-4 py-2 rounded-lg shadow-md border border-gray-300">
                     <button
-                      className="text-black text-xl flex items-center justify-center w-8 h-8"
+                      className="text-black text-xl flex items-center justify-center w-4 h-4"
                       onClick={() => handleDecrement(selectedProduct._id)}
                     >
                       −
                     </button>
-                    <span className="text-black font-semibold text-xl mx-2">
+                    <span className="text-black font-semibold text-md mx-2">
                       {getProductQuantity(selectedProduct._id)}
                     </span>
                     <button
-                      className="text-black text-xl flex items-center justify-center w-8 h-8"
+                      className="text-black text-xl flex items-center justify-center w-4 h-4"
                       onClick={() => handleIncrement(selectedProduct._id)}
                     >
                       +
