@@ -33,9 +33,9 @@ const Navbar = ({ toggleSidebar }) => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 w-full bg-white shadow-md z-50">
+    <nav className="fixed top-0 left-0 w-full bg-white border-b z-50">
       {/* Desktop View */}
-      <div className="hidden md:flex items-center justify-between px-4 py-2">
+      <div className="hidden md:flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-2">
           {/* Sidebar Toggle Button */}
           <button
