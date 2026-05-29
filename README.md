@@ -1,4 +1,4 @@
-# QRAR — Restaurant Ordering SaaS Platform
+# NexaDine — Restaurant Ordering SaaS Platform
 
 A multi-tenant SaaS platform enabling restaurants to manage menus, orders, and offers through a centralized system. Built solo from scratch — currently live with **2+ paying restaurant clients**.
 
